@@ -232,7 +232,7 @@
 
 <script>
 // --- VERİ YAPISI ---
-const API_URL = "https://script.google.com/macros/s/AKfycbzYl6qP74Kl-VTShGXIRveq_PvnT1iSBkJPUSf0X2_WcpLcaUe4m6HKwKSryaIAcfs6/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxJ2YnHUiLc5MJaALIQiJL8Ptkjf_V3_8e3NiM3TvuAkA7IJ17U-V6PHmkmoqZQdeA7/exec";
 const DB_KEY = "ZikirTakipData_v2";
 let data = {
     aktifler: [], // ["kalp", "letaif"] gibi
@@ -532,7 +532,18 @@ function sifirla() {
     }
 }
 	// --- ONLINE HATİM FONKSİYONLARI ---
+// --- YARDIMCI FONKSİYONLAR ---
 
+function showLoader(goster) {
+    let loader = document.getElementById("loader");
+    if(loader) loader.style.display = goster ? "flex" : "none";
+}
+
+function ekranGoster(id) {
+    document.querySelectorAll(".ekran").forEach(e => e.style.display = "none");
+    let hedef = document.getElementById(id);
+    if(hedef) hedef.style.display = "block";
+}
 // Kullanıcı Kimliği (Cihaza özel sabit ID oluşturur)
 function getKullaniciID() {
     let id = localStorage.getItem("pwa_user_id");
@@ -646,4 +657,5 @@ function kuranOku(url, sayfaNo) {
 </script>
 </body>
 </html>
+
 
