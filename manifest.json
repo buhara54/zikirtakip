@@ -1,6 +1,7 @@
 {
   "name": "Zikir Takip",
   "short_name": "Zikir",
+  "id": "./index.html",
   "start_url": "./index.html",
   "display": "standalone",
   "theme_color": "#2e7d32",
@@ -18,4 +19,5 @@
     }
   ]
 }
+
 
