@@ -3,7 +3,6 @@
   "short_name": "Zikir",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#ffffff",
   "theme_color": "#2e7d32",
   "orientation": "portrait",
   "icons": [
@@ -19,3 +18,4 @@
     }
   ]
 }
+
