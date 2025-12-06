@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Zikir Takip</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2e7d32">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --ana-renk: #2e7d32;
+            --arkaplan: #f0f2f5;
+            --kart-bg: #ffffff;
+            --radius: 12px;
+            --golge: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--arkaplan); margin: 0; padding-bottom: 80px; user-select: none; }
+        .container { max-width: 600px; margin: 0 auto; padding: 10px; }
+        
+        /* Header */
+        .header { background: var(--ana-renk); color: white; padding: 20px; text-align: center; border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .header h1 { margin: 0; font-size: 1.5rem; }
+        .header p { margin: 5px 0 0 0; opacity: 0.9; font-size: 0.9rem; }
+
+        /* Kartlar */
+        .kart { background: var(--kart-bg); border-radius: var(--radius); padding: 15px; margin-bottom: 15px; box-shadow: var(--golge); animation: fadeIn 0.5s; }
+        .kart-baslik { font-weight: bold; color: var(--ana-renk); border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        
+        /* Form Elemanları */
+        .btn { border: none; padding: 10px 15px; border-radius: 8px; font-weight: 600; cursor: pointer; width: 100%; font-size: 1rem; transition: 0.2s; }
+        .btn-ana { background: var(--ana-renk); color: white; }
+        .btn-ana:active { transform: scale(0.98); }
+        .btn-outline { background: transparent; border: 2px solid var(--ana-renk); color: var(--ana-renk); }
+        .btn-danger { background: #d32f2f; color: white; }
+        
+        .input-grup { display: flex; gap: 10px; margin-top: 10px; }
+        input[type="number"], input[type="date"], input[type="text"] { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; box-sizing: border-box; outline: none; }
+        input:focus { border-color: var(--ana-renk); }
+
+        /* Alt Navigasyon */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: white; display: flex; justify-content: space-around; padding: 10px 0; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); z-index: 1000; }
+        .nav-item { text-align: center; color: #888; background: none; border: none; font-size: 0.8rem; cursor: pointer; }
+        .nav-item i { display: block; font-size: 1.4rem; margin-bottom: 3px; }
+        .nav-item.aktif { color: var(--ana-renk); }
+
+        /* Sekmeler */
+        .tab-content { display: none; }
+        .tab-content.aktif { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Özel Bileşenler */
+        .badge { background: #e8f5e9; color: var(--ana-renk); padding: 4px 8px; border-radius: 10px; font-size: 0.8rem; }
+        .progress-bg { background: #eee; height: 10px; border-radius: 5px; overflow: hidden; margin: 10px 0; }
+        .progress-fill { background: var(--ana-renk); height: 100%; width: 0%; transition: width 0.5s; }
+        .gecmis-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f0f0f0; font-size: 0.9rem; }
+        .ayar-btn { text-align: left; margin-bottom: 10px; background: #f9f9f9; color: #333; display: flex; align-items: center; gap: 10px; }
+
+        /* Modal */
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 2000; }
+        .modal-box { background: white; width: 90%; max-width: 400px; padding: 20px; border-radius: 15px; }
+        .checkbox-label { display: flex; align-items: center; gap: 10px; padding: 10px; border-bottom: 1px solid #f0f0f0; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Zikir Takip</h1>
+        <p>Kişisel Manevi Gelişim</p>
+    </div>
+
+    <div class="container">
+        
+        <div id="tab-zikir" class="tab-content aktif">
+            <div style="text-align:right; margin-bottom:10px;">
+                <button class="btn btn-outline" style="width:auto; padding:6px 15px; font-size:0.9rem;" onclick="toggleZikirModal()">
+                    <i class="fa fa-plus"></i> Ders Ekle / Çıkar
+                </button>
+            </div>
+            
+            <div id="zikir-container"></div>
+        </div>
+
+        <div id="tab-ayarlar" class="tab-content">
+            <div class="kart">
+                <div class="kart-baslik">Veri Yedekleme</div>
+                <p style="font-size:0.9rem; color:#666; margin-bottom:15px;">Verileriniz sadece telefonunuzda saklanır. Silinmemesi için düzenli yedek alınız.</p>
+                
+                <button class="btn ayar-btn" onclick="yedekIndir()">
+                    <i class="fa fa-download"></i> Yedeği İndir (Dosya)
+                </button>
+                
+                <button class="btn ayar-btn" onclick="document.getElementById('yedek-yukle').click()">
+                    <i class="fa fa-upload"></i> Yedeği Geri Yükle
+                </button>
+                <input type="file" id="yedek-yukle" style="display:none" onchange="yedekYukle(this)">
+                
+                <button class="btn ayar-btn btn-danger" style="margin-top:20px; color:white; background:#d32f2f;" onclick="sifirla()">
+                    <i class="fa fa-trash"></i> Tüm Verileri Sil
+                </button>
+            </div>
+            
+            <div class="kart" style="text-align:center;">
+                <p style="font-size:0.8rem; color:#888;">Buhara Vakfı Akyazı Şubesi<br>v2.0 - Çevrimdışı PWA</p>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="bottom-nav">
+        <button class="nav-item aktif" onclick="navGit('zikir', this)">
+            <i class="fa fa-fingerprint"></i> Zikirlerim
+        </button>
+        <button class="nav-item" onclick="navGit('ayarlar', this)">
+            <i class="fa fa-cog"></i> Ayarlar
+        </button>
+    </div>
+
+    <div id="modal-zikir" class="modal">
+        <div class="modal-box">
+            <h3 style="margin-top:0; color:var(--ana-renk);">Ders Seçimi</h3>
+            <p style="font-size:0.9rem; color:#666;">Ana ekranda görmek istediklerinizi işaretleyin.</p>
+            <div style="display:flex; flex-direction:column; margin:15px 0; max-height:300px; overflow-y:auto;">
+                <label class="checkbox-label"><input type="checkbox" id="chk-kalp"> Kalp Zikri</label>
+                <label class="checkbox-label"><input type="checkbox" id="chk-letaif"> Letaif Dersleri</label>
+                <label class="checkbox-label"><input type="checkbox" id="chk-nefyu"> Nefyu İsbat</label>
+                <label class="checkbox-label"><input type="checkbox" id="chk-tehlil"> Hatme-i Tehlil</label>
+                <label class="checkbox-label"><input type="checkbox" id="chk-ihlas"> İhlas-ı Şerif</label>
+            </div>
+            <div style="display:flex; gap:10px;">
+                <button class="btn btn-outline" onclick="toggleZikirModal()">İptal</button>
+                <button class="btn btn-ana" onclick="zikirSecimKaydet()">Kaydet</button>
+            </div>
+        </div>
+    </div>
+
+<script>
+// --- VERİ YAPISI ---
+const DB_KEY = "ZikirTakipData_v2";
+let data = {
+    aktifler: [], // ["kalp", "letaif"] gibi
+    kalp: { baslangic: "" },
+    letaif: { baslangic: "", hedef: 23000, tur: "" },
+    nefyu: { baslangic: "", sayi: 0 },
+    tehlil: { baslangic: "", toplam: 0, biten: 0, gecmis: [] },
+    ihlas: { baslangic: "", toplam: 0, biten: 0, gecmis: [] }
+};
+
+// --- BAŞLANGIÇ ---
+window.onload = function() {
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+    
+    let stored = localStorage.getItem(DB_KEY);
+    if(stored) data = JSON.parse(stored);
+    
+    // İlk açılışta boşsa modalı aç
+    if(data.aktifler.length === 0) toggleZikirModal();
+    
+    arayuzGuncelle();
+};
+
+function kaydet() {
+    localStorage.setItem(DB_KEY, JSON.stringify(data));
+    arayuzGuncelle();
+}
+
+function navGit(tabId, btn) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('aktif'));
+    document.getElementById('tab-' + tabId).classList.add('aktif');
+    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('aktif'));
+    btn.classList.add('aktif');
+}
+
+function arayuzGuncelle() {
+    renderZikirKartlari();
+    // Modal Checkboxlarını güncelle
+    document.getElementById("chk-kalp").checked = data.aktifler.includes("kalp");
+    document.getElementById("chk-letaif").checked = data.aktifler.includes("letaif");
+    document.getElementById("chk-nefyu").checked = data.aktifler.includes("nefyu");
+    document.getElementById("chk-tehlil").checked = data.aktifler.includes("tehlil");
+    document.getElementById("chk-ihlas").checked = data.aktifler.includes("ihlas");
+}
+
+// --- ZİKİR FONKSİYONLARI ---
+function toggleZikirModal() {
+    let m = document.getElementById("modal-zikir");
+    m.style.display = (m.style.display == "flex") ? "none" : "flex";
+}
+
+function zikirSecimKaydet() {
+    let list = [];
+    if(document.getElementById("chk-kalp").checked) list.push("kalp");
+    if(document.getElementById("chk-letaif").checked) list.push("letaif");
+    if(document.getElementById("chk-nefyu").checked) list.push("nefyu");
+    if(document.getElementById("chk-tehlil").checked) list.push("tehlil");
+    if(document.getElementById("chk-ihlas").checked) list.push("ihlas");
+    data.aktifler = list;
+    kaydet();
+    toggleZikirModal();
+}
+
+function renderZikirKartlari() {
+    let container = document.getElementById("zikir-container");
+    container.innerHTML = "";
+    
+    if(data.aktifler.length === 0) {
+        container.innerHTML = "<p style='text-align:center; color:#888; margin-top:50px;'>Takip listeniz boş.<br>'+ Zikir Ekle' butonuna basınız.</p>";
+        return;
+    }
+
+    data.aktifler.forEach(tip => {
+        if(tip == 'kalp') container.innerHTML += kartKalp();
+        if(tip == 'letaif') container.innerHTML += kartLetaif();
+        if(tip == 'nefyu') container.innerHTML += kartNefyu();
+        if(tip == 'tehlil') container.innerHTML += kartSayacli('Hatme-i Tehlil', 'tehlil', 70000);
+        if(tip == 'ihlas') container.innerHTML += kartSayacli('İhlas-ı Şerif', 'ihlas', 100000);
+    });
+}
+
+function gunHesapla(tarih) {
+    if(!tarih) return 0;
+    let diff = new Date() - new Date(tarih);
+    let gun = Math.floor(diff / (1000 * 60 * 60 * 24));
+    return gun > 0 ? gun : 0;
+}
+
+// --- KART HTML ÜRETİCİLERİ ---
+
+function kartKalp() {
+    let d = data.kalp;
+    let gun = gunHesapla(d.baslangic);
+    return `<div class="kart">
+        <div class="kart-baslik">
+            <span><i class="fa fa-heart" style="color:#d32f2f"></i> Kalp Zikri</span>
+            <span class="badge">${gun} Gün</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <label style="font-size:0.9rem; color:#666;">Başlangıç:</label>
+            <input type="date" style="width:60%; padding:8px;" value="${d.baslangic}" onchange="updateZikir('kalp', 'baslangic', this.value)">
+        </div>
+    </div>`;
+}
+
+function kartLetaif() {
+    let d = data.letaif;
+    let gun = gunHesapla(d.baslangic);
+    
+    // Hesaplama
+    let s = d.hedef;
+    let r1000 = Math.floor(s/6000); s %= 6000;
+    let r500 = Math.floor(s/3000); s %= 3000;
+    let r100 = Math.floor(s/600); s %= 600;
+    let kirik = s;
+    
+    let hesapText = `<i class="fa fa-check-circle" style="color:var(--ana-renk)"></i> <b>${r1000}</b> Tur 1000'lik (x6)<br>
+                     <i class="fa fa-check-circle" style="color:var(--ana-renk)"></i> <b>${r500}</b> Tur 500'lük (x6)<br>
+                     <i class="fa fa-check-circle" style="color:var(--ana-renk)"></i> <b>${r100}</b> Tur 100'lük (x6)`;
+    if(kirik > 0) hesapText += `<br><i class="fa fa-plus-circle" style="color:#f57c00"></i> <b>${kirik}</b> adet ilave`;
+
+    return `<div class="kart">
+        <div class="kart-baslik">
+            <span><i class="fa fa-layer-group"></i> Letaif Dersleri</span>
+            <span class="badge">${gun} Gün</span>
+        </div>
+        <div style="margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
+             <small>Başlangıç:</small> <input type="date" style="width:60%; padding:5px;" value="${d.baslangic}" onchange="updateZikir('letaif', 'baslangic', this.value)">
+        </div>
+        <hr style="border:0; border-top:1px dashed #eee;">
+        <div class="input-grup" style="align-items:center;">
+            <span style="font-size:0.9rem;">Hedef:</span>
+            <input type="number" value="${d.hedef}" step="2000" onchange="updateZikir('letaif', 'hedef', this.value)">
+        </div>
+        <div style="background:#e8f5e9; padding:10px; margin-top:10px; border-radius:8px; font-size:0.85rem; line-height:1.6;">${hesapText}</div>
+        <div class="input-grup" style="margin-top:15px;">
+            <input type="text" placeholder="Not (Örn: 2. Turdayım)" value="${d.tur}" onchange="updateZikir('letaif', 'tur', this.value)">
+        </div>
+    </div>`;
+}
+
+function kartNefyu() {
+    let d = data.nefyu;
+    let gun = gunHesapla(d.baslangic);
+    return `<div class="kart">
+        <div class="kart-baslik">
+            <span><i class="fa fa-infinity"></i> Nefyu İsbat</span>
+            <span class="badge">${gun} Gün</span>
+        </div>
+        <div style="margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
+             <small>Başlangıç:</small> <input type="date" style="width:60%; padding:5px;" value="${d.baslangic}" onchange="updateZikir('nefyu', 'baslangic', this.value)">
+        </div>
+        <div style="text-align:center; font-size:2.5rem; font-weight:bold; color:var(--ana-renk); margin:10px 0;">
+            ${d.sayi} <span style="font-size:1rem; color:#999; font-weight:normal;">/ 21</span>
+        </div>
+        <div class="input-grup">
+            <input type="number" id="nefyu-ekle" placeholder="Sayı">
+            <button class="btn btn-ana" onclick="nefyuIslem('ilave')">+ Ekle</button>
+            <button class="btn btn-outline" onclick="nefyuIslem('yenile')">Yenile</button>
+        </div>
+    </div>`;
+}
+
+function nefyuIslem(tip) {
+    let el = document.getElementById("nefyu-ekle");
+    let val = parseInt(el.value);
+    if(!val && val !== 0) return;
+    let mevcut = data.nefyu.sayi || 0;
+    
+    if(tip == 'ilave') mevcut += val;
+    else mevcut = val;
+    
+    if(mevcut > 21) { alert("Sayı 21'i geçemez!"); return; }
+    
+    data.nefyu.sayi = mevcut;
+    el.value = "";
+    kaydet();
+}
+
+function kartSayacli(baslik, key, hedef) {
+    let d = data[key];
+    let yuzde = Math.min(100, Math.floor((d.toplam / hedef) * 100));
+    
+    let btnTamam = "";
+    if(d.toplam >= hedef) {
+        btnTamam = `<div style="text-align:center; margin:10px 0;">
+            <div style="color:#2e7d32; font-weight:bold; margin-bottom:5px;">🎉 Tebrikler! Hedef Tamamlandı.</div>
+            <button class="btn btn-ana" onclick="sayacSifirla('${key}')">Yeni Hatim Başlat (+1)</button>
+        </div>`;
+    }
+
+    let gecmisHTML = "";
+    if(d.gecmis && d.gecmis.length > 0) {
+        d.gecmis.slice(0,5).forEach(g => {
+            gecmisHTML += `<div class="gecmis-item"><span>${g.tarih}</span><b>+${g.miktar.toLocaleString()}</b></div>`;
+        });
+    } else { gecmisHTML = "<div style='color:#999; font-size:0.8rem;'>Henüz kayıt yok.</div>"; }
+
+    return `<div class="kart">
+        <div class="kart-baslik">
+            <span><i class="fa fa-chart-pie"></i> ${baslik}</span>
+            <span class="badge">Biten: ${d.biten}</span>
+        </div>
+        
+        <div class="progress-bg"><div class="progress-fill" style="width:${yuzde}%"></div></div>
+        <div style="text-align:center; font-size:0.9rem; margin-bottom:10px; color:#555;">
+             <b>${d.toplam.toLocaleString()}</b> / ${hedef.toLocaleString()} (%${yuzde})
+        </div>
+        
+        ${btnTamam}
+        
+        <div class="input-grup" style="${d.toplam>=hedef ? 'display:none':''}">
+            <input type="number" id="sayac-${key}" placeholder="Okunan Miktar">
+            <button class="btn btn-ana" onclick="sayacEkle('${key}')">Kaydet</button>
+        </div>
+
+        <div style="margin-top:15px; border-top:1px solid #eee; padding-top:10px;">
+             <div style="font-size:0.8rem; color:#888; margin-bottom:5px;">Son Hareketler:</div>
+             ${gecmisHTML}
+        </div>
+        
+        <div style="margin-top:10px; font-size:0.85rem; color:#666; display:flex; justify-content:space-between; align-items:center;">
+             <span>Başlangıç:</span>
+             <input type="date" style="width:60%; padding:5px;" value="${d.baslangic}" onchange="updateZikir('${key}', 'baslangic', this.value)">
+        </div>
+    </div>`;
+}
+
+function sayacEkle(key) {
+    let el = document.getElementById("sayac-"+key);
+    let val = parseInt(el.value);
+    if(!val) return;
+    
+    data[key].toplam += val;
+    // Geçmişe ekle
+    if(!data[key].gecmis) data[key].gecmis = [];
+    data[key].gecmis.unshift({tarih: new Date().toLocaleDateString("tr-TR"), miktar: val});
+    if(data[key].gecmis.length > 10) data[key].gecmis.pop();
+    
+    el.value = "";
+    kaydet();
+}
+
+function sayacSifirla(key) {
+    if(confirm("Sayı sıfırlanacak ve Biten sayacı +1 artacak. Onaylıyor musunuz?")) {
+        data[key].biten++;
+        data[key].toplam = 0;
+        data[key].gecmis = [];
+        data[key].baslangic = new Date().toISOString().substring(0,10);
+        kaydet();
+    }
+}
+
+function updateZikir(anaKey, altKey, val) {
+    data[anaKey][altKey] = val;
+    kaydet();
+}
+
+// --- YEDEKLEME ---
+function yedekIndir() {
+    let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data));
+    let a = document.createElement('a');
+    a.href = dataStr;
+    a.download = "zikir_yedek_" + new Date().toLocaleDateString("tr-TR") + ".json";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+}
+
+function yedekYukle(input) {
+    let file = input.files[0];
+    if(!file) return;
+    let reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            let json = JSON.parse(e.target.result);
+            // Basit doğrulama: içinde 'zikir' veya 'kalp' var mı?
+            if(json.kalp && json.letaif) {
+                if(confirm("Mevcut veriler silinip yedek yüklenecek. Emin misiniz?")) {
+                    data = json;
+                    kaydet();
+                    alert("Yedek başarıyla yüklendi.");
+                }
+            } else {
+                alert("Geçersiz veya hatalı yedek dosyası!");
+            }
+        } catch(err) { alert("Dosya okunamadı!"); }
+    };
+    reader.readAsText(file);
+}
+
+function sifirla() {
+    if(confirm("DİKKAT: Tüm verileriniz kalıcı olarak silinecek!")) {
+        localStorage.removeItem(DB_KEY);
+        location.reload();
+    }
+}
+</script>
+</body>
+</html>
