@@ -167,7 +167,13 @@
             </div>
             
             <div class="kart" style="text-align:center;">
-                <p style="font-size:0.8rem; color:#888;">Buhara Vakfı Akyazı Şubesi<br>v4.0 - Çevrimdışı PWA</p>
+                <p style="font-size:0.8rem; color:#888;">Buhara Vakfı Akyazı Şubesi</p>
+    <p>Mevcut Sürüm: <strong id="uygulama-versiyon">v2.0</strong></p>
+    
+    <button onclick="guncellemeKontrol()" class="btn btn-primary" style="background-color: #2196F3; color: white;">
+        <i class="fa fa-sync"></i> Güncellemeleri Denetle ve Yükle
+    </button>
+</div>
             </div>
 		<div class="kart">
                 <div class="kart-baslik">
@@ -225,6 +231,9 @@
 
 <script>
 // --- VERİ YAPISI ---
+	// Kodun en tepesine manuel olarak versiyon numaranı yazmalısın.
+// Her kod değiştirdiğinde bunu arttır (v1.1, v1.2 vs.) ki güncellendiğini anla.
+const APP_VERSION = "v2.0"; 
 const API_URL = "https://script.google.com/macros/s/AKfycbyjgcqxphx1289d7I6huxpj-ImqUbOscgg5pM6waojHhU-r9NoQnJ_4DpPmgw9WtOYJ/exec";
 const DB_KEY = "ZikirTakipData_v2";
 let data = {
@@ -235,7 +244,36 @@ let data = {
     tehlil: { baslangic: "", toplam: 0, biten: 0, gecmis: [] },
     ihlas: { baslangic: "", toplam: 0, biten: 0, gecmis: [] }
 };
+// Sayfa açıldığında versiyonu ekrana bas
+document.addEventListener("DOMContentLoaded", function() {
+    let verSpan = document.getElementById("uygulama-versiyon");
+    if(verSpan) verSpan.innerText = APP_VERSION;
+});
 
+// GÜNCELLEME FONKSİYONU (ZORLA YENİLEME)
+function guncellemeKontrol() {
+    if(!confirm("Uygulamanın en güncel halini yüklemek için sayfa yenilenecek. Onaylıyor musunuz?")) return;
+
+    showLoader(true); // Yükleniyor animasyonu varsa aç
+
+    if ('serviceWorker' in navigator) {
+        // Tüm kayıtlı Service Worker'ları bul
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+            // Hepsini tek tek sil (Unregister)
+            for(let registration of registrations) {
+                registration.unregister();
+            }
+            // Önbelleği temizle ve sayfayı sunucudan zorla yeniden yükle
+            window.location.reload(true);
+        }).catch(function(err) {
+            console.log('Service Worker silinemedi:', err);
+            window.location.reload(true); // Hata olsa bile yenile
+        });
+    } else {
+        // Service worker yoksa direkt yenile
+        window.location.reload(true);
+    }
+}
 // --- BAŞLANGIÇ ---
 window.onload = function() {
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
@@ -651,6 +689,7 @@ function kuranOku(url, sayfaNo) {
 </script>
 </body>
 </html>
+
 
 
 
