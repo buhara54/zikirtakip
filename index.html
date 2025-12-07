@@ -147,57 +147,55 @@
             <div id="zikir-container"></div>
         </div>
 
-        <div id="tab-ayarlar" class="tab-content">
-            <div class="kart">
-                <div class="kart-baslik">Veri Yedekleme</div>
-                <p style="font-size:0.9rem; color:#666; margin-bottom:15px;">Verileriniz sadece telefonunuzda saklanır. Silinmemesi için düzenli yedek alınız.</p>
-                
-                <button class="btn ayar-btn" onclick="yedekIndir()">
-                    <i class="fa fa-download"></i> Yedeği İndir (Dosya)
-                </button>
-                
-                <button class="btn ayar-btn" onclick="document.getElementById('yedek-yukle').click()">
-                    <i class="fa fa-upload"></i> Yedeği Geri Yükle
-                </button>
-                <input type="file" id="yedek-yukle" style="display:none" onchange="yedekYukle(this)">
-                
-                <button class="btn ayar-btn btn-danger" style="margin-top:20px; color:white; background:#d32f2f;" onclick="sifirla()">
-                    <i class="fa fa-trash"></i> Tüm Verileri Sil
-                </button>
-            </div>
-            
-            <div class="kart" style="text-align:center;">
-                <p style="font-size:0.8rem; color:#888;">Buhara Vakfı Akyazı Şubesi</p>
-    <p>Mevcut Sürüm: <strong id="uygulama-versiyon">v2.0</strong></p>
+       <div id="tab-ayarlar" class="tab-content">
     
-    <button onclick="guncellemeKontrol()" class="btn btn-primary" style="background-color: #2196F3; color: white;">
-        <i class="fa fa-sync"></i> Güncellemeleri Denetle ve Yükle
-    </button>
-</div>
-            </div>
-		<div class="kart">
-                <div class="kart-baslik">
-                    <span><i class="fa fa-map-marker-alt"></i> Adresimiz</span>
-                </div>
-                
-                <p class="adres-metni">
-                   Fatih mh. 9024 sk. 10/A <br>
-                    Akyazı / Sakarya
-                </p>
-
-                <div class="harita-kapsayici">
-                    <a href="https://maps.google.com/?q=Buhara+Vakfı+Akyazı" target="_blank" class="harita-tiklama-alani"></a>
-                    
-                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3025.347425275039!2d30.61677437540473!3d40.688345439064385!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x14cccb5220d4798d%3A0x4d77956bf7e1e9c5!2zQnVoYXJhIFZha2bEsSBBa3lhesSx!5e0!3m2!1str!2str!4v1765017134279!5m2!1str!2str" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-                </div>
-                
-                <a href="https://maps.google.com/?q=Buhara+Vakfı+Akyazı" target="_blank" class="btn btn-outline" style="text-decoration:none; display:block; text-align:center; margin: 10px auto 0 auto; width: auto;">
-                    <i class="fa fa-directions"></i> Yol Tarifi Al
-                </a>
-            </div>
-        </div>
-
+    <div class="kart">
+        <div class="kart-baslik">Veri Yedekleme</div>
+        <p style="font-size:0.9rem; color:#666; margin-bottom:15px;">Verileriniz sadece telefonunuzda saklanır. Silinmemesi için düzenli yedek alınız.</p>
+        
+        <button class="btn ayar-btn" onclick="yedekIndir()">
+            <i class="fa fa-download"></i> Yedeği İndir (Dosya)
+        </button>
+        
+        <button class="btn ayar-btn" onclick="document.getElementById('yedek-yukle').click()">
+            <i class="fa fa-upload"></i> Yedeği Geri Yükle
+        </button>
+        <input type="file" id="yedek-yukle" style="display:none" onchange="yedekYukle(this)">
+        
+        <button class="btn ayar-btn btn-danger" style="margin-top:20px; color:white; background:#d32f2f;" onclick="sifirla()">
+            <i class="fa fa-trash"></i> Tüm Verileri Sil
+        </button>
     </div>
+    
+    <div class="kart" style="text-align:center;">
+        <p style="font-size:0.8rem; color:#888;">Buhara Vakfı Akyazı Şubesi</p>
+        <p>Mevcut Sürüm: <strong id="uygulama-versiyon">v2.0</strong></p>
+        
+        <button onclick="guncellemeKontrol()" class="btn btn-primary" style="background-color: #2196F3; color: white;">
+            <i class="fa fa-sync"></i> Güncellemeleri Denetle ve Yükle
+        </button>
+    </div>
+
+    <div class="kart">
+        <div class="kart-baslik">
+            <span><i class="fa fa-map-marker-alt"></i> Adresimiz</span>
+        </div>
+        
+        <p class="adres-metni">
+           Fatih mh. 9024 sk. 10/A <br>
+            Akyazı / Sakarya
+        </p>
+
+        <div class="harita-kapsayici">
+            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3027.8!2d30.6!3d40.6!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zM40wMzYnMjAuNCJOIDMwwrA0MScwNi4wIkU!5e0!3m2!1str!2str!4v1" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+        </div>
+        
+        <a href="https://maps.google.com/?q=Fatih+mh.+9024+sk.+10/A+Akyazı+Sakarya" target="_blank" class="btn btn-outline" style="text-decoration:none; display:block; text-align:center; margin: 10px auto 0 auto; width: auto;">
+            <i class="fa fa-directions"></i> Yol Tarifi Al
+        </a>
+    </div>
+
+</div>
 
     <div class="bottom-nav">
         <button class="nav-item aktif" onclick="navGit('zikir', this)">
@@ -689,6 +687,7 @@ function kuranOku(url, sayfaNo) {
 </script>
 </body>
 </html>
+
 
 
 
