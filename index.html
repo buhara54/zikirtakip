@@ -30,9 +30,7 @@
         }
 
         .header h1 {
-            margin: 10px 0 0 0; /* Logo ile yazı arasına biraz boşluk */
-            font-size: 2.1rem;
-        }
+            margin: 10px 0 0 0; /* Logo ile yazı arasına biraz boşluk */font-size: 2.1rem;}
 
         .header-logo {
             width: 140px;            /* Büyük ve doyurucu boyut */
@@ -92,11 +90,7 @@
             border: 1px solid #ddd;
         }
         
-        .harita-kapsayici iframe {
-            width: 100%;
-            height: 100%;
-            border: 0;
-        }
+        .harita-kapsayici iframe {width: 100%;height: 100%;border: 0;}
 
         /* Haritanın üzerine gelen şeffaf tıklama alanı */
         .harita-tiklama-alani {
@@ -108,7 +102,6 @@
             z-index: 10; /* Haritanın (iframe) üstünde durur */
             background-color: transparent; 
         }
-        
         .adres-metni {
             font-size: 0.9rem;
             color: #555;
@@ -531,7 +524,7 @@ function sifirla() {
         location.reload();
     }
 }
-	// --- ONLINE HATİM FONKSİYONLARI ---
+// --- ONLINE HATİM FONKSİYONLARI ---
 // --- YARDIMCI FONKSİYONLAR ---
 
 function showLoader(goster) {
@@ -579,17 +572,20 @@ function onlineHatimYukle() {
 
 // Sayfa Alma İsteği
 function onlineSayfaAl() {
-    if (!navigator.onLine) return alert("Hatim almak için internet gereklidir.");
-    if(!confirm("Sıradaki sayfayı almak istiyor musunuz?")) return;
-
+    if (!navigator.onLine) return alert("Hatim almak için internet gereklidir."); 
+    // Kullanıcıya adet sor
+    let girilenAdet = prompt("Kaç sayfa almak istiyorsunuz?", "1");  
+    // İptal ederse çık
+    if (girilenAdet === null || girilenAdet.trim() === "") return;
+    let adet = parseInt(girilenAdet);
+    if (isNaN(adet) || adet < 1) return alert("Lütfen geçerli bir sayı giriniz.");
     showLoader(true);
-    
     fetch(API_URL, {
         method: 'POST',
         body: JSON.stringify({ 
             action: "sayfaAl", 
             kullaniciId: getKullaniciID(),
-            adet: 1 
+            adet: adet 
         })
     })
     .then(res => res.json())
@@ -597,34 +593,32 @@ function onlineSayfaAl() {
         showLoader(false);
         if(data.status == 'ok') {
             alert(data.mesaj);
-            // Alınan sayfaları yerel hafızaya kaydet
             let localList = JSON.parse(localStorage.getItem("online_sayfalarim") || "[]");
-            data.sayfalar.forEach(s => {
-                localList.unshift({ sayfa: s, tarih: new Date().toLocaleDateString() });
-            });
-            localStorage.setItem("online_sayfalarim", JSON.stringify(localList));
             
-            onlineHatimYukle(); // Ekranı yenile
-        } else {
-            alert(data.message);
-        }
+            // Yeni alınanları listeye ekle
+            data.sayfalar.reverse().forEach(s => {
+                localList.unshift({ sayfa: s, tarih: new Date().toLocaleDateString() });});
+            
+            localStorage.setItem("online_sayfalarim", JSON.stringify(localList));
+            onlineHatimYukle(); 
+        } else {alert(data.message);}
     })
     .catch(() => { showLoader(false); alert("Bağlantı hatası."); });
 }
-
-// Listeyi Ekrana Basma ve OKUMA Butonu
+	// Listeyi Ekrana Basma ve OKUMA Butonu
 function alinanlariListele() {
     let list = JSON.parse(localStorage.getItem("online_sayfalarim") || "[]");
-    let html = "";
-    
+    let html = "";   
     list.forEach(item => {
-        // GitHub Resim Linki Oluşturma (Sayfa+1 kuralı)
-        // Bizim 0. sayfa = Resim 001.png
-        let resimNo = parseInt(item.sayfa) + 1;
+        // Sayfa numarası hesabı (+1 mantığına göre)
+        let resimNo = parseInt(item.sayfa) + 1;       
+        // --- DÜZELTME: 3 Haneli Yapma İşlemi (Padding) ---
+        // Sayının başına sıfırlar ekleyip son 3 haneyi alıyoruz.
+        // Örn: 1 -> 0001 -> 001 | 10 -> 00010 -> 010
         let pad = "000" + resimNo;
-        let resimKodu = pad.substr(pad.length - 3);
-        let resimUrl = `https://raw.githubusercontent.com/HassanAlBawab/quran-images/master/kfgqpc-hafs/${resimKodu}.png`;
-
+        let resimKodu = pad.substr(pad.length - 3);        
+        // Kaynak: BatoulApps SVG (3 haneli kodu kullanıyoruz)
+        let resimUrl = `https://raw.githubusercontent.com/batoulapps/quran-svg/main/svg/${resimKodu}.svg`;
         html += `<div class="kart" style="display:flex; justify-content:space-between; align-items:center;">
                     <div>
                         <strong>Sayfa ${item.sayfa}</strong> <small>(${item.tarih})</small>
@@ -634,29 +628,30 @@ function alinanlariListele() {
                     </button>
                  </div>`;
     });
-    
-    document.getElementById("online-alinanlar-listesi").innerHTML = html;
+    let container = document.getElementById("online-alinanlar-listesi");
+    if(container) container.innerHTML = html;
 }
-
 // --- OKUMA MODALI (RESİM GÖSTERİCİ) ---
 function kuranOku(url, sayfaNo) {
-    // Basit bir tam ekran resim görüntüleyici oluştur
+    // Modal oluştur
     let modal = document.createElement("div");
-    modal.style = "position:fixed; top:0; left:0; width:100%; height:100%; background:black; z-index:9999; display:flex; flex-direction:column; justify-content:center;";
+    modal.style = "position:fixed; top:0; left:0; width:100%; height:100%; background:black; z-index:9999; display:flex; flex-direction:column;";
+    
     modal.innerHTML = `
-        <div style="color:white; padding:15px; display:flex; justify-content:space-between; background:rgba(0,0,0,0.5);">
-            <span>Sayfa ${sayfaNo}</span>
-            <button onclick="this.parentElement.parentElement.remove()" style="background:none; border:none; color:white; font-size:1.2rem;">X</button>
+        <div style="color:white; padding:15px; background:rgba(0,0,0,0.8); display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size:1.2rem;">Sayfa ${sayfaNo}</span>
+            <button onclick="this.closest('div').parentElement.remove()" style="background:none; border:none; color:white; font-size:1.5rem; cursor:pointer;">&times; Kapat</button>
         </div>
-        <div style="flex:1; overflow:auto; text-align:center;">
-            <img src="${url}" style="width:100%; max-width:600px; height:auto;">
-        </div>
+            <div style="flex:1; overflow-y:auto; overflow-x:hidden; background-color:#fdfdfd; text-align:center;">
+            <img src="${url}" style="width:100%; height:auto; display:block;">
+            <div style="height: 50px;"></div> </div>
     `;
     document.body.appendChild(modal);
 }
 </script>
 </body>
 </html>
+
 
 
 
