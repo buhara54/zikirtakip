@@ -51,23 +51,31 @@
 <body class="bg-stone-100 h-screen flex flex-col overflow-hidden select-none">
 
     <div class="bg-white border-b border-stone-200 p-2 shadow-sm z-20 flex justify-between items-center h-14 shrink-0">
+    
+    <div class="flex items-center gap-1">
         <button onclick="toggleAyarlar()" class="p-2 text-stone-600 hover:bg-stone-100 rounded">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
         </button>
-        
-        <div class="flex gap-2 items-center">
-            <select id="surahSelect" class="border border-stone-300 p-1 rounded w-36 text-sm bg-stone-50 font-semibold" onchange="sureDegistir()">
-                <option>Yükleniyor...</option>
-            </select>
-            <div class="flex items-center border border-stone-300 rounded bg-white overflow-hidden h-8">
-                <input type="number" id="pageInput" min="1" max="604" value="1" 
-                       class="w-10 text-center outline-none text-sm font-bold" onchange="sayfayaGitInput()">
-            </div>
+
+        <a href="index.html" class="flex items-center gap-1 text-stone-600 hover:bg-stone-100 px-2 py-1 rounded text-sm font-bold no-underline border border-stone-200">
+            <span>&larr;</span>
+            <span class="hidden md:block">Ana Menü</span>
+        </a>
+    </div>
+    
+    <div class="flex gap-2 items-center">
+        <select id="surahSelect" class="border border-stone-300 p-1 rounded w-28 md:w-36 text-sm bg-stone-50 font-semibold" onchange="sureDegistir()">
+            <option>Yükleniyor...</option>
+        </select>
+        <div class="flex items-center border border-stone-300 rounded bg-white overflow-hidden h-8">
+            <input type="number" id="pageInput" min="1" max="604" value="1" 
+                   class="w-10 text-center outline-none text-sm font-bold" onchange="sayfayaGitInput()">
         </div>
     </div>
+</div>
 
     <div id="settingsPanel" class="hidden absolute top-14 left-0 w-full bg-white border-b p-4 shadow-lg z-30">
         <div class="flex flex-col gap-4 max-w-sm mx-auto">
@@ -130,22 +138,37 @@
             fontFamily: localStorage.getItem('quran_font') || 'Hafs'
         };
 
-        window.onload = function() {
-            if(typeof quranData === 'undefined' || typeof pageMappings === 'undefined') {
-                document.getElementById('pageContent').innerHTML = "<br>HATA: data.js veya maps.js eksik.";
-                return;
-            }
-            applySettings();
-            
-            // Inputları ve Select'i hafızadaki değerle güncelle
-            document.querySelector('input[oninput*="fontSize"]').value = userSettings.fontSize;
-            document.querySelector('input[oninput*="lineHeight"]').value = userSettings.lineHeight;
-            document.getElementById('fontSelect').value = userSettings.fontFamily;
+       window.onload = function() {
+    // Veri Dosyası Kontrolü
+    if(typeof quranData === 'undefined' || typeof pageMappings === 'undefined') {
+        document.getElementById('pageContent').innerHTML = "<br>HATA: data.js veya maps.js yüklenemedi.";
+        return;
+    }
 
-            sureListesiniDoldur();
-            sayfayiCiz(aktifSayfa);
-        };
+    // 1. Ayarları Uygula
+    applySettings();
+    document.querySelector('input[oninput*="fontSize"]').value = userSettings.fontSize;
+    document.querySelector('input[oninput*="lineHeight"]').value = userSettings.lineHeight;
+    document.getElementById('fontSelect').value = userSettings.fontFamily;
 
+    // 2. Sure Listesini Doldur
+    sureListesiniDoldur();
+
+    // 3. KRİTİK DÜZELTME: URL'den Sayfa Numarasını Al
+    const urlParams = new URLSearchParams(window.location.search);
+    const gelenSayfa = urlParams.get('sayfa'); // Linkteki ?sayfa=XX değerini al
+
+    if (gelenSayfa) {
+        // Eğer linkten geldiyse (Hatimden) o sayfayı aç
+        aktifSayfa = parseInt(gelenSayfa);
+    } else {
+        // Serbest okuma ise en son kaldığı yeri hafızadan al (yoksa 1)
+        aktifSayfa = parseInt(localStorage.getItem('son_kaldigim_sayfa')) || 1;
+    }
+
+    // 4. Sayfayı Çiz
+    sayfayiCiz(aktifSayfa);
+};
         function applySettings() {
             const content = document.getElementById('pageContent');
             content.style.fontSize = userSettings.fontSize + 'px';
@@ -207,6 +230,7 @@
 
             div.innerHTML = html;
             document.getElementById('scrollContainer').scrollTop = 0;
+            localStorage.setItem('son_kaldigim_sayfa', sayfaNo); 
         }
 
         function sayfaDegis(yon) {
@@ -226,4 +250,5 @@
         }
     </script>
 </body>
+
 </html>
