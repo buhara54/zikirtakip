@@ -204,8 +204,8 @@
             const map = pageMappings[sayfaNo];
             if(!map) { div.innerHTML = "Sayfa yok."; return; }
 
-            document.getElementById('lblPage').innerText = sayfaNo;
-            document.getElementById('pageInput').value = sayfaNo;
+            document.getElementById('lblPage').innerText = sayfaNo - 1;
+            document.getElementById('pageInput').value = sayfaNo - 1;
             div.innerHTML = "";
 
             let html = "";
@@ -238,10 +238,17 @@
             if(yeni >= 1 && yeni <= 604) { aktifSayfa = yeni; sayfayiCiz(aktifSayfa); }
         }
 
-        function sayfayaGitInput() {
-            let val = parseInt(document.getElementById('pageInput').value);
-            if(val >= 1 && val <= 604) { aktifSayfa = val; sayfayiCiz(aktifSayfa); }
-        }
+       function sayfayaGitInput() {
+    let val = parseInt(document.getElementById('pageInput').value);
+    // Arkada işleyen mantık 1-604 arası olduğu için. Kullanıcının yazdığına 1 ekleyip sisteme veriyoruz.
+    // Örn: Kullanıcı 0 yazarsa -> 1. Sayfa (Fatiha) açılır.
+    let gercekSayfa = val + 1;
+
+    if(gercekSayfa >= 1 && gercekSayfa <= 604) {
+        aktifSayfa = gercekSayfa;
+        sayfayiCiz(aktifSayfa);
+    }
+}
 
         function sureDegistir() {
             let id = parseInt(document.getElementById('surahSelect').value);
@@ -252,3 +259,4 @@
 </body>
 
 </html>
+
