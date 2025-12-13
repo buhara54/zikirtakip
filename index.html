@@ -30,11 +30,11 @@
         }
 
         .header h1 {
-            margin: 10px 0 0 0; /* Logo ile yazı arasına biraz boşluk */font-size: 2.1rem;}
+            margin: 8px 0 0 0; /* Logo ile yazı arasına biraz boşluk */font-size: 1.8rem;}
 
         .header-logo {
-            width: 140px;            /* Büyük ve doyurucu boyut */
-            height: 140px;
+            width: 100px;            /* Büyük ve doyurucu boyut */
+            height: 100px;
             border-radius: 50%;
             border: 3px solid rgba(255,255,255,0.2);
             background-color: white;
@@ -119,6 +119,13 @@
 
     <div class="container">
         <div id="tab-hatim" class="tab-content">
+			<div class="kart" style="text-align:center; cursor:pointer;" onclick="window.location.href='kuran.html'">
+    <div style="font-size:1.5rem; color:#2e7d32; margin-bottom:5px;">
+        <i class="fa-solid fa-book-quran"></i>
+    </div>
+    <div style="font-weight:bold; color:#333;">Kur'an-ı Kerim Oku</div>
+    <div style="font-size:0.8rem; color:#888;">Serbest okuma yapmak için tıkla</div>
+</div>
             <div class="kart" style="background:#e3f2fd; border-left:5px solid #1565c0;">
                 <div class="kart-baslik" style="color:#1565c0;">
                     <span><i class="fa fa-globe"></i> Online Ortak Hatim</span>
@@ -646,20 +653,12 @@ function alinanlariListele() {
     let list = JSON.parse(localStorage.getItem("online_sayfalarim") || "[]");
     let html = "";   
     list.forEach(item => {
-        // Sayfa numarası hesabı (+1 mantığına göre)
-        let resimNo = parseInt(item.sayfa) + 1;       
-        // --- DÜZELTME: 3 Haneli Yapma İşlemi (Padding) ---
-        // Sayının başına sıfırlar ekleyip son 3 haneyi alıyoruz.
-        // Örn: 1 -> 0001 -> 001 | 10 -> 00010 -> 010
-        let pad = "000" + resimNo;
-        let resimKodu = pad.substr(pad.length - 3);        
-        // Kaynak: BatoulApps SVG (3 haneli kodu kullanıyoruz)
-        let resimUrl = `https://raw.githubusercontent.com/batoulapps/quran-svg/main/svg/${resimKodu}.svg`;
+        // SVG URL hesaplamalarına artık gerek yok, sildik.
         html += `<div class="kart" style="display:flex; justify-content:space-between; align-items:center;">
                     <div>
                         <strong>Sayfa ${item.sayfa}</strong> <small>(${item.tarih})</small>
                     </div>
-                    <button class="btn btn-outline" style="width:auto; padding:5px 15px;" onclick="kuranOku('${resimUrl}', ${item.sayfa})">
+                    <button class="btn btn-outline" style="width:auto; padding:5px 15px;" onclick="sayfaAc(${item.sayfa+1})">
                         <i class="fa fa-book-open"></i> Oku
                     </button>
                  </div>`;
@@ -667,30 +666,10 @@ function alinanlariListele() {
     let container = document.getElementById("online-alinanlar-listesi");
     if(container) container.innerHTML = html;
 }
-// --- OKUMA MODALI (RESİM GÖSTERİCİ) ---
-function kuranOku(url, sayfaNo) {
-    // Modal oluştur
-    let modal = document.createElement("div");
-    modal.style = "position:fixed; top:0; left:0; width:100%; height:100%; background:black; z-index:9999; display:flex; flex-direction:column;";
-    
-    modal.innerHTML = `
-        <div style="color:white; padding:15px; background:rgba(0,0,0,0.8); display:flex; justify-content:space-between; align-items:center;">
-            <span style="font-size:1.2rem;">Sayfa ${sayfaNo}</span>
-            <button onclick="this.closest('div').parentElement.remove()" style="background:none; border:none; color:white; font-size:1.5rem; cursor:pointer;">&times; Kapat</button>
-        </div>
-            <div style="flex:1; overflow-y:auto; overflow-x:hidden; background-color:#fdfdfd; text-align:center;">
-            <img src="${url}" style="width:100%; height:auto; display:block;">
-            <div style="height: 50px;"></div> </div>
-    `;
-    document.body.appendChild(modal);
+function sayfaAc(sayfaNo) {
+    // Yeni kuran.html sayfasına yönlendir, sayfa parametresi ile
+    window.location.href = `kuran.html?sayfa=${sayfaNo}`;
 }
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
