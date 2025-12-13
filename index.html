@@ -233,7 +233,33 @@
             </div>
         </div>
     </div>
+<div id="modal-hatim-uyari" class="modal">
+    <div class="modal-box" style="text-align:center;">
+        <div style="font-size:3rem; color:#f57c00; margin-bottom:10px;">
+            <i class="fa fa-exclamation-triangle"></i>
+        </div>
+        <h3 style="margin-top:0; color:#333;">Önemli Hatırlatma</h3>
+        
+        <p style="font-size:0.95rem; color:#555; line-height:1.6; text-align:left;">
+            Alınan sayfaları okuyacağınız öngörülerek kalan sayfalar diğer kişilere dağıtılır.
+            <br><br>
+            <span style="color:#d32f2f; font-weight:bold; font-size:1rem;">
+                Aldığınız sayfanın okunması sizin sorumluluğunuzdadır.
+            </span>
+            <br><br>
+            Hatmin düzgün tamamlanabilmesi için lütfen aldığınız sayfaları okuyunuz.
+        </p>
 
+        <div style="margin:20px 0; padding:10px; background:#f9f9f9; border-radius:8px; text-align:left;">
+            <label style="display:flex; align-items:center; cursor:pointer;">
+                <input type="checkbox" id="chk-hatim-uyari-kalici" style="width:20px; height:20px; margin-right:10px;">
+                <span style="font-size:0.9rem; color:#666;">Bu uyarıyı bir daha gösterme</span>
+            </label>
+        </div>
+
+        <button class="btn btn-ana" onclick="kapatHatimUyari()">Anladım, Okuyacağım</button>
+    </div>
+</div>
 <script>
 // --- VERİ YAPISI ---
 	// Kodun en tepesine manuel olarak versiyon numaranı yazmalısın.
@@ -302,7 +328,11 @@ function navGit(tabId, btn) {
     document.getElementById('tab-' + tabId).classList.add('aktif');
     document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('aktif'));
     btn.classList.add('aktif');
-	if(tabId === 'hatim') onlineHatimYukle();
+    // EĞER HATİM SEKMESİ AÇILDIYSA
+    if(tabId === 'hatim') {
+        onlineHatimYukle();
+        hatimUyariKontrol(); // <-- YENİ EKLENEN SATIR BU
+    }
 }
 
 function arayuzGuncelle() {
@@ -669,6 +699,32 @@ function alinanlariListele() {
 function sayfaAc(sayfaNo) {
     // Yeni kuran.html sayfasına yönlendir, sayfa parametresi ile
     window.location.href = `kuran.html?sayfa=${sayfaNo}`;
+}
+	// --- HATİM UYARI SİSTEMİ ---
+
+function hatimUyariKontrol() {
+    // 1. Kullanıcı daha önce "Gösterme" demiş mi?
+    let gosterme = localStorage.getItem("hatim_uyari_gosterme");
+    
+    // Eğer "true" kayıtlıysa fonksiyonu durdur, modalı açma
+    if (gosterme === "true") return;
+
+    // 2. Kayıt yoksa Modalı Aç
+    let modal = document.getElementById("modal-hatim-uyari");
+    if(modal) modal.style.display = "flex";
+}
+
+function kapatHatimUyari() {
+    // Checkbox işaretli mi kontrol et
+    let chk = document.getElementById("chk-hatim-uyari-kalici");
+    
+    if (chk && chk.checked) {
+        // İşaretliyse hafızaya kaydet
+        localStorage.setItem("hatim_uyari_gosterme", "true");
+    }
+
+    // Modalı kapat
+    document.getElementById("modal-hatim-uyari").style.display = "none";
 }
 </script>
 </body>
