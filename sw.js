@@ -1,5 +1,5 @@
 // sw.js - Gelişmiş Service Worker (Network First Stratejisi)
-const CACHE_NAME = 'zikir-takip-v2.2'; 
+const CACHE_NAME = 'zikir-takip-v2.3'; 
 const ASSETS = [
   './',
   './index.html',
@@ -71,4 +71,5 @@ self.addEventListener('fetch', (e) => {
       })
   );
 });
+
 
