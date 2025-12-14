@@ -109,6 +109,55 @@
             margin-bottom: 10px;
             line-height: 1.4;
         }
+		/* --- GÜNCELLEME UYARI KUTUSU (TOAST) --- */
+#update-notification {
+    visibility: hidden;
+    min-width: 250px;
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    border-radius: 8px;
+    padding: 16px;
+    position: fixed;
+    z-index: 3000;
+    left: 50%;
+    bottom: 80px; /* Navigasyonun üstünde dursun */
+    transform: translateX(-50%);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    font-size: 0.9rem;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+#update-notification.show {
+    visibility: visible;
+    animation: fadein 0.5s, fadeout 0.5s 60s; /* 60sn sonra kaybolur */
+}
+
+.update-actions {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.btn-update {
+    background: #4caf50;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+}
+.btn-close {
+    background: transparent;
+    border: 1px solid #777;
+    color: #ddd;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+}
     </style>
 </head>
 <body>
@@ -356,6 +405,15 @@
         <button class="btn btn-ana" onclick="kapatHatimUyari()">Anladım, Okuyacağım</button>
     </div>
 </div>
+		<div id="update-notification">
+    <div>
+        <i class="fa fa-sync fa-spin"></i> Yeni bir güncelleme mevcut!
+    </div>
+    <div class="update-actions">
+        <button class="btn-close" onclick="closeUpdateModal()">Sonra</button>
+        <button class="btn-update" onclick="guncellemeKontrol()">Yükle</button>
+    </div>
+</div>
 <script>
 // --- VERİ YAPISI ---
 const APP_VERSION = "v2.4"; 
@@ -399,18 +457,56 @@ function guncellemeKontrol() {
         window.location.reload(true);
     }
 }
-// --- BAŞLANGIÇ ---
+// --- BAŞLANGIÇ VE SW KONTROLÜ ---
 window.onload = function() {
-    if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
-    
+    // 1. Veritabanını yükle
     let stored = localStorage.getItem(DB_KEY);
     if(stored) data = JSON.parse(stored);
-    
-    // İlk açılışta boşsa modalı aç
+        // İlk açılış kontrolü
     if(data.aktifler.length === 0) toggleZikirModal();
-    
     arayuzGuncelle();
+    // 2. Service Worker Kaydı ve Güncelleme Dinleyicisi
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js').then(function(reg) {
+            
+            // Eğer servis çalışanı zaten varsa ve yenisi bekliyorsa
+            if (reg.waiting) {
+                showUpdateBar();
+                return;
+            }
+            // Yeni bir güncelleme bulunduğunda
+            reg.onupdatefound = function() {
+                let installingWorker = reg.installing;
+                
+                installingWorker.onstatechange = function() {
+                    if (installingWorker.state === 'installed') {
+                        if (navigator.serviceWorker.controller) {
+                            // Zaten eski bir versiyon kontrol ediyorsa ve yenisi geldiyse:
+                            console.log("Yeni güncelleme hazır.");
+                            showUpdateBar();
+                        } else {
+                            console.log("İçerik önbelleğe alındı, çevrimdışı kullanılabilir.");
+                        }
+                    }
+                };
+            };
+        }).catch(function(err) {
+            console.error('SW kaydı başarısız:', err);
+        });
+    }
 };
+
+// Uyarı kutusunu gösteren fonksiyon
+function showUpdateBar() {
+    let x = document.getElementById("update-notification");
+    x.className = "show";
+}
+
+// Uyarı kutusunu kapatan fonksiyon
+function closeUpdateModal() {
+    let x = document.getElementById("update-notification");
+    x.className = x.className.replace("show", "");
+}
 
 function kaydet() {
     localStorage.setItem(DB_KEY, JSON.stringify(data));
@@ -823,6 +919,7 @@ function kapatHatimUyari() {
 </script>
 </body>
 </html>
+
 
 
 
