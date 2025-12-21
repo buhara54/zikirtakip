@@ -158,6 +158,57 @@
     border-radius: 4px;
     cursor: pointer;
 }
+		/* --- ARŞİV VE LİSTE STİLLERİ --- */
+.arsiv-toggle-btn {
+    background-color: #f1f3f4;
+    color: #333;
+    padding: 12px 15px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    text-align: left;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    border: 1px solid #ddd;
+    transition: background 0.2s;
+}
+.arsiv-toggle-btn:active { background-color: #e0e0e0; }
+
+.arsiv-konteyner {
+    display: none; /* Başlangıçta gizli */
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 10px;
+    margin-top: 5px;
+}
+.arsiv-baslik {
+    font-size: 0.9rem;
+    font-weight: bold;
+    color: #2e7d32; /* Ana renk */
+    margin-top: 10px;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 5px;
+}
+.arsiv-sayfa-kutusu {
+    display: inline-block;
+    background: #fff;
+    border: 1px solid #ccc;
+    color: #333;
+    padding: 6px 12px;
+    margin: 5px 5px 0 0;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+.tarih-etiketi {
+    font-size: 0.75rem;
+    color: #999;
+    margin-top: 2px;
+}
     </style>
 </head>
 <body>
@@ -192,6 +243,14 @@
 
             <div id="online-alinanlar-listesi">
                 </div>
+			<div id="arsiv-toggle" class="arsiv-toggle-btn" onclick="arsivAcKapat()">
+    <span><i class="fa fa-history" style="color:#777"></i> Geçmiş Arşivi</span>
+    <i class="fa fa-chevron-down" id="arsiv-ok-ikonu"></i>
+</div>
+
+<div id="arsiv-alani" class="arsiv-konteyner">
+    <div style="text-align:center; color:#999; font-size:0.8rem; padding:10px;">Arşiv boş.</div>
+</div>
         </div>
         <div id="tab-zikir" class="tab-content aktif">
             <div style="text-align:right; margin-bottom:10px;">
@@ -827,21 +886,26 @@ function onlineHatimYukle() {
         if(data.status == 'ok') {
             document.getElementById("online-hatim-no").innerText = data.aktifHatim + ". Hatim";
             document.getElementById("online-son-sayfa").innerText = data.sonSayfa;
+			otomatikGecmisHatimleriTemizle(data.aktifHatim);
         }
     });
     
     alinanlariListele();
+	arsivRenderEt();
 }
 
 // Sayfa Alma İsteği
 function onlineSayfaAl() {
     if (!navigator.onLine) return alert("Hatim almak için internet gereklidir."); 
-    // Kullanıcıya adet sor
     let girilenAdet = prompt("Kaç sayfa almak istiyorsunuz?", "1");  
-    // İptal ederse çık
     if (girilenAdet === null || girilenAdet.trim() === "") return;
     let adet = parseInt(girilenAdet);
     if (isNaN(adet) || adet < 1) return alert("Lütfen geçerli bir sayı giriniz.");
+    
+    // O anki hatim numarasını ekrandan alıyoruz
+    let mevcutHatimText = document.getElementById("online-hatim-no").innerText; 
+    let mevcutHatimNo = parseInt(mevcutHatimText) || 0; // Sadece sayıyı al
+
     showLoader(true);
     fetch(API_URL, {
         method: 'POST',
@@ -858,9 +922,14 @@ function onlineSayfaAl() {
             alert(data.mesaj);
             let localList = JSON.parse(localStorage.getItem("online_sayfalarim") || "[]");
             
-            // Yeni alınanları listeye ekle
+            // Yeni alınanları listeye ekle (Hatim No ile birlikte)
             data.sayfalar.reverse().forEach(s => {
-                localList.unshift({ sayfa: s, tarih: new Date().toLocaleDateString() });});
+                localList.unshift({ 
+                    sayfa: s, 
+                    tarih: new Date().toLocaleDateString("tr-TR"),
+                    hatimNo: mevcutHatimNo // <-- BURASI YENİ: Hatim nosunu kaydediyoruz
+                });
+            });
             
             localStorage.setItem("online_sayfalarim", JSON.stringify(localList));
             onlineHatimYukle(); 
@@ -871,20 +940,36 @@ function onlineSayfaAl() {
 	// Listeyi Ekrana Basma ve OKUMA Butonu
 function alinanlariListele() {
     let list = JSON.parse(localStorage.getItem("online_sayfalarim") || "[]");
-    let html = "";   
-    list.forEach(item => {
-        // SVG URL hesaplamalarına artık gerek yok, sildik.
+    let html = "";
+    
+    if(list.length === 0) {
+        document.getElementById("online-alinanlar-listesi").innerHTML = 
+            "<div style='text-align:center; color:#999; margin:20px;'>Aktif sayfanız yok.<br>Sayfa Al butonunu kullanabilirsiniz.</div>";
+        return;
+    }
+
+    list.forEach((item, index) => {
+        // Eğer eski verilerde hatimNo yoksa '?' göster
+        let hNo = item.hatimNo ? item.hatimNo + ". Hatim" : "";
+
         html += `<div class="kart" style="display:flex; justify-content:space-between; align-items:center;">
                     <div>
-                        <strong>Sayfa ${item.sayfa}</strong> <small>(${item.tarih})</small>
+                        <div style="font-size:0.75rem; color:#2e7d32; font-weight:bold;">${hNo}</div>
+                        <div style="font-size:1.1rem; font-weight:bold;">Sayfa ${item.sayfa}</div>
+                        <div class="tarih-etiketi">${item.tarih}</div>
                     </div>
-                    <button class="btn btn-outline" style="width:auto; padding:5px 15px;" onclick="sayfaAc(${item.sayfa+1})">
-                        <i class="fa fa-book-open"></i> Oku
-                    </button>
+                    <div style="display:flex; gap:8px;">
+                        <button class="btn btn-outline" style="width:auto; padding:8px 12px;" onclick="sayfaAc(${item.sayfa})">
+                            <i class="fa fa-book-open"></i> Oku
+                        </button>
+                        <button class="btn" style="background:#eee; color:#555; width:auto; padding:8px 12px;" onclick="manuelArsivle(${index}, '${item.hatimNo || 'Eski'}', ${item.sayfa})">
+                            <i class="fa fa-archive"></i>
+                        </button>
+                    </div>
                  </div>`;
     });
-    let container = document.getElementById("online-alinanlar-listesi");
-    if(container) container.innerHTML = html;
+    
+    document.getElementById("online-alinanlar-listesi").innerHTML = html;
 }
 function sayfaAc(sayfaNo) {
     // Yeni kuran.html sayfasına yönlendir, sayfa parametresi ile
@@ -916,9 +1001,118 @@ function kapatHatimUyari() {
     // Modalı kapat
     document.getElementById("modal-hatim-uyari").style.display = "none";
 }
+	// --- ARŞİV SİSTEMİ FONKSİYONLARI ---
+
+// 1. OTOMATİK TEMİZLEME (Hatim değişince çalışır)
+function otomatikGecmisHatimleriTemizle(guncelSunucuHatimNo) {
+    let aktifList = JSON.parse(localStorage.getItem("online_sayfalarim") || "[]");
+    let arsiv = JSON.parse(localStorage.getItem("hatim_arsivi") || "[]");
+    let degisiklikVar = false;
+    let yeniAktifList = [];
+
+    aktifList.forEach(item => {
+        // Eğer sayfanın hatim numarası var VE sunucudaki güncel hatimden küçükse -> Arşive at
+        if (item.hatimNo && item.hatimNo < guncelSunucuHatimNo) {
+            arsiv.push(item);
+            degisiklikVar = true;
+        } else {
+            // Değilse aktif listede kalsın
+            yeniAktifList.push(item);
+        }
+    });
+
+    if (degisiklikVar) {
+        localStorage.setItem("online_sayfalarim", JSON.stringify(yeniAktifList));
+        localStorage.setItem("hatim_arsivi", JSON.stringify(arsiv));
+        // Kullanıcıya haber verelim (Opsiyonel, istersen silebilirsin)
+        showUpdateBar(); // Veya console.log("Eski hatimler arşivlendi.");
+    }
+}
+
+// 2. MANUEL ARŞİVLEME (Kullanıcı butona basarsa)
+function manuelArsivle(index, hNo, sayfaNo) {
+    if(!confirm("Sayfa " + sayfaNo + " arşive taşınacak. Onaylıyor musunuz?")) return;
+
+    let aktifList = JSON.parse(localStorage.getItem("online_sayfalarim") || "[]");
+    let arsiv = JSON.parse(localStorage.getItem("hatim_arsivi") || "[]");
+    
+    // Veriyi al
+    let tasinacakVeri = aktifList[index];
+    
+    // Eğer veride hatim no yoksa (eski veriyse) ekrandan tahmin etmeye çalış veya 'Genel' yap
+    if(!tasinacakVeri.hatimNo) {
+        tasinacakVeri.hatimNo = hNo !== 'Eski' ? hNo : "Geçmiş";
+    }
+
+    // Arşive ekle
+    arsiv.push(tasinacakVeri);
+    
+    // Listeden sil
+    aktifList.splice(index, 1);
+
+    // Kaydet
+    localStorage.setItem("hatim_arsivi", JSON.stringify(arsiv));
+    localStorage.setItem("online_sayfalarim", JSON.stringify(aktifList));
+
+    // Ekranı Yenile
+    alinanlariListele();
+    arsivRenderEt();
+}
+
+// 3. ARŞİVİ GÖSTER / GİZLE
+function arsivAcKapat() {
+    let alan = document.getElementById("arsiv-alani");
+    let ok = document.getElementById("arsiv-ok-ikonu");
+    
+    if (alan.style.display === "block") {
+        alan.style.display = "none";
+        ok.className = "fa fa-chevron-down";
+    } else {
+        alan.style.display = "block";
+        ok.className = "fa fa-chevron-up";
+        arsivRenderEt();
+    }
+}
+
+// 4. ARŞİVİ EKRANA BAS (Gruplu Şekilde)
+function arsivRenderEt() {
+    let arsiv = JSON.parse(localStorage.getItem("hatim_arsivi") || "[]");
+    let container = document.getElementById("arsiv-alani");
+    
+    if (arsiv.length === 0) {
+        container.innerHTML = "<div style='text-align:center; color:#999; font-size:0.8rem; padding:10px;'>Arşiv boş.</div>";
+        return;
+    }
+
+    // Gruplama
+    let gruplar = {};
+    arsiv.forEach(item => {
+        let key = item.hatimNo || "Diğer"; // Hatim No yoksa 'Diğer' grubuna at
+        if (!gruplar[key]) gruplar[key] = [];
+        gruplar[key].push(item.sayfa);
+    });
+
+    let html = "";
+    // Hatim numaralarına göre (Büyükten küçüğe) sırala
+    Object.keys(gruplar).sort((a, b) => b - a).forEach(hatimNo => {
+        let baslik = isNaN(hatimNo) ? hatimNo : hatimNo + ". Hatim";
+        
+        // Sayfaları küçükten büyüğe sırala
+        let sayfalar = gruplar[hatimNo].sort((a, b) => a - b);
+        
+        html += `<div class="arsiv-baslik">${baslik}</div><div>`;
+        sayfalar.forEach(s => {
+            html += `<span class="arsiv-sayfa-kutusu">${s}</span>`;
+        });
+        html += `</div>`;
+    });
+
+    container.innerHTML = html;
+}
 </script>
 </body>
 </html>
+
 
 
 
