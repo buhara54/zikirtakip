@@ -204,8 +204,8 @@
             const map = pageMappings[sayfaNo];
             if(!map) { div.innerHTML = "Sayfa yok."; return; }
 
-            document.getElementById('lblPage').innerText = sayfaNo - 1;
-            document.getElementById('pageInput').value = sayfaNo - 1;
+            document.getElementById('lblPage').innerText = sayfaNo;
+            document.getElementById('pageInput').value = sayfaNo;
             div.innerHTML = "";
 
             let html = "";
@@ -259,5 +259,6 @@
 </body>
 
 </html>
+
 
 
