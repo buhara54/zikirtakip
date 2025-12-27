@@ -199,40 +199,61 @@
             });
         }
 
-        function sayfayiCiz(sayfaNo) {
-            const div = document.getElementById('pageContent');
-            const map = pageMappings[sayfaNo];
-            if(!map) { div.innerHTML = "Sayfa yok."; return; }
+       function sayfayiCiz(sayfaNo) {
+    const div = document.getElementById('pageContent');
+    const lblPage = document.getElementById('lblPage');
+    const pageInput = document.getElementById('pageInput');
+    // --- 1. GÖRSEL KISIM ---
+    // Eğer sayfa 0 ise ekranda "Fâtiha (0)" yazsın
+    if (sayfaNo === 0) {
+        lblPage.innerText = "Fâtiha (0)";
+        pageInput.value = 0;
+    } else {
+        lblPage.innerText = sayfaNo;
+        pageInput.value = sayfaNo;
+    }
+    
+    div.innerHTML = "";
+    const map = pageMappings[sayfaNo + 1]; 
 
-            document.getElementById('lblPage').innerText = sayfaNo;
-            document.getElementById('pageInput').value = sayfaNo;
-            div.innerHTML = "";
+    if(!map) { 
+        // Eğer harita bulunamazsa (Örn: sayfa 604'ü geçince)
+        div.innerHTML = "<div class='text-center mt-10'>Sayfa sonu veya veri yok.</div>"; 
+        return; 
+    }
 
-            let html = "";
-            map.forEach(item => {
-                const sure = quranData.find(s => s.id === item.surah);
-                if(!sure) return;
+    let html = "";
+    map.forEach(item => {
+        const sure = quranData.find(s => s.id === item.surah);
+        if(!sure) return;
 
-                if(item.start === 1) {
-                    html += `<div class="w-full flex justify-center mt-4 mb-4"><div class="border-y-2 border-stone-300 w-full text-center py-2 bg-stone-50"><span class="text-xl font-bold text-stone-700 font-serif">${sure.name}</span></div></div>`;
-                    if(sure.id !== 1 && sure.id !== 9) {
-                        html += `<div class="w-full text-center mb-4 mt-2 text-2xl">بِسۡمِ ٱللَّهِ ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ</div>`;
-                    }
-                }
-
-                const ayetler = sure.verses.filter(v => v.id >= item.start && v.id <= item.end);
-                ayetler.forEach(v => {
-                    let isSajdah = secdeAyetleri[sure.id] && secdeAyetleri[sure.id].includes(v.id);
-                    let textClass = isSajdah ? "sajdah-ayah" : "";
-                    html += `<span class="${textClass}">${v.text} <span class="ayah-symbol select-none text-xl">&#64831;${v.id}&#64830;</span></span> `;
-                });
-            });
-
-            div.innerHTML = html;
-            document.getElementById('scrollContainer').scrollTop = 0;
-            localStorage.setItem('son_kaldigim_sayfa', sayfaNo); 
+        // Sure Başlığı
+        if(item.start === 1) {
+            html += `<div class="w-full flex justify-center mt-4 mb-4">
+                        <div class="border-y-2 border-stone-300 w-full text-center py-2 bg-stone-50">
+                            <span class="text-xl font-bold text-stone-700 font-serif">${sure.name}</span>
+                        </div>
+                     </div>`;
+            
+            // Fatiha ve Tevbe hariç Besmele
+            if(sure.id !== 1 && sure.id !== 9) {
+                html += `<div class="w-full text-center mb-4 mt-2 text-2xl">بِسۡمِ ٱللَّهِ ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ</div>`;
+            }
         }
 
+        // Ayetler
+        const ayetler = sure.verses.filter(v => v.id >= item.start && v.id <= item.end);
+        ayetler.forEach(v => {
+            let isSajdah = secdeAyetleri[sure.id] && secdeAyetleri[sure.id].includes(v.id);
+            let textClass = isSajdah ? "sajdah-ayah" : "";
+            html += `<span class="${textClass}">${v.text} <span class="ayah-symbol select-none text-xl">&#64831;${v.id}&#64830;</span></span> `;
+        });
+    });
+
+    div.innerHTML = html;
+    document.getElementById('scrollContainer').scrollTop = 0;
+    localStorage.setItem('son_kaldigim_sayfa', sayfaNo); 
+}
         function sayfaDegis(yon) {
             let yeni = aktifSayfa + yon;
             if(yeni >= 1 && yeni <= 604) { aktifSayfa = yeni; sayfayiCiz(aktifSayfa); }
@@ -242,7 +263,7 @@
     let val = parseInt(document.getElementById('pageInput').value);
     // Arkada işleyen mantık 1-604 arası olduğu için. Kullanıcının yazdığına 1 ekleyip sisteme veriyoruz.
     // Örn: Kullanıcı 0 yazarsa -> 1. Sayfa (Fatiha) açılır.
-    let gercekSayfa = val + 1;
+    let gercekSayfa = val;
 
     if(gercekSayfa >= 1 && gercekSayfa <= 604) {
         aktifSayfa = gercekSayfa;
@@ -259,6 +280,7 @@
 </body>
 
 </html>
+
 
 
 
