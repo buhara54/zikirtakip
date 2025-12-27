@@ -71,7 +71,7 @@
             <option>Yükleniyor...</option>
         </select>
         <div class="flex items-center border border-stone-300 rounded bg-white overflow-hidden h-8">
-            <input type="number" id="pageInput" min="1" max="604" value="1" 
+            <input type="number" id="pageInput" min="0" max="603" value="1" 
                    class="w-10 text-center outline-none text-sm font-bold" onchange="sayfayaGitInput()">
         </div>
     </div>
@@ -203,6 +203,7 @@
     const div = document.getElementById('pageContent');
     const lblPage = document.getElementById('lblPage');
     const pageInput = document.getElementById('pageInput');
+
     // --- 1. GÖRSEL KISIM ---
     // Eğer sayfa 0 ise ekranda "Fâtiha (0)" yazsın
     if (sayfaNo === 0) {
@@ -214,11 +215,16 @@
     }
     
     div.innerHTML = "";
+    
+    // --- 2. HARİTA EŞLEŞTİRME ---
+    // MEVCUT MANTIK KORUNDU: Gelen sayıya 1 ekleyip haritadan çekiyoruz.
+    // 0 gelirse -> Map[1] (Fatiha)
+    // 166 gelirse -> Map[167] (Ve Cavezna)
     const map = pageMappings[sayfaNo + 1]; 
 
     if(!map) { 
-        // Eğer harita bulunamazsa (Örn: sayfa 604'ü geçince)
-        div.innerHTML = "<div class='text-center mt-10'>Sayfa sonu veya veri yok.</div>"; 
+        // 603. sayfayı geçince hata vermemesi için uyarı
+        div.innerHTML = "<div class='text-center mt-10'>Sayfa sonu.</div>"; 
         return; 
     }
 
@@ -256,7 +262,7 @@
 }
         function sayfaDegis(yon) {
             let yeni = aktifSayfa + yon;
-            if(yeni >= 1 && yeni <= 604) { aktifSayfa = yeni; sayfayiCiz(aktifSayfa); }
+            if(yeni >= 0 && yeni <= 603) { aktifSayfa = yeni; sayfayiCiz(aktifSayfa); }
         }
 
        function sayfayaGitInput() {
@@ -272,14 +278,32 @@
 }
 
         function sureDegistir() {
-            let id = parseInt(document.getElementById('surahSelect').value);
-            aktifSayfa = getStartPageOfSurah(id);
-            sayfayiCiz(aktifSayfa);
-        }
+    let id = parseInt(document.getElementById('surahSelect').value);
+    
+    // Yardımcı fonksiyonu içerde de kullanabilirsin veya globalde tanımlı ise:
+    // Haritadan sayfa numarasını buluyoruz
+    let hedefSayfa = 1;
+    for(var p in pageMappings){ 
+        var m = pageMappings[p]; 
+        for(var i=0; i<m.length; i++){ 
+            if(m[i].surah == id && m[i].start == 1) {
+                hedefSayfa = parseInt(p);
+                break;
+            }
+        } 
+    }
+    
+    // BULUNAN SAYFADAN 1 ÇIKARIYORUZ
+    // Çünkü harita 1 diyor, bizim sistem 0 tabanlı çalışıyor.
+    aktifSayfa = hedefSayfa - 1; 
+    
+    sayfayiCiz(aktifSayfa);
+}
     </script>
 </body>
 
 </html>
+
 
 
 
