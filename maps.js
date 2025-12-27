@@ -53,5 +53,6 @@ var pageMappings = {
 "603":[{"surah":109,"start":1,"end":6},{"surah":110,"start":1,"end":3},{"surah":111,"start":1,"end":5}],
 "604":[{"surah":112,"start":1,"end":4},{"surah":113,"start":1,"end":5},{"surah":114,"start":1,"end":6}]};
 
-
+//dene
 function getStartPageOfSurah(id){ for(var p in pageMappings){ var m=pageMappings[p]; for(var i=0; i<m.length; i++){ if(m[i].surah==id && m[i].start==1) return parseInt(p); } } return 1; }
+
