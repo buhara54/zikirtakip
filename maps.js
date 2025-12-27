@@ -36,7 +36,7 @@ var pageMappings = {
 "586":[{"surah":81,"start":21,"end":29},{"surah":82,"start":1,"end":19}],
 "587":[{"surah":83,"start":1,"end":26}],
 "588":[{"surah":83,"start":27,"end":36},{"surah":84,"start":1,"end":13}],
-"589":[{"surah":84,"start":14,"end":13},{"surah":85,"start":1,"end":11}],
+"589":[{"surah":84,"start":14,"end":25},{"surah":85,"start":1,"end":11}],
 "590":[{"surah":85,"start":12,"end":22},{"surah":86,"start":1,"end":17}],
 "591":[{"surah":87,"start":1,"end":19},{"surah":88,"start":1,"end":11}],
 "592":[{"surah":88,"start":12,"end":26},{"surah":89,"start":1,"end":14}],
@@ -44,7 +44,7 @@ var pageMappings = {
 "594":[{"surah":90,"start":8,"end":20},{"surah":91,"start":1,"end":15}],
 "595":[{"surah":92,"start":1,"end":21},{"surah":93,"start":1,"end":3}],
 "596":[{"surah":93,"start":4,"end":11},{"surah":94,"start":1,"end":8},{"surah":95,"start":1,"end":5}],
-"597":[{"surah":95,"start":6,"end":8}{"surah":96,"start":1,"end":19}],
+"597":[{"surah":95,"start":6,"end":8},{"surah":96,"start":1,"end":19}],
 "598":[{"surah":97,"start":1,"end":5},{"surah":98,"start":1,"end":8}],
 "599":[{"surah":99,"start":1,"end":8},{"surah":100,"start":1,"end":11}],
 "600":[{"surah":101,"start":1,"end":11},{"surah":102,"start":1,"end":8}],
@@ -53,6 +53,6 @@ var pageMappings = {
 "603":[{"surah":109,"start":1,"end":6},{"surah":110,"start":1,"end":3},{"surah":111,"start":1,"end":5}],
 "604":[{"surah":112,"start":1,"end":4},{"surah":113,"start":1,"end":5},{"surah":114,"start":1,"end":6}]};
 
-//dene
 function getStartPageOfSurah(id){ for(var p in pageMappings){ var m=pageMappings[p]; for(var i=0; i<m.length; i++){ if(m[i].surah==id && m[i].start==1) return parseInt(p); } } return 1; }
+
 
