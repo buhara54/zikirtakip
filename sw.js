@@ -1,4 +1,4 @@
-const CACHE_NAME = 'zikir-takip-v2.8'; 
+const CACHE_NAME = 'zikir-takip-v2.8.1'; 
 const ASSETS = [
   './',
   './index.html',
@@ -70,6 +70,7 @@ self.addEventListener('fetch', (e) => {
       })
   );
 });
+
 
 
 
