@@ -214,20 +214,14 @@
         pageInput.value = sayfaNo;
     }
     
-    div.innerHTML = "";
-    
+    div.innerHTML = "";   
     // --- 2. HARİTA EŞLEŞTİRME ---
-    // MEVCUT MANTIK KORUNDU: Gelen sayıya 1 ekleyip haritadan çekiyoruz.
-    // 0 gelirse -> Map[1] (Fatiha)
-    // 166 gelirse -> Map[167] (Ve Cavezna)
     const map = pageMappings[sayfaNo + 1]; 
-
     if(!map) { 
         // 603. sayfayı geçince hata vermemesi için uyarı
         div.innerHTML = "<div class='text-center mt-10'>Sayfa sonu.</div>"; 
         return; 
     }
-
     let html = "";
     map.forEach(item => {
         const sure = quranData.find(s => s.id === item.surah);
@@ -246,7 +240,6 @@
                 html += `<div class="w-full text-center mb-4 mt-2 text-2xl">بِسۡمِ ٱللَّهِ ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ</div>`;
             }
         }
-
         // Ayetler
         const ayetler = sure.verses.filter(v => v.id >= item.start && v.id <= item.end);
         ayetler.forEach(v => {
@@ -262,7 +255,7 @@
 }
         function sayfaDegis(yon) {
             let yeni = aktifSayfa + yon;
-            if(yeni >= 0 && yeni <= 603) { aktifSayfa = yeni; sayfayiCiz(aktifSayfa); }
+            if(yeni >= 0 && yeni <= 604) { aktifSayfa = yeni; sayfayiCiz(aktifSayfa); }
         }
 
        function sayfayaGitInput() {
@@ -301,12 +294,4 @@
 }
     </script>
 </body>
-
 </html>
-
-
-
-
-
-
-
