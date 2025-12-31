@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Zikir Takip</title>
-    <link rel="manifest" href="./manifest.json?v=2.9">
+    <link rel="manifest" href="./manifest.json?v=3.0">
     <meta name="theme-color" content="#2e7d32">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -29,8 +29,7 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.2);
         }
 
-        .header h1 {
-            margin: 8px 0 0 0; /* Logo ile yazı arasına biraz boşluk */font-size: 1.8rem;}
+        .header h1 {margin: 8px 0 0 0;font-size: 1.8rem;}
 
         .header-logo {
             width: 100px;            /* Büyük ve doyurucu boyut */
@@ -135,11 +134,7 @@
     animation: fadein 0.5s, fadeout 0.5s 60s; /* 60sn sonra kaybolur */
 }
 
-.update-actions {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-}
+.update-actions {display: flex;justify-content: center;gap: 10px;}
 
 .btn-update {
     background: #4caf50;
@@ -204,11 +199,7 @@
     font-size: 0.9rem;
     font-weight: 500;
 }
-.tarih-etiketi {
-    font-size: 0.75rem;
-    color: #999;
-    margin-top: 2px;
-}
+.tarih-etiketi {font-size: 0.75rem;color: #999;margin-top: 2px;}
 /* Modal Arka Planı (Karartma) */
 .modal-overlay {
     position: fixed;
@@ -234,23 +225,11 @@
 }
 
 /* Başlık ve Metin */
-.modal-kutu h3 {
-    margin: 10px 0;
-    color: #333;
-    font-size: 1.2rem;
-}
-.modal-kutu p {
-    color: #666;
-    font-size: 0.95rem;
-    margin-bottom: 20px;
-    line-height: 1.5;
-}
+.modal-kutu h3 {margin: 10px 0;color: #333;font-size: 1.2rem;}
+.modal-kutu p {color: #666;font-size: 0.95rem;margin-bottom: 20px;line-height: 1.5;}
 
 /* İkon (Opsiyonel) */
-.modal-ikon {
-    font-size: 2rem;
-    margin-bottom: 5px;
-}
+.modal-ikon {font-size: 2rem;margin-bottom: 5px;}
 
 /* Buton */
 .modal-btn {
@@ -265,9 +244,7 @@
     width: 100%;
     transition: background 0.2s;
 }
-.modal-btn:active {
-    background: #1b5e20;
-    transform: scale(0.98);
+.modal-btn:active {background: #1b5e20;transform: scale(0.98);
 }
 
 /* Açılma Animasyonu */
@@ -279,216 +256,300 @@
     border-color: #2e7d32 !important;
     box-shadow: 0 0 5px rgba(46, 125, 50, 0.5);
 }
-    </style>
+/* İletişim İkonları */
+    .social-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        font-size: 1.8rem;
+        color: white;
+        text-decoration: none;
+        margin: 0 10px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        transition: transform 0.2s;
+    }
+    .social-btn:active { transform: scale(0.9); }
+    .btn-gmail { background: #db4437; }
+    .btn-youtube { background: #ff0000; }
+
+    /* Hatim Mesaj Kutusu */
+   .bildirim-noktasi {
+    position: absolute;
+    top: -2px;    /* Yukarı çektik */
+    right: -2px;  /* Sağa çektik */
+    width: 12px;
+    height: 12px;
+    background-color: red;
+    border-radius: 50%;
+    border: 2px solid white;
+    display: none; 
+    z-index: 10;  /* İkonun üstünde dursun */
+    box-shadow: 0 0 2px rgba(0,0,0,0.5);
+}
+
+/* İkonun kapsayıcısına relative verelim ki nokta ona göre dursun */
+.mesaj-kutusu-wrapper {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    cursor: pointer;
+    z-index: 5;
+    display: inline-block; /* Önemli */
+}
+    .mesaj-ikon {
+    font-size: 1.5rem;
+    color: #999; /* Varsayılan GRİ */
+    background: white;
+    padding: 8px;
+    border-radius: 50%;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    transition: all 0.3s ease; /* Renk değişimi yumuşak olsun */
+}
+
+/* Mesaj gelince eklenecek MAVİ sınıfı */
+.mesaj-ikon.mesaj-var {
+    color: #1565c0 !important; /* Mesaj varsa MAVİ */
+    box-shadow: 0 4px 8px rgba(21, 101, 192, 0.3); /* Hafif mavi gölge */
+}
+
+    /* Gizli Buton Alanı */
+    #gizli-katilim-btn {
+        width: 100%;
+        height: 50px;
+        margin-top: 20px;
+        /* background: rgba(0,0,0,0.05);  Test ederken görmek için açabilirsiniz */
+        background: transparent; 
+        cursor: default;
+    }
+</style>
 </head>
 <body>
-
-    <div class="header">
-        <img src="./icon-192.png" class="header-logo"> <h1>Zikir Takip</h1>
-    </div>
-
-    <div class="container">
-        <div id="tab-hatim" class="tab-content">
-			<div class="kart" style="text-align:center; cursor:pointer;" onclick="window.location.href='kuran.html'">
-    <div style="font-size:1.5rem; color:#2e7d32; margin-bottom:5px;">
-        <i class="fa-solid fa-book-quran"></i>
-    </div>
-    <div style="font-weight:bold; color:#333;">Kur'an-ı Kerim Oku</div>
-    <div style="font-size:0.8rem; color:#888;">Serbest okuma yapmak için tıkla</div>
+<div class="header">
+    <img src="./icon-192.png" class="header-logo" onclick="gizliButonTikla()"> <h1>Zikir Takip</h1>
 </div>
-            <div class="kart" style="background:#e3f2fd; border-left:5px solid #1565c0;">
-                <div class="kart-baslik" style="color:#1565c0;">
-                    <span><i class="fa fa-globe"></i> Online Ortak Hatim</span>
-                    <span class="badge" id="online-hatim-no">...</span>
-                </div>
-                
-                <div style="text-align:center; padding:15px;">
-                    <div style="font-size:0.9rem; color:#666;">Son Alınan Sayfa</div>
-                    <div style="font-size:3rem; font-weight:bold; color:#1565c0;" id="online-son-sayfa">0</div>
-                    <button class="btn btn-ana" style="background:#1565c0; margin-top:10px;" onclick="onlineSayfaAl()">
-                        <i class="fa fa-plus"></i> Sayfa Al (Sıradaki)
-                    </button>
-                </div>
+
+<div class="container">
+    
+    <div id="tab-hatim" class="tab-content">
+        <div style="position: relative; margin-bottom: 10px;">
+            <div class="mesaj-kutusu-wrapper" onclick="mesajGoster()">
+                <i class="fa fa-envelope mesaj-ikon"></i>
+                <div id="bildirim-noktasi" class="bildirim-noktasi"></div>
             </div>
-
-            <div id="online-alinanlar-listesi">
-                </div>
-			<div id="arsiv-toggle" class="arsiv-toggle-btn" onclick="arsivAcKapat()">
-    <span><i class="fa fa-history" style="color:#777"></i> Geçmiş Arşivi</span>
-    <i class="fa fa-chevron-down" id="arsiv-ok-ikonu"></i>
-</div>
-
-<div id="arsiv-alani" class="arsiv-konteyner">
-    <div style="text-align:center; color:#999; font-size:0.8rem; padding:10px;">Arşiv boş.</div>
-</div>
         </div>
-        <div id="tab-zikir" class="tab-content aktif">
-            <div style="text-align:right; margin-bottom:10px;">
-                <button class="btn btn-outline" style="width:auto; padding:6px 15px; font-size:0.9rem;" onclick="toggleZikirModal()">
-                    <i class="fa fa-plus"></i> Ders Ekle / Çıkar
+
+        <div class="kart" style="text-align:center; cursor:pointer; margin-top: 40px;" onclick="window.location.href='kuran.html'">
+            <div style="font-size:1.5rem; color:#2e7d32; margin-bottom:5px;">
+                <i class="fa-solid fa-book-quran"></i>
+            </div>
+            <div style="font-weight:bold; color:#333;">Kur'an-ı Kerim Oku</div>
+            <div style="font-size:0.8rem; color:#888;">Serbest okuma yapmak için tıkla</div>
+        </div>
+
+        <div class="kart" style="background:#e3f2fd; border-left:5px solid #1565c0;">
+            <div class="kart-baslik" style="color:#1565c0;">
+                <span><i class="fa fa-globe"></i> Online Ortak Hatim</span>
+                <span class="badge" id="online-hatim-no">...</span>
+            </div>
+            
+            <div style="text-align:center; padding:15px;">
+                <div style="font-size:0.9rem; color:#666;">Son Alınan Sayfa</div>
+                <div style="font-size:3rem; font-weight:bold; color:#1565c0;" id="online-son-sayfa">0</div>
+                <button class="btn btn-ana" style="background:#1565c0; margin-top:10px;" onclick="onlineSayfaAl()">
+                    <i class="fa fa-plus"></i> Sayfa Al (Sıradaki)
                 </button>
             </div>
+        </div>
+
+        <div id="online-alinanlar-listesi"></div>
+        
+        <div id="arsiv-toggle" class="arsiv-toggle-btn" onclick="arsivAcKapat()">
+            <span><i class="fa fa-history" style="color:#777"></i> Geçmiş Arşivi</span>
+            <i class="fa fa-chevron-down" id="arsiv-ok-ikonu"></i>
+        </div>
+
+        <div id="arsiv-alani" class="arsiv-konteyner">
+            <div style="text-align:center; color:#999; font-size:0.8rem; padding:10px;">Arşiv boş.</div>
+        </div>
+    </div>
+
+    <div id="tab-zikir" class="tab-content aktif">
+        <div style="text-align:right; margin-bottom:10px;">
+            <button class="btn btn-outline" style="width:auto; padding:6px 15px; font-size:0.9rem;" onclick="toggleZikirModal()">
+                <i class="fa fa-plus"></i> Ders Ekle / Çıkar
+            </button>
+        </div>
+        <div id="zikir-container"></div>
+    </div>
+
+    <div id="tab-ayarlar" class="tab-content">
+        <div class="kart">
+            <div class="kart-baslik">Veri Yedekleme</div>
+            <p style="font-size:0.9rem; color:#666; margin-bottom:15px;">Verileriniz sadece telefonunuzda saklanır. Silinmemesi için düzenli yedek alınız.</p>
             
-            <div id="zikir-container"></div>
-        </div>
-
-       <div id="tab-ayarlar" class="tab-content">
-    
-    <div class="kart">
-        <div class="kart-baslik">Veri Yedekleme</div>
-        <p style="font-size:0.9rem; color:#666; margin-bottom:15px;">Verileriniz sadece telefonunuzda saklanır. Silinmemesi için düzenli yedek alınız.</p>
-        
-        <button class="btn ayar-btn" onclick="yedekIndir()">
-            <i class="fa fa-download"></i> Yedeği İndir (Dosya)
-        </button>
-        
-        <button class="btn ayar-btn" onclick="document.getElementById('yedek-yukle').click()">
-            <i class="fa fa-upload"></i> Yedeği Geri Yükle
-        </button>
-        <input type="file" id="yedek-yukle" style="display:none" onchange="yedekYukle(this)">
-        
-        <button class="btn ayar-btn btn-danger" style="margin-top:20px; color:white; background:#d32f2f;" onclick="sifirla()">
-            <i class="fa fa-trash"></i> Tüm Verileri Sil
-        </button>
-    </div>
-    <div class="kart">
-    <div class="kart-baslik">
-        <span><i class="fa fa-question-circle"></i> Sıkça Sorulan Sorular & Yardım</span>
-    </div>
-    
-    <details style="margin-bottom:10px; border-bottom:1px solid #eee; padding-bottom:10px;">
-        <summary style="cursor:pointer; font-weight:600; color:#444; outline:none; display:flex; align-items:center; gap:8px;">
-            <i class="fa fa-download" style="color:#2e7d32; font-size:1rem;"></i> Uygulamayı telefonuma nasıl yüklerim?
-        </summary>
-        <div style="font-size:0.9rem; color:#555; margin-top:10px; line-height:1.6; padding-left:5px;">
-            Bu uygulamayı mağazada aramanıza gerek yoktur. Şu adımları izleyin:
+            <button class="btn ayar-btn" onclick="yedekIndir()">
+                <i class="fa fa-download"></i> Yedeği İndir (Dosya)
+            </button>
             
-            <div style="margin-top:10px; background:#f9f9f9; padding:10px; border-radius:6px; border-left:4px solid #2e7d32;">
-                <strong> Android İçin:</strong>
-                <ol style="margin:5px 0; padding-left:20px;">
-                    <li>Linki <b>Chrome</b> tarayıcısı ile açın.</li>
-                    <li>Sağ üstteki <b>3 noktaya (⋮)</b> tıklayın.</li>
-                    <li>Listeden <b>"Uygulamayı Yükle"</b> veya <b>"Ana Ekrana Ekle"</b> seçeneğine basın.</li>
-                </ol>
-            </div>
-
-            <div style="margin-top:10px; background:#f9f9f9; padding:10px; border-radius:6px; border-left:4px solid #333;">
-                <strong> iPhone (iOS) İçin:</strong>
-                <ol style="margin:5px 0; padding-left:20px;">
-                    <li>Linki <b>Safari</b> tarayıcısı ile açın.</li>
-                    <li>Ekranın altındaki <b>"Paylaş"</b> (kare ve yukarı ok) butonuna basın.</li>
-                    <li>Menüyü yukarı kaydırıp <b>"Ana Ekrana Ekle"</b> seçeneğine basın.</li>
-                </ol>
-            </div>
+            <button class="btn ayar-btn" onclick="document.getElementById('yedek-yukle').click()">
+                <i class="fa fa-upload"></i> Yedeği Geri Yükle
+            </button>
+            <input type="file" id="yedek-yukle" style="display:none" onchange="yedekYukle(this)">
+            
+            <button class="btn ayar-btn btn-danger" style="margin-top:20px; color:white; background:#d32f2f;" onclick="sifirla()">
+                <i class="fa fa-trash"></i> Tüm Verileri Sil
+            </button>
         </div>
-    </details>
 
-    <details style="margin-bottom:10px; border-bottom:1px solid #eee; padding-bottom:10px;">
-        <summary style="cursor:pointer; font-weight:600; color:#444; outline:none; display:flex; align-items:center; gap:8px;">
-            <i class="fa fa-sync" style="color:#1976d2; font-size:1rem;"></i> Güncellemeleri alamıyorum, ne yapmalıyım?
-        </summary>
-        <div style="font-size:0.9rem; color:#555; margin-top:10px; line-height:1.6; padding-left:5px;">
-            Telefonunuz internet kotanızı korumak için uygulamanın eski halini hafızada tutuyor olabilir. Sırasıyla şunları deneyin:
-            <br><br>
-            <strong>Çözüm 1 (Önerilen):</strong><br>
-            Yukarıdaki mavi renkli <b>"Güncellemeleri Denetle"</b> butonuna basın ve sayfanın yenilenmesini bekleyin.
-            <br><br>
-            <strong>Çözüm 2 (Kesin Çözüm):</strong><br>
-            Eğer düzelmezse uygulamayı silip tekrar kurmanız gerekir.
-            <div style="background:#ffebee; padding:10px; border-radius:6px; margin-top:5px; border:1px solid #ffcdd2;">
-                <strong style="color:#d32f2f;">⚠️ DİKKAT: Veri Kaybı Riski</strong><br>
-                Uygulamayı silmeden önce mutlaka yukarıdaki <b>"Yedeği İndir"</b> butonuyla verilerinizi yedekleyin. Aksi takdirde zikir kayıtlarınız silinebilir.
+        <div class="kart">
+            <div class="kart-baslik">
+                <span><i class="fa fa-question-circle"></i> Sıkça Sorulan Sorular & Yardım</span>
             </div>
-            <ol style="margin:5px 0; padding-left:20px;">
-                <li>Yedeğinizi aldığınızdan emin olun.</li>
-                <li>Ana ekrandaki "Zikir Takip" simgesini tamamen kaldırın (Silin).</li>
-                <li>Linki tekrar açıp kurulum adımlarını ("Ana Ekrana Ekle") baştan uygulayın.</li>
-                <li>Son olarak "Yedeği Geri Yükle" diyerek verilerinizi geri getirin.</li>
-            </ol>
+            
+            <details style="margin-bottom:10px; border-bottom:1px solid #eee; padding-bottom:10px;">
+                <summary style="cursor:pointer; font-weight:600; color:#444; outline:none; display:flex; align-items:center; gap:8px;">
+                    <i class="fa fa-download" style="color:#2e7d32; font-size:1rem;"></i> Uygulamayı telefonuma nasıl yüklerim?
+                </summary>
+                <div style="font-size:0.9rem; color:#555; margin-top:10px; line-height:1.6; padding-left:5px;">
+                    Bu uygulamayı mağazada aramanıza gerek yoktur. Şu adımları izleyin:
+                    
+                    <div style="margin-top:10px; background:#f9f9f9; padding:10px; border-radius:6px; border-left:4px solid #2e7d32;">
+                        <strong> Android İçin:</strong>
+                        <ol style="margin:5px 0; padding-left:20px;">
+                            <li>Linki <b>Chrome</b> tarayıcısı ile açın.</li>
+                            <li>Sağ üstteki <b>3 noktaya (⋮)</b> tıklayın.</li>
+                            <li>Listeden <b>"Uygulamayı Yükle"</b> veya <b>"Ana Ekrana Ekle"</b> seçeneğine basın.</li>
+                        </ol>
+                    </div>
+
+                    <div style="margin-top:10px; background:#f9f9f9; padding:10px; border-radius:6px; border-left:4px solid #333;">
+                        <strong> iPhone (iOS) İçin:</strong>
+                        <ol style="margin:5px 0; padding-left:20px;">
+                            <li>Linki <b>Safari</b> tarayıcısı ile açın.</li>
+                            <li>Ekranın altındaki <b>"Paylaş"</b> (kare ve yukarı ok) butonuna basın.</li>
+                            <li>Menüyü yukarı kaydırıp <b>"Ana Ekrana Ekle"</b> seçeneğine basın.</li>
+                        </ol>
+                    </div>
+                </div>
+            </details>
+
+            <details style="margin-bottom:10px; border-bottom:1px solid #eee; padding-bottom:10px;">
+                <summary style="cursor:pointer; font-weight:600; color:#444; outline:none; display:flex; align-items:center; gap:8px;">
+                    <i class="fa fa-sync" style="color:#1976d2; font-size:1rem;"></i> Güncellemeleri alamıyorum, ne yapmalıyım?
+                </summary>
+                <div style="font-size:0.9rem; color:#555; margin-top:10px; line-height:1.6; padding-left:5px;">
+                    Telefonunuz internet kotanızı korumak için uygulamanın eski halini hafızada tutuyor olabilir. Sırasıyla şunları deneyin:
+                    <br><br>
+                    <strong>Çözüm 1 (Önerilen):</strong><br>
+                    Yukarıdaki mavi renkli <b>"Güncellemeleri Denetle"</b> butonuna basın ve sayfanın yenilenmesini bekleyin.
+                    <br><br>
+                    <strong>Çözüm 2 (Kesin Çözüm):</strong><br>
+                    Eğer düzelmezse uygulamayı silip tekrar kurmanız gerekir.
+                    <div style="background:#ffebee; padding:10px; border-radius:6px; margin-top:5px; border:1px solid #ffcdd2;">
+                        <strong style="color:#d32f2f;">⚠️ DİKKAT: Veri Kaybı Riski</strong><br>
+                        Uygulamayı silmeden önce mutlaka yukarıdaki <b>"Yedeği İndir"</b> butonuyla verilerinizi yedekleyin. Aksi takdirde zikir kayıtlarınız silinebilir.
+                    </div>
+                    <ol style="margin:5px 0; padding-left:20px;">
+                        <li>Yedeğinizi aldığınızdan emin olun.</li>
+                        <li>Ana ekrandaki "Zikir Takip" simgesini tamamen kaldırın (Silin).</li>
+                        <li>Linki tekrar açıp kurulum adımlarını ("Ana Ekrana Ekle") baştan uygulayın.</li>
+                        <li>Son olarak "Yedeği Geri Yükle" diyerek verilerinizi geri getirin.</li>
+                    </ol>
+                </div>
+            </details>
+
+            <details style="margin-bottom:10px; border-bottom:1px solid #eee; padding-bottom:10px;">
+                <summary style="cursor:pointer; font-weight:600; color:#444; outline:none; display:flex; align-items:center; gap:8px;">
+                    <i class="fa fa-wifi" style="color:#f57c00; font-size:0.9rem;"></i> İnternetim yokken çalışır mı?
+                </summary>
+                <p style="font-size:0.9rem; color:#666; margin-top:5px; line-height:1.5;">
+                    Evet. Zikir sayaçları, geçmiş kayıtlarınız ve "Kur'an Oku" özelliği internet olmadan da çalışır. Sadece "Online Ortak Hatim"den <b>yeni sayfa almak</b> için internet gereklidir.
+                </p>
+            </details>
+
+            <details style="margin-bottom:10px; border-bottom:1px solid #eee; padding-bottom:10px;">
+                <summary style="cursor:pointer; font-weight:600; color:#444; outline:none; display:flex; align-items:center; gap:8px;">
+                    <i class="fa fa-shield-alt" style="color:#555; font-size:0.9rem;"></i> Verilerim silinir mi?
+                </summary>
+                <p style="font-size:0.9rem; color:#666; margin-top:5px; line-height:1.5;">
+                    Verileriniz sunucuda değil, sadece <b>sizin telefonunuzda</b> saklanır. Eğer telefonunuzu sıfırlarsanız veya tarayıcı geçmişini temizlerseniz veriler gidebilir.
+                    <br><br>
+                    Bu yüzden yukarıdaki <b>"Yedeği İndir"</b> butonu ile ara sıra yedeğinizi almanız önerilir.
+                </p>
+            </details>
+
+            <details style="margin-bottom:5px;">
+                <summary style="cursor:pointer; font-weight:600; color:#444; outline:none; display:flex; align-items:center; gap:8px;">
+                    <i class="fa-solid fa-book-quran" style="color:#2e7d32; font-size:0.9rem;"></i> Hatim sayfası nasıl alırım?
+                </summary>
+                <div style="font-size:0.9rem; color:#666; margin-top:5px; line-height:1.6;">
+                    Hatim sekmesine girip mavi renkli <b>"Sayfa Al"</b> butonuna basınız.
+                    <br><br>
+                    <i class="fa fa-check-circle" style="color:#2e7d32"></i> <b>Toplu Sayfa Alma:</b> Girdiğiniz sayı kadar sayfayı tek seferde alabilirsiniz. Örneğin "5" yazarsanız, sistem sıradaki boş 5 sayfayı (Örn: 21'den 25'e kadar) size tanımlar.
+                    <br><br>
+                    Aldığınız sayfayı okuduktan sonra sistemden düşmenize gerek yoktur. Sistem o sayfayı size verdiği an "Okunacak" olarak kaydeder ve başkasına vermez.
+                </div>
+            </details>
         </div>
-    </details>
-
-    <details style="margin-bottom:10px; border-bottom:1px solid #eee; padding-bottom:10px;">
-        <summary style="cursor:pointer; font-weight:600; color:#444; outline:none; display:flex; align-items:center; gap:8px;">
-            <i class="fa fa-wifi" style="color:#f57c00; font-size:0.9rem;"></i> İnternetim yokken çalışır mı?
-        </summary>
-        <p style="font-size:0.9rem; color:#666; margin-top:5px; line-height:1.5;">
-            Evet. Zikir sayaçları, geçmiş kayıtlarınız ve "Kur'an Oku" özelliği internet olmadan da çalışır. Sadece "Online Ortak Hatim"den <b>yeni sayfa almak</b> için internet gereklidir.
-        </p>
-    </details>
-
-    <details style="margin-bottom:10px; border-bottom:1px solid #eee; padding-bottom:10px;">
-        <summary style="cursor:pointer; font-weight:600; color:#444; outline:none; display:flex; align-items:center; gap:8px;">
-            <i class="fa fa-shield-alt" style="color:#555; font-size:0.9rem;"></i> Verilerim silinir mi?
-        </summary>
-        <p style="font-size:0.9rem; color:#666; margin-top:5px; line-height:1.5;">
-            Verileriniz sunucuda değil, sadece <b>sizin telefonunuzda</b> saklanır. Eğer telefonunuzu sıfırlarsanız veya tarayıcı geçmişini temizlerseniz veriler gidebilir.
-            <br><br>
-            Bu yüzden yukarıdaki <b>"Yedeği İndir"</b> butonu ile ara sıra yedeğinizi almanız önerilir.
-        </p>
-    </details>
-
-    <details style="margin-bottom:5px;">
-        <summary style="cursor:pointer; font-weight:600; color:#444; outline:none; display:flex; align-items:center; gap:8px;">
-            <i class="fa-solid fa-book-quran" style="color:#2e7d32; font-size:0.9rem;"></i> Hatim sayfası nasıl alırım?
-        </summary>
-        <div style="font-size:0.9rem; color:#666; margin-top:5px; line-height:1.6;">
-            Hatim sekmesine girip mavi renkli <b>"Sayfa Al"</b> butonuna basınız.
-            <br><br>
-            <i class="fa fa-check-circle" style="color:#2e7d32"></i> <b>Toplu Sayfa Alma:</b> Girdiğiniz sayı kadar sayfayı tek seferde alabilirsiniz. Örneğin "5" yazarsanız, sistem sıradaki boş 5 sayfayı (Örn: 21'den 25'e kadar) size tanımlar.
-            <br><br>
-            Aldığınız sayfayı okuduktan sonra sistemden düşmenize gerek yoktur. Sistem o sayfayı size verdiği an "Okunacak" olarak kaydeder ve başkasına vermez.
-        </div>
-    </details>
-</div>
-    <div class="kart" style="text-align:center;">
-        <p>Mevcut Sürüm: <strong id="uygulama-versiyon">v2.0</strong></p>
         
-        <button onclick="guncellemeKontrol()" class="btn btn-primary" style="background-color: #2196F3; color: white;">
-            <i class="fa fa-sync"></i> Güncellemeleri Denetle ve Yükle
-        </button>
-    </div>
-
-    <div class="kart">
-        <div class="kart-baslik">
-            <span><i class="fa fa-map-marker-alt"></i> Buhara Vakfı Akyazı Şubesi</span>
+        <div class="kart" style="text-align:center;">
+            <p>Mevcut Sürüm: <strong id="uygulama-versiyon">v2.1</strong></p>
+            <button onclick="guncellemeKontrol()" class="btn btn-primary" style="background-color: #2196F3; color: white;">
+                <i class="fa fa-sync"></i> Güncellemeleri Denetle ve Yükle
+            </button>
         </div>
-        
-        <p class="adres-metni">
-           Fatih mh. 9024 sk. 10/A <br>
-            Akyazı / Sakarya
-        </p>
-
-       <div class="harita-kapsayici">
-    <iframe 
-        width="100%" 
-        height="100%" 
-        frameborder="0" 
-        scrolling="no" 
-        marginheight="0" 
-        marginwidth="0" 
-        src="https://maps.google.com/maps?q=Buhara+Vakf%C4%B1+Akyaz%C4%B1&t=&z=17&ie=UTF8&iwloc=B&output=embed">
-    </iframe>
-</div>
-
-<a href="https://www.google.com/maps/dir//Buhara+Vakfı+Akyazı" target="_blank" class="btn btn-outline" style="text-decoration:none; display:block; text-align:center; margin: 10px auto 0 auto; width: auto;">
-    <i class="fa fa-directions"></i> Yol Tarifi Al
-</a>
     </div>
 
-</div>
+    <div id="tab-iletisim" class="tab-content">
+        <div class="kart" style="text-align: center; padding: 20px;">
+            <div class="kart-baslik">Bize Ulaşın</div>
+            <div style="margin-top: 20px; display: flex; justify-content: center; gap: 20px;">
+                <a href="mailto:buhara54@gmail.com" class="social-btn btn-gmail">
+                    <i class="fa fa-envelope"></i>
+                </a>
+                <a href="https://www.youtube.com/@buhara54" target="_blank" class="social-btn btn-youtube">
+                    <i class="fab fa-youtube"></i>
+                </a>
+            </div>
+            <p style="font-size: 0.8rem; color: #999; margin-top: 15px;">
+                İkonlara tıklayarak ulaşabilirsiniz.
+            </p>
+        </div>
 
-    <div class="bottom-nav">
-        <button class="nav-item aktif" onclick="navGit('zikir', this)">
-            <i class="fa fa-fingerprint"></i> Zikirlerim
-        </button>
-		<button class="nav-item" onclick="navGit('hatim', this)">
-            <i class="fa-solid fa-book-quran"></i> Hatim
-        </button>
-        <button class="nav-item" onclick="navGit('ayarlar', this)">
-            <i class="fa fa-cog"></i> Ayarlar
-        </button>
+        <div class="kart">
+            <div class="kart-baslik">
+                <span><i class="fa fa-map-marker-alt"></i> Buhara Vakfı Akyazı Şubesi</span>
+            </div>
+            <p class="adres-metni">
+               Fatih mh. 9024 sk. 10/A <br>
+               Akyazı / Sakarya
+            </p>
+            <div class="harita-kapsayici">
+                <iframe width="100%" height="100%" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" src="https://maps.google.com/maps?q=Buhara+Vakf%C4%B1+Akyaz%C4%B1&t=&z=17&ie=UTF8&iwloc=B&output=embed"></iframe>
+            </div>
+            <a href="https://www.google.com/maps/dir//Buhara+Vakfı+Akyazı" target="_blank" class="btn btn-outline" style="text-decoration:none; display:block; text-align:center; margin: 10px auto 0 auto; width: auto;">
+                <i class="fa fa-directions"></i> Yol Tarifi Al
+            </a>
+        </div>
     </div>
+
+</div> <div class="bottom-nav">
+    <button class="nav-item aktif" onclick="navGit('zikir', this)">
+        <i class="fa fa-fingerprint"></i> Zikirlerim
+    </button>
+    <button class="nav-item" onclick="navGit('hatim', this)">
+        <i class="fa-solid fa-book-quran"></i> Hatim
+    </button>
+    <button class="nav-item" onclick="navGit('ayarlar', this)">
+        <i class="fa fa-cog"></i> Ayarlar
+    </button>
+    <button class="nav-item" onclick="navGit('iletisim', this)">
+        <i class="fa fa-comment-dots"></i> İletişim
+    </button>
+</div>
 
     <div id="modal-zikir" class="modal">
         <div class="modal-box">
@@ -545,7 +606,7 @@
 </div>
 <script>
 // --- VERİ YAPISI ---
-const APP_VERSION = "v2.9"; // maps,data,kuran
+const APP_VERSION = "v3.0"; // -update dahil
 const API_URL = "https://script.google.com/macros/s/AKfycbyjgcqxphx1289d7I6huxpj-ImqUbOscgg5pM6waojHhU-r9NoQnJ_4DpPmgw9WtOYJ/exec";
 const DB_KEY = "ZikirTakipData_v2";
 let data = {
@@ -642,17 +703,125 @@ function kaydet() {
     arayuzGuncelle();
 }
 
+/* --- 1. MEVCUT NAVİGASYON (Sizin Kodunuz - Aynen Korundu) --- */
 function navGit(tabId, btn) {
     document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('aktif'));
     document.getElementById('tab-' + tabId).classList.add('aktif');
     document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('aktif'));
     btn.classList.add('aktif');
+    
     // EĞER HATİM SEKMESİ AÇILDIYSA
     if(tabId === 'hatim') {
         onlineHatimYukle();
-        hatimUyariKontrol(); // <-- YENİ EKLENEN SATIR BU
+        // Eğer hatimUyariKontrol fonksiyonu kodlarınızda tanımlıysa çalışır
+        if (typeof hatimUyariKontrol === "function") {
+            hatimUyariKontrol(); 
+        }
     }
 }
+
+/* --- GİZLİ GİRİŞ (Logoya 3 Tıklama) --- */
+let gizliTiklamaSayisi = 0;
+let gizliSayacSifirlama;
+
+function gizliButonTikla() {
+    gizliTiklamaSayisi++;
+    
+    // Sayaç sıfırlama (1.5 saniye içinde arkası arkasına basılmazsa sıfırlar)
+    clearTimeout(gizliSayacSifirlama);
+    gizliSayacSifirlama = setTimeout(() => {
+        gizliTiklamaSayisi = 0;
+    }, 1500);
+
+    // 3. tıklamaya ulaştıysa işlem yap
+    if (gizliTiklamaSayisi >= 3) {
+        ozelAlert("Yönetici paneline yönlendiriliyorsunuz...", "Erişim");
+        
+        setTimeout(() => {
+            // BURASI ÖNEMLİ: Dosya isminiz 'katilim.html' ise böyle kalsın.
+            // Farklıysa burayı düzeltin.
+            window.location.href = "katilim.html"; 
+        }, 1000);
+        
+        gizliTiklamaSayisi = 0;
+    }
+}
+
+/* --- 3. HATİM MESAJ / DUYURU SİSTEMİ --- */
+let mevcutDuyuruMesaji = ""; 
+const BASE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzG8oO9FVrSH67A7ImWQXkBA66y_g6sxUQaAnPRZ48ttXg8W7h2l_FJErI6F9gr4cSEcA/exec";
+/* --- GÜNCELLENMİŞ DUYURU KONTROL --- */
+/* --- AKILLI DUYURU SİSTEMİ (Hafızalı) --- */
+
+function duyuruKontrol() {
+    if(typeof BASE_SCRIPT_URL === 'undefined' || BASE_SCRIPT_URL.includes("SİZİN")) return;
+
+    // Cache sorunu olmasın diye zaman damgası
+    const fetchUrl = BASE_SCRIPT_URL + "?tur=mesaj&v=" + new Date().getTime();
+
+    fetch(fetchUrl)
+    .then(response => response.text())
+    .then(gelenMesaj => {
+        const nokta = document.getElementById("bildirim-noktasi");
+        const ikon = document.querySelector(".mesaj-ikon");
+        
+        // Mesaj geçerli mi?
+        if (gelenMesaj && gelenMesaj.trim().length > 0 && !gelenMesaj.includes("Hata")) {
+            mevcutDuyuruMesaji = gelenMesaj;
+
+            // HAFIZA KONTROLÜ:
+            // Tarayıcıdaki son okunan mesaj ile gelen mesaj aynı mı?
+            const sonOkunan = localStorage.getItem("son_okunan_duyuru");
+
+            if (gelenMesaj === sonOkunan) {
+                // Mesaj aynı, yani kullanıcı bunu zaten okumuş.
+                // İkon GRİ kalsın, nokta ÇIKMASIN.
+                if(nokta) nokta.style.display = "none";
+                if(ikon) ikon.classList.remove("mesaj-var");
+                console.log("Mesaj var ama daha önce okunmuş.");
+            } else {
+                // Mesaj FARKLI, bu yeni bir duyuru!
+                // İkon MAVİ olsun, nokta ÇIKSIN.
+                if(nokta) nokta.style.display = "block";
+                if(ikon) ikon.classList.add("mesaj-var");
+                console.log("Yeni mesaj geldi!");
+            }
+
+        } else {
+            // Hiç mesaj yoksa
+            mevcutDuyuruMesaji = "";
+            if(nokta) nokta.style.display = "none";
+            if(ikon) ikon.classList.remove("mesaj-var");
+        }
+    })
+    .catch(error => console.error("Hata:", error));
+}
+
+function mesajGoster() {
+    if (mevcutDuyuruMesaji !== "") {
+        ozelAlert(mevcutDuyuruMesaji, "📢 Yeni Duyuru");
+
+        // OKUNDU OLARAK İŞARETLE
+        // 1. Hafızaya kaydet
+        localStorage.setItem("son_okunan_duyuru", mevcutDuyuruMesaji);
+
+        // 2. Görseli anında düzelt (Gri yap, noktayı kaldır)
+        const nokta = document.getElementById("bildirim-noktasi");
+        const ikon = document.querySelector(".mesaj-ikon");
+        
+        if(nokta) nokta.style.display = "none";
+        if(ikon) ikon.classList.remove("mesaj-var");
+
+    } else {
+        ozelAlert("Şu an görüntülenecek yeni bir duyuru bulunmamaktadır.", "Bilgi");
+    }
+}
+
+// Sayfa yüklendiğinde duyuruyu kontrol et
+window.addEventListener('load', function() {
+    // Mevcut yükleme işlemleriniz varsa onları bozmaz, ek olarak çalışır
+    setTimeout(duyuruKontrol, 2000); // Sayfa oturduktan 2sn sonra kontrol et
+});
 
 function arayuzGuncelle() {
     renderZikirKartlari();
@@ -1270,9 +1439,3 @@ function kapatAlert() {
 </div>
 </body>
 </html>
-
-
-
-
-
-
