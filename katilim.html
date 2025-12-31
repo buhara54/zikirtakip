@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Gelişmiş Katılım Paneli</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --ana-renk: #2e7d32; --arkaplan: #f0f2f5; --radius: 12px; --kirmizi: #d32f2f; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--arkaplan); margin: 0; padding: 10px; color: #333; }
+        
+        /* Genel Bileşenler */
+        .header { background: var(--ana-renk); color: white; padding: 15px; border-radius: var(--radius); text-align: center; margin-bottom: 20px; position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .back-btn { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: white; font-size: 1.2rem; cursor: pointer; }
+        
+        .kart { background: white; padding: 20px; border-radius: var(--radius); box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 15px; animation: fadeIn 0.4s; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.9rem; color: #555; }
+        input, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; box-sizing: border-box; outline: none; transition: 0.3s; }
+        input:focus { border-color: var(--ana-renk); box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1); }
+        
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; background: var(--ana-renk); color: white; font-size: 1rem; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .btn:active { transform: scale(0.98); }
+        .btn-secondary { background: #757575; }
+        .btn-outline { background: transparent; border: 2px solid var(--ana-renk); color: var(--ana-renk); }
+
+        /* Sekmeler */
+        .nav-tabs { display: flex; gap: 10px; margin-bottom: 15px; }
+        .nav-tab { flex: 1; padding: 10px; text-align: center; background: #e0e0e0; border-radius: 8px; cursor: pointer; font-weight: 600; color: #555; }
+        .nav-tab.active { background: var(--ana-renk); color: white; }
+
+        /* Ekranlar */
+        .ekran { display: none; }
+        .ekran.aktif { display: block; }
+
+        /* Uyarı Animasyonu */
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        .uyari-kutu { background: #ffebee; border: 1px solid #ffcdd2; color: #c62828; padding: 10px; border-radius: 8px; margin-bottom: 15px; display: none; align-items: center; justify-content: space-between; }
+        .uyari-metin { font-weight: bold; animation: blink 1.5s infinite; }
+
+        /* Eksik Veri Satırı (Tablo İçin) */
+        .satir-eksik { background-color: #ffebee; color: var(--kirmizi); font-weight: bold; }
+        .eksik-yazi { animation: blink 2s infinite; }
+
+        /* Vekil Checkbox */
+        .vekil-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; max-height: 200px; overflow-y: auto; padding: 5px; border: 1px solid #eee; border-radius: 8px; }
+        .vekil-item { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; padding: 5px; background: #fafafa; border-radius: 4px; }
+        
+        /* Tablolar */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.85rem; }
+        th, td { padding: 8px; text-align: center; border-bottom: 1px solid #eee; }
+        th { background: #f9f9f9; color: var(--ana-renk); font-weight: 600; }
+        .text-left { text-align: left; }
+
+        /* Checkbox Grubu */
+        .cb-group { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px; font-size: 0.85rem; }
+        .cb-group label { display: flex; align-items: center; gap: 5px; cursor: pointer; font-weight: normal; margin:0; }
+
+        /* Yazdırma Modu */
+        @media print {
+            body { background: white; margin: 0; padding: 0; }
+            .no-print, .header, .nav-tabs, .form-group, .btn, .cb-group { display: none !important; }
+            .printable-area { display: block !important; position: static; width: 100%; }
+            .kart { box-shadow: none; border: none; padding: 0; margin: 0; }
+            h3, h4 { color: black !important; border-bottom: 1px solid #000 !important; }
+            th { background: #eee !important; color: black !important; }
+            /* Eksik satırlar çıktıda çok bağırmasın ama belli olsun */
+            .satir-eksik { background-color: #eee !important; color: #333 !important; font-weight: normal; } 
+            .eksik-yazi { animation: none; }
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <i class="fa fa-arrow-left back-btn" onclick="window.location.reload()"></i>
+        <h2 style="margin:0; font-size:1.2rem;">Yönetim Paneli</h2>
+    </div>
+
+    <div id="ekran-giris" class="ekran aktif">
+        <div class="kart">
+            <h3 style="text-align:center; color:var(--ana-renk);">Giriş Yap</h3>
+            <div class="form-group">
+                <label>E-Posta</label>
+                <input type="email" id="giris-email" placeholder="mail@ornek.com">
+            </div>
+            <div class="form-group">
+                <label>Şifre</label>
+                <input type="password" id="giris-sifre" placeholder="******">
+            </div>
+            <button class="btn" onclick="girisYap()">Giriş Yap</button>
+            <p style="text-align:center; margin-top:15px; font-size:0.9rem;">
+                Hesabınız yok mu? <a href="#" onclick="ekranDegistir('kayit')" style="color:var(--ana-renk);">Kayıt Ol</a>
+            </p>
+        </div>
+    </div>
+
+    <div id="ekran-kayit" class="ekran">
+        <div class="kart">
+            <h3 style="text-align:center; color:var(--ana-renk);">Yeni Kayıt</h3>
+            <div class="form-group"><label>Ad Soyad</label><input type="text" id="kayit-ad"></div>
+            <div class="form-group"><label>E-Posta</label><input type="email" id="kayit-email"></div>
+            <div class="form-group"><label>Şifre</label><input type="password" id="kayit-sifre"></div>
+            <hr style="margin:15px 0; border:0; border-top:1px solid #eee;">
+            <p style="font-size:0.8rem; color:#666; margin-bottom:10px;">Birim Bilgileri (Ortak liste için önemlidir)</p>
+            <div class="form-group"><label>Dergah</label><input type="text" id="kayit-dergah" placeholder="Örn: Buhara"></div>
+            <div class="form-group"><label>Şube</label><input type="text" id="kayit-sube" placeholder="Örn: Akyazı"></div>
+            <div class="form-group"><label>Bölge</label><input type="text" id="kayit-bolge" placeholder="Örn: Merkez"></div>
+            <button class="btn" onclick="kayitOl()">Kaydı Tamamla</button>
+            <button class="btn btn-secondary" onclick="ekranDegistir('giris')">İptal</button>
+        </div>
+    </div>
+
+    <div id="ekran-setup" class="ekran">
+        <div class="kart">
+            <h3 style="text-align:center; color:#f57c00;"><i class="fa fa-users-cog"></i> Liste Kurulumu</h3>
+            <p style="font-size:0.9rem; color:#666;">Biriminiz için vekil listesi oluşturun.</p>
+            <div style="display:flex; gap:5px; margin-bottom:10px;">
+                <input type="text" id="yeni-vekil-ad" placeholder="Vekil Adı Soyadı">
+                <button class="btn" style="width:auto; margin:0;" onclick="vekilListeyeEkle()">Ekle</button>
+            </div>
+            <div id="setup-liste-onizleme" style="background:#f9f9f9; padding:10px; border-radius:8px; max-height:150px; overflow-y:auto; margin-bottom:15px;">
+                <div style="text-align:center; color:#999; font-size:0.8rem;">Liste boş.</div>
+            </div>
+            <button class="btn" onclick="vekilListesiniKaydet()">Listeyi Kaydet</button>
+        </div>
+    </div>
+
+    <div id="ekran-panel" class="ekran">
+        
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <div>
+                <div style="font-weight:bold; color:#333; font-size:1.1rem;" id="kullanici-baslik">Kullanıcı</div>
+            </div>
+            <button class="btn btn-outline" style="width:auto; padding:5px 10px; font-size:0.8rem; margin:0;" onclick="cikisYap()">Çıkış</button>
+        </div>
+
+        <div id="eksik-gun-uyarisi" class="uyari-kutu">
+            <div class="uyari-metin"><i class="fa fa-exclamation-circle"></i> Bu ay kayıt girilmemiş günler mevcut!</div>
+            <button class="btn btn-outline" style="width:auto; padding:2px 8px; font-size:0.7rem; margin:0; background:white;" onclick="uyariKapat()">Tamam</button>
+        </div>
+
+        <div class="nav-tabs no-print">
+            <div class="nav-tab active" onclick="tabDegistir('giris')">Veri Girişi</div>
+            <div class="nav-tab" onclick="tabDegistir('rapor')">Raporlar</div>
+        </div>
+
+        <div id="tab-giris" class="tab-content">
+            <div class="kart">
+                <div class="form-group">
+                    <label>Tarih</label>
+                    <input type="date" id="giris-tarih">
+                </div>
+                <div class="form-group">
+                    <label>Katılan Vekiller</label>
+                    <div class="vekil-grid" id="vekil-checkbox-listesi">
+                        <div style="padding:10px; color:#999;">Yükleniyor...</div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Toplam Katılım Sayısı</label>
+                    <input type="number" id="giris-sayi" placeholder="0">
+                </div>
+                <button class="btn" onclick="veriyiKaydet()">KAYDET</button>
+            </div>
+        </div>
+
+        <div id="tab-rapor" class="tab-content" style="display:none;">
+            <div class="kart no-print">
+                <label>Rapor Dönemi</label>
+                <div style="display:flex; gap:10px; margin-bottom:10px;">
+                    <select id="rapor-ay">
+                        <option value="0">Ocak</option><option value="1">Şubat</option><option value="2">Mart</option>
+                        <option value="3">Nisan</option><option value="4">Mayıs</option><option value="5">Haziran</option>
+                        <option value="6">Temmuz</option><option value="7">Ağustos</option><option value="8">Eylül</option>
+                        <option value="9">Ekim</option><option value="10">Kasım</option><option value="11">Aralık</option>
+                    </select>
+                    <select id="rapor-yil">
+                        <option value="2025">2025</option><option value="2026">2026</option>
+                    </select>
+                </div>
+                
+                <label style="margin-bottom:5px;">Raporda Gösterilecekler:</label>
+                <div class="cb-group">
+                    <label><input type="checkbox" id="cb-gunluk-analiz" checked> Günlük Analiz Tablosu</label>
+                    <label><input type="checkbox" id="cb-vekil-perf" checked> Vekil Performansı</label>
+                    <label><input type="checkbox" id="cb-gunluk-dokum" checked> Günlük Kayıt Dökümü</label>
+                </div>
+
+                <button class="btn" onclick="raporGetir()">Raporu Getir</button>
+            </div>
+
+            <div id="rapor-sonuc-alani" class="printable-area" style="display:none;">
+                <div class="kart">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <h3 id="rapor-ana-baslik" style="margin:0; color:var(--ana-renk); font-size:1.1rem;">Katılım Raporu</h3>
+                        <button class="btn btn-outline no-print" style="width:auto; margin:0;" onclick="window.print()">
+                            <i class="fa fa-print"></i> Yazdır
+                        </button>
+                    </div>
+                    
+                    <p id="rapor-tarih-detay" style="color:#666; font-size:0.9rem; margin-top:5px; border-bottom:1px solid #eee; padding-bottom:10px;"></p>
+
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:15px; text-align:center;">
+                        <div style="background:#e3f2fd; padding:12px; border-radius:8px;">
+                            <div style="font-weight:bold; color:#1565c0; font-size:1.3rem;" id="lbl-aylik-ort">0</div>
+                            <div style="font-size:0.75rem; color:#555;">Bu Ay Ortalaması</div>
+                        </div>
+                        <div style="background:#fff3e0; padding:12px; border-radius:8px;">
+                            <div style="font-weight:bold; color:#f57c00; font-size:1.3rem;" id="lbl-yil-ort">0</div>
+                            <div style="font-size:0.75rem; color:#555;">Yıllık Genel Ortalama</div>
+                        </div>
+                    </div>
+
+                    <div id="sec-gunluk-analiz">
+                        <h4 style="margin-top:20px; border-bottom:2px solid #eee; padding-bottom:5px; color:#333;">
+                            <i class="fa fa-chart-bar"></i> Günlük Ortalama Analizi
+                        </h4>
+                        <div style="overflow-x:auto;">
+                            <table id="tbl-gunluk-analiz">
+                                <thead>
+                                    <tr>
+                                        <th style="text-align:left;">Dönem</th>
+                                        <th>Pzt</th><th>Sal</th><th>Çar</th><th>Per</th><th>Cum</th><th>Cmt</th><th>Paz</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div id="sec-vekil-perf">
+                        <h4 style="margin-top:20px; border-bottom:2px solid #eee; padding-bottom:5px; color:#333;">
+                            <i class="fa fa-users"></i> Vekil Katılım Durumu
+                        </h4>
+                        <table id="tbl-vekil-performans">
+                            <thead>
+                                <tr>
+                                    <th class="text-left">Vekil Adı</th>
+                                    <th>Bu Ay</th>
+                                    <th>%</th>
+                                    <th style="border-left:2px solid #eee;">Genel (Yıl)</th>
+                                    <th>%</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+
+                    <div id="sec-gunluk-dokum">
+                        <h4 style="margin-top:20px; border-bottom:2px solid #eee; padding-bottom:5px; color:#333;">
+                            <i class="fa fa-list"></i> Günlük Kayıt Dökümü
+                        </h4>
+                        <table id="tbl-gunluk-dokum">
+                            <thead>
+                                <tr>
+                                    <th>Tarih</th>
+                                    <th>Gün</th>
+                                    <th>Sayı</th>
+                                    <th class="text-left">Gelenler</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- AYARLAR ---
+        const API_URL = "https://script.google.com/macros/s/AKfycbyN6UOTS9mM9KXWRfGxf3Snlg3U9s2s-SoVIZ7hX46on3f_vTJnw-GUTalad1LAny2i/exec";
+        
+        // Global Değişkenler
+        let currentUser = null;
+        let tempVekilList = [];
+        let globalVeriler = []; 
+
+        window.onload = function() {
+            document.getElementById('giris-tarih').valueAsDate = new Date();
+            const bugun = new Date();
+            document.getElementById('rapor-ay').value = bugun.getMonth();
+            document.getElementById('rapor-yil').value = bugun.getFullYear();
+
+            const kayitliKullanici = localStorage.getItem("buhara_user");
+            if(kayitliKullanici) {
+                currentUser = JSON.parse(kayitliKullanici);
+                panelAc();
+            }
+        };
+
+        // --- EKRAN YÖNETİMİ ---
+        function ekranDegistir(id) {
+            document.querySelectorAll('.ekran').forEach(e => e.classList.remove('aktif'));
+            document.getElementById('ekran-' + id).classList.add('aktif');
+        }
+
+        function tabDegistir(tabId) {
+            document.querySelectorAll('.tab-content').forEach(e => e.style.display = 'none');
+            document.querySelectorAll('.nav-tab').forEach(e => e.classList.remove('active'));
+            document.getElementById('tab-' + tabId).style.display = 'block';
+            event.target.classList.add('active');
+        }
+
+        // --- UYARI SİSTEMİ ---
+        function uyariKapat() {
+            document.getElementById('eksik-gun-uyarisi').style.display = 'none';
+            localStorage.setItem("uyari_kapatildi_tarih", new Date().toDateString());
+        }
+
+        function eksikGunKontrolu(veriler) {
+            const kapatilmaTarihi = localStorage.getItem("uyari_kapatildi_tarih");
+            if(kapatilmaTarihi === new Date().toDateString()) return;
+
+            const bugun = new Date();
+            const buAy = bugun.getMonth();
+            const buYil = bugun.getFullYear();
+            const bugunGun = bugun.getDate();
+
+            if(bugunGun < 2) return;
+
+            let kayitliGunler = new Set();
+            veriler.forEach(v => {
+                const t = tarihCozumle(v.tarih);
+                if(t && t.ay - 1 === buAy && t.yil === buYil) {
+                    kayitliGunler.add(t.gun);
+                }
+            });
+
+            let eksikVar = false;
+            for(let i = 1; i < bugunGun; i++) {
+                if(!kayitliGunler.has(i)) {
+                    eksikVar = true; break;
+                }
+            }
+            if(eksikVar) document.getElementById('eksik-gun-uyarisi').style.display = 'flex';
+        }
+
+        // --- BACKEND İLETİŞİM ---
+        async function apiIstegi(data) {
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify(data)
+                });
+                return await response.json();
+            } catch (error) {
+                alert("Bağlantı hatası!"); return null;
+            }
+        }
+
+        // --- GİRİŞ / KAYIT ---
+        function girisYap() {
+            const email = document.getElementById('giris-email').value;
+            const sifre = document.getElementById('giris-sifre').value;
+            if(!email || !sifre) { alert("Bilgileri girin."); return; }
+            
+            const btn = event.target; btn.innerText = "Kontrol...";
+            apiIstegi({ islem: 'giris', email, sifre }).then(res => {
+                btn.innerText = "Giriş Yap";
+                if(res && res.basarili) {
+                    currentUser = res.kullanici;
+                    currentUser.vekilListesi = res.vekilListesi || [];
+                    localStorage.setItem("buhara_user", JSON.stringify(currentUser));
+                    
+                    if(currentUser.vekilListesi.length === 0) ekranDegistir('setup');
+                    else panelAc();
+                } else alert(res ? res.mesaj : "Hata");
+            });
+        }
+
+        function kayitOl() {
+            const veri = {
+                islem: 'kayit',
+                adSoyad: document.getElementById('kayit-ad').value,
+                email: document.getElementById('kayit-email').value,
+                sifre: document.getElementById('kayit-sifre').value,
+                dergah: document.getElementById('kayit-dergah').value,
+                sube: document.getElementById('kayit-sube').value,
+                bolge: document.getElementById('kayit-bolge').value
+            };
+            if(!veri.email || !veri.sifre || !veri.dergah) { alert("Tüm alanları doldurun."); return; }
+            
+            const btn = event.target; btn.disabled = true; btn.innerText = "İşleniyor...";
+            apiIstegi(veri).then(res => {
+                btn.disabled = false; btn.innerText = "Kaydı Tamamla";
+                if(res && res.basarili) {
+                    alert(res.mesaj);
+                    currentUser = res.kullanici;
+                    if(!currentUser.vekilListesi) currentUser.vekilListesi = [];
+                    localStorage.setItem("buhara_user", JSON.stringify(currentUser));
+                    
+                    if(res.listeDurumu === 'yeni') ekranDegistir('setup');
+                    else panelAc();
+                } else alert(res ? res.mesaj : "Hata");
+            });
+        }
+
+        function panelAc() {
+            ekranDegistir('panel');
+            document.getElementById('kullanici-baslik').innerText = currentUser.adSoyad;
+            vekilListesiniRenderEt();
+            
+            apiIstegi({
+                islem: 'rapor_getir',
+                email: currentUser.email,
+                dergah: currentUser.dergah, sube: currentUser.sube, bolge: currentUser.bolge
+            }).then(res => {
+                if(res && res.basarili) {
+                    globalVeriler = res.veriler;
+                    eksikGunKontrolu(res.veriler);
+                }
+            });
+        }
+
+        function cikisYap() {
+            localStorage.removeItem("buhara_user");
+            window.location.reload();
+        }
+
+        function vekilListeyeEkle() {
+            const input = document.getElementById('yeni-vekil-ad');
+            const isim = input.value.trim();
+            if(isim) {
+                tempVekilList.push(isim);
+                const div = document.createElement("div");
+                div.innerHTML = `<i class="fa fa-check"></i> ${isim}`;
+                div.style.padding = "5px"; div.style.borderBottom = "1px solid #eee";
+                document.getElementById('setup-liste-onizleme').appendChild(div);
+                input.value = ""; input.focus();
+            }
+        }
+
+        function vekilListesiniKaydet() {
+            if(tempVekilList.length < 1) { alert("En az 1 isim girin."); return; }
+            apiIstegi({
+                islem: 'vekil_kaydet',
+                email: currentUser.email,
+                dergah: currentUser.dergah, sube: currentUser.sube, bolge: currentUser.bolge,
+                vekilListesi: tempVekilList
+            }).then(res => {
+                if(res.basarili) {
+                    currentUser.vekilListesi = tempVekilList;
+                    localStorage.setItem("buhara_user", JSON.stringify(currentUser));
+                    panelAc();
+                }
+            });
+        }
+
+        function vekilListesiniRenderEt() {
+            const container = document.getElementById('vekil-checkbox-listesi');
+            container.innerHTML = "";
+            if(!currentUser.vekilListesi || currentUser.vekilListesi.length === 0) {
+                container.innerHTML = "Liste boş."; return;
+            }
+            currentUser.vekilListesi.forEach(isim => {
+                const item = document.createElement("label");
+                item.className = "vekil-item";
+                item.innerHTML = `<input type="checkbox" value="${isim}" class="vekil-cb"><span>${isim}</span>`;
+                container.appendChild(item);
+            });
+        }
+
+        function veriyiKaydet() {
+            const tarih = document.getElementById('giris-tarih').value;
+            const tarihFormatli = tarih.split("-").reverse().join(".");
+            const secilenler = [];
+            document.querySelectorAll('.vekil-cb:checked').forEach(cb => secilenler.push(cb.value));
+            const sayi = document.getElementById('giris-sayi').value;
+
+            if(!sayi) { alert("Sayı girmediniz."); return; }
+
+            apiIstegi({
+                islem: 'veri_kaydet',
+                email: currentUser.email,
+                dergah: currentUser.dergah, sube: currentUser.sube, bolge: currentUser.bolge,
+                tarih: tarihFormatli, sayi: sayi, secilenler: JSON.stringify(secilenler)
+            }).then(res => {
+                if(res.basarili) {
+                    alert("Kaydedildi.");
+                    document.getElementById('giris-sayi').value = "";
+                    document.querySelectorAll('.vekil-cb').forEach(cb => cb.checked = false);
+                }
+            });
+        }
+
+        function raporGetir() {
+            const ay = parseInt(document.getElementById('rapor-ay').value);
+            const yil = parseInt(document.getElementById('rapor-yil').value);
+            
+            if(globalVeriler.length > 0) {
+                raporuHesaplaVeGoster(globalVeriler, ay, yil);
+            } else {
+                apiIstegi({
+                    islem: 'rapor_getir',
+                    email: currentUser.email,
+                    dergah: currentUser.dergah, sube: currentUser.sube, bolge: currentUser.bolge
+                }).then(res => {
+                    if(res.basarili) {
+                        globalVeriler = res.veriler;
+                        raporuHesaplaVeGoster(res.veriler, ay, yil);
+                    }
+                });
+            }
+        }
+
+        function tarihCozumle(tarihVerisi) {
+            let gun, ay, yil, tarihObj;
+            if (typeof tarihVerisi === 'string' && tarihVerisi.includes('T')) {
+                const parcalar = tarihVerisi.split('T')[0].split('-'); 
+                yil = parseInt(parcalar[0]); ay = parseInt(parcalar[1]); gun = parseInt(parcalar[2]);
+                tarihObj = new Date(yil, ay - 1, gun);
+            } else if (typeof tarihVerisi === 'string' && tarihVerisi.includes('.')) {
+                const parcalar = tarihVerisi.split('.');
+                gun = parseInt(parcalar[0]); ay = parseInt(parcalar[1]); yil = parseInt(parcalar[2]);
+                tarihObj = new Date(yil, ay - 1, gun);
+            } else return null;
+
+            return { gun: gun, ay: ay, yil: yil, haftaGunIndex: tarihObj.getDay(), tamTarih: `${gun < 10 ? '0'+gun : gun}.${ay < 10 ? '0'+ay : ay}.${yil}` };
+        }
+
+        function raporuHesaplaVeGoster(veriler, secilenAy, secilenYil) {
+            // Checkbox Kontrol
+            const gosterAnaliz = document.getElementById('cb-gunluk-analiz').checked;
+            const gosterVekil = document.getElementById('cb-vekil-perf').checked;
+            const gosterDokum = document.getElementById('cb-gunluk-dokum').checked;
+
+            document.getElementById('sec-gunluk-analiz').style.display = gosterAnaliz ? 'block' : 'none';
+            document.getElementById('sec-vekil-perf').style.display = gosterVekil ? 'block' : 'none';
+            document.getElementById('sec-gunluk-dokum').style.display = gosterDokum ? 'block' : 'none';
+
+            // BAŞLIKLAR
+            const dinamikBaslik = `${currentUser.bolge} Bölge ${currentUser.sube} ${currentUser.dergah} Katılım Raporu`;
+            document.getElementById('rapor-ana-baslik').innerText = dinamikBaslik;
+
+            const ayIsimleri = ["Ocak","Şubat","Mart","Nisan","Mayıs","Haziran","Temmuz","Ağustos","Eylül","Ekim","Kasım","Aralık"];
+            document.getElementById('rapor-tarih-detay').innerText = `${ayIsimleri[secilenAy]} ${secilenYil} Dönemi`;
+
+            // DEĞİŞKENLER
+            let aylikToplam = 0, aylikAdet = 0;
+            let yillikToplam = 0, yillikAdet = 0;
+            
+            let gunlukStats = {};
+            [1,2,3,4,5,6,0].forEach(i => gunlukStats[i] = { ayT:0, ayA:0, yilT:0, yilA:0 });
+
+            let vekilStats = {};
+            if(currentUser.vekilListesi) {
+                currentUser.vekilListesi.forEach(v => vekilStats[v.trim()] = { ay:0, yil:0 });
+            }
+
+            // Gelen Verileri Tarihine Göre Haritala (Bu ay için)
+            // Amaç: O günün verisi var mı yok mu hızlıca bulmak
+            let aylikVeriHaritasi = {};
+
+            // 1. TÜM VERİLERİ DÖNGÜYE AL (Hesaplamalar için)
+            veriler.forEach(kayit => {
+                const t = tarihCozumle(kayit.tarih);
+                if(!t) return;
+                const sayi = parseInt(kayit.sayi || 0);
+
+                // YILLIK
+                if(t.yil === secilenYil) {
+                    yillikToplam += sayi;
+                    yillikAdet++;
+                    if(gunlukStats[t.haftaGunIndex]) {
+                        gunlukStats[t.haftaGunIndex].yilT += sayi;
+                        gunlukStats[t.haftaGunIndex].yilA++;
+                    }
+                    try {
+                        JSON.parse(kayit.vekiller).forEach(isim => {
+                            let temiz = isim.trim();
+                            if(vekilStats[temiz]) vekilStats[temiz].yil++;
+                            else vekilStats[temiz] = { ay:0, yil:1 };
+                        });
+                    } catch(e){}
+                }
+
+                // AYLIK
+                if((t.ay - 1) === secilenAy && t.yil === secilenYil) {
+                    aylikToplam += sayi;
+                    aylikAdet++;
+                    // Haritaya ekle (Gün numarasına göre)
+                    aylikVeriHaritasi[t.gun] = kayit;
+
+                    if(gunlukStats[t.haftaGunIndex]) {
+                        gunlukStats[t.haftaGunIndex].ayT += sayi;
+                        gunlukStats[t.haftaGunIndex].ayA++;
+                    }
+                    try {
+                        JSON.parse(kayit.vekiller).forEach(isim => {
+                            let temiz = isim.trim();
+                            if(vekilStats[temiz]) vekilStats[temiz].ay++;
+                        });
+                    } catch(e){}
+                }
+            });
+
+            // TABLOLARI HAZIRLA
+            const tblGunluk = document.querySelector("#tbl-gunluk-dokum tbody");
+            const tblVekil = document.querySelector("#tbl-vekil-performans tbody");
+            const tblAnaliz = document.querySelector("#tbl-gunluk-analiz tbody");
+            tblGunluk.innerHTML = ""; tblVekil.innerHTML = ""; tblAnaliz.innerHTML = "";
+
+            // KARTLAR (Sadece Ortalamalar)
+            document.getElementById('lbl-aylik-ort').innerText = aylikAdet > 0 ? (aylikToplam/aylikAdet).toFixed(1) : 0;
+            document.getElementById('lbl-yil-ort').innerText = yillikAdet > 0 ? (yillikToplam/yillikAdet).toFixed(1) : 0;
+
+            // ANALİZ TABLOSU
+            let rowAy = "<tr><td style='font-weight:bold; text-align:left;'>Bu Ay Ort.</td>";
+            let rowYil = "<tr><td style='font-weight:bold; text-align:left; background:#fafafa;'>Yıllık Ort.</td>";
+            [1,2,3,4,5,6,0].forEach(i => {
+                const d = gunlukStats[i];
+                const ayOrt = d.ayA > 0 ? (d.ayT / d.ayA).toFixed(1) : "-";
+                const yilOrt = d.yilA > 0 ? (d.yilT / d.yilA).toFixed(1) : "-";
+                rowAy += `<td>${ayOrt}</td>`;
+                rowYil += `<td style='background:#fafafa;'>${yilOrt}</td>`;
+            });
+            tblAnaliz.innerHTML = rowAy + "</tr>" + rowYil + "</tr>";
+
+            // VEKİL PERFORMANS
+            for (const [isim, veri] of Object.entries(vekilStats)) {
+                const yuzdeAy = aylikAdet > 0 ? Math.round((veri.ay / aylikAdet)*100) : 0;
+                const yuzdeYil = yillikAdet > 0 ? Math.round((veri.yil / yillikAdet)*100) : 0;
+                tblVekil.innerHTML += `<tr><td class="text-left">${isim}</td><td><b>${veri.ay}</b> / ${aylikAdet}</td><td>%${yuzdeAy}</td><td style="border-left:2px solid #eee;"><b>${veri.yil}</b> / ${yillikAdet}</td><td>%${yuzdeYil}</td></tr>`;
+            }
+
+            // GÜNLÜK LİSTE DÖKÜMÜ (SONDAN BAŞA VE EKSİKLER DAHİL)
+            // 1. Seçilen ayın kaç çektiğini bul
+            const ayinSonGunu = new Date(secilenYil, secilenAy + 1, 0).getDate();
+            const bugunTarih = new Date(); // Gelecek kontrolü için
+
+            // 2. Sondan başa döngü (31 -> 1)
+            for (let gun = ayinSonGunu; gun >= 1; gun--) {
+                const kontrolTarihi = new Date(secilenYil, secilenAy, gun);
+                
+                // Gelecek tarihleri gösterme (Bugünden sonrası ise atla)
+                // Ancak yıl/ay geçmişse hepsini göster
+                const gelecekMi = kontrolTarihi > bugunTarih && (secilenYil === bugunTarih.getFullYear() && secilenAy === bugunTarih.getMonth());
+                if (gelecekMi) continue;
+
+                const gunAdi = ["Pazar","Pazartesi","Salı","Çarşamba","Perşembe","Cuma","Cumartesi"][kontrolTarihi.getDay()];
+                const tamTarih = `${gun < 10 ? '0'+gun : gun}.${secilenAy+1 < 10 ? '0'+(secilenAy+1) : secilenAy+1}.${secilenYil}`;
+
+                if (aylikVeriHaritasi[gun]) {
+                    // VERİ VAR
+                    const kayit = aylikVeriHaritasi[gun];
+                    let vekilText = "-";
+                    try { vekilText = JSON.parse(kayit.vekiller).join(", "); } catch(e){}
+                    
+                    tblGunluk.innerHTML += `
+                        <tr>
+                            <td>${tamTarih}</td>
+                            <td>${gunAdi}</td>
+                            <td style="font-weight:bold; color:var(--ana-renk);">${kayit.sayi}</td>
+                            <td class="text-left">${vekilText}</td>
+                        </tr>`;
+                } else {
+                    // VERİ YOK (EKSİK GÜN)
+                    tblGunluk.innerHTML += `
+                        <tr class="satir-eksik">
+                            <td>${tamTarih}</td>
+                            <td>${gunAdi}</td>
+                            <td colspan="2" class="eksik-yazi">Kayıt Girilmedi <i class="fa fa-exclamation-triangle"></i></td>
+                        </tr>`;
+                }
+            }
+            
+            document.getElementById('rapor-sonuc-alani').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
