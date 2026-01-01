@@ -467,27 +467,66 @@
         }
 
         function veriyiKaydet() {
-            const tarih = document.getElementById('giris-tarih').value;
-            const tarihFormatli = tarih.split("-").reverse().join(".");
-            const secilenler = [];
-            document.querySelectorAll('.vekil-cb:checked').forEach(cb => secilenler.push(cb.value));
-            const sayi = document.getElementById('giris-sayi').value;
+    // 1. Verileri Al
+    const tarih = document.getElementById('giris-tarih').value;
+    if (!tarih) { alert("Lütfen tarih seçiniz."); return; } // Tarih boşsa uyar
 
-            if(!sayi) { alert("Sayı girmediniz."); return; }
+    const tarihFormatli = tarih.split("-").reverse().join(".");
+    
+    const secilenler = [];
+    document.querySelectorAll('.vekil-cb:checked').forEach(cb => secilenler.push(cb.value));
+    
+    const sayi = document.getElementById('giris-sayi').value;
+    if(!sayi) { alert("Sayı girmediniz."); return; }
 
-            apiIstegi({
-                islem: 'veri_kaydet',
-                email: currentUser.email,
-                dergah: currentUser.dergah, sube: currentUser.sube, bolge: currentUser.bolge,
-                tarih: tarihFormatli, sayi: sayi, secilenler: JSON.stringify(secilenler)
-            }).then(res => {
-                if(res.basarili) {
-                    alert("Kaydedildi.");
-                    document.getElementById('giris-sayi').value = "";
-                    document.querySelectorAll('.vekil-cb').forEach(cb => cb.checked = false);
-                }
-            });
+    // 2. BUTONU KİLİTLE (Çift Tıklama Önlemi)
+    // HTML'deki kaydet butonunun ID'si 'btn-kaydet' ise. Değilse burayı kendi ID'nle düzelt.
+    const btn = document.getElementById('btn-kaydet'); 
+    if (btn) {
+        btn.disabled = true;
+        btn.innerText = "İşleniyor...";
+    }
+
+    // 3. API İsteği
+    apiIstegi({
+        islem: 'veri_kaydet', // Code.gs tarafında bu işlemi 'gunlukVeriKaydet'e yönlendirdiğinden emin ol
+        email: currentUser.email,
+        dergah: currentUser.dergah, 
+        sube: currentUser.sube, 
+        bolge: currentUser.bolge,
+        tarih: tarihFormatli, 
+        sayi: sayi, 
+        secilenler: JSON.stringify(secilenler)
+    }).then(res => {
+        // 4. BUTONU AÇ (İşlem bitince)
+        if (btn) {
+            btn.disabled = false;
+            btn.innerText = "Kaydet";
         }
+
+        // 5. SONUCU DEĞERLENDİR
+        if(res.basarili) {
+            // Başarılı (Mükerrer yok)
+            alert("✅ " + (res.mesaj || "Kaydedildi."));
+            document.getElementById('giris-sayi').value = "";
+            document.querySelectorAll('.vekil-cb').forEach(cb => cb.checked = false);
+            
+            // Eğer formu temizleme fonksiyonun varsa buraya ekleyebilirsin:
+            // formuTemizle();
+        } else {
+            // HATA veya UYARI (Mükerrer Kayıt Uyarısı Buraya Düşer)
+            // Backend'den gelen "Bu tarihte kayıt var" mesajını gösterir.
+            alert(res.mesaj); 
+        }
+    }).catch(err => {
+        // Sunucu hatası durumunda butonu kurtar
+        if (btn) {
+            btn.disabled = false;
+            btn.innerText = "Kaydet";
+        }
+        alert("Bağlantı hatası: " + err);
+    });
+}
 
         function raporGetir() {
             const ay = parseInt(document.getElementById('rapor-ay').value);
