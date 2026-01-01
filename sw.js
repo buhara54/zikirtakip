@@ -1,13 +1,11 @@
-const CACHE_NAME = 'zikir-takip-v3.0'; 
+const CACHE_NAME = 'zikir-takip-v3'; 
 const ASSETS = [
   './',
-  './index.html',
-  './kuran.html',       // YENİ EKLENDİ
-  './data.js',          // YENİ EKLENDİ
-  './maps.js',          // YENİ EKLENDİ
+  './index.html','./kuran.html',  
+  './data.js','./maps.js',          
   './manifest.json',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css',
-  'https://cdn.tailwindcss.com' // Tailwind kullanıyorsan bunu da ekle
+  'https://cdn.tailwindcss.com' 
 ];
 
 // 1. YÜKLEME (INSTALL)
@@ -70,6 +68,7 @@ self.addEventListener('fetch', (e) => {
       })
   );
 });
+
 
 
 
