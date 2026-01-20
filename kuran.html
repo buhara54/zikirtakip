@@ -46,47 +46,48 @@
 
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        /* --- YATAY EKRAN (LANDSCAPE) MODU AYARLARI --- */
-        @media screen and (orientation: landscape) and (max-width: 900px) {          
-            /* 1. Üst Menüyü ve Alt Butonları Gizle (Tam Odaklanma) */
-            .h-14,         /* Üst Menü */
-            .h-16,         /* Alt Butonlar */
-            #settingsPanel /* Ayar Paneli açıksa */ 
-            {
-                display: none !important;
-            }
-            /* 2. Ana Kapsayıcıyı Tam Ekran Yap */
-            #scrollContainer {
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100vw;
-                height: 100vh;
-                z-index: 9999;
-                background: #fff; /* Taşma olursa arkası beyaz kalsın */
-                margin: 0;
-                padding: 0;
-            }
-            /* 3. İçerik Kutusunu Genişlet */
-            #scrollContainer > div {
-                max-width: none !important; /* 2xl sınırını kaldır */
-                width: 100%;
-                min-height: 100vh;
-                border: none;
-                padding-bottom: 20px !important; /* Alt boşluğu azalt */
-            }
-            /* 4. Yazı Alanını Düzenle */
-            #pageContent {
-                padding: 10px 20px !important; /* Kenar boşluklarını yatayda rahatlat */
-                /* Yazı boyutu yatayda biraz daha büyük okunabilir */
-                font-size: 1.2em; 
-            }
-            
-            /* Sayfa numarasını gizle (yer kazanmak için) */
-            .text-center.py-2 {
-                display: none;
-            }
-        }
+       /* --- YATAY EKRAN (LANDSCAPE) AYARLARI (GÜNCELLENDİ) --- */
+@media screen and (orientation: landscape) and (max-width: 900px) {
+    
+    /* 1. Sadece Üst Menüyü ve Ayarları Gizle (Yer Kazan) */
+    .h-14,         /* Üst Header (Sure Seçimi) */
+    #settingsPanel /* Ayar Paneli */ 
+    {
+        display: none !important;
+    }
+    /* 2. Alt Menüyü (İleri-Geri) GÖSTER ve Sabitle */
+    .h-16 {
+        display: flex !important;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        z-index: 50; /* En üstte kalsın */
+        height: 30px !important; /* Biraz daha ince yapalım, yer kalsın */
+    }
+    /* 3. İçeriği Alt Menüye Göre Ayarla */
+    #scrollContainer {
+        height: calc(100vh - 50px) !important; /* Ekran - Alt Menü */
+        margin-top: 0 !important;
+        padding-bottom: 0 !important;
+    }
+    /* 4. Sayfa İçeriğini Genişlet */
+    #scrollContainer > div {
+        max-width: none !important;
+        border: none;
+        box-shadow: none;
+    }
+    /* 5. Yazı Alanını Rahatlat */
+    #pageContent {
+        padding: 10px 40px !important; /* Yanlardan boşluk bırak */
+        font-size: 1.1em; /* Yazıyı biraz büyüt */
+    }
+    /* Body kilidini aç (Dönmeyi sağlamak için) */
+    body, html {
+        height: 100%;
+        overflow: hidden; /* Genel scroll'u kapat, sadece metin scroll olsun */
+    }
+}
     </style>
 </head>
 <body class="bg-stone-100 h-screen flex flex-col overflow-hidden select-none">
@@ -336,4 +337,5 @@
     </script>
 </body>
 </html>
+
 
