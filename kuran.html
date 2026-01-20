@@ -334,8 +334,22 @@
     
     sayfayiCiz(aktifSayfa);
 }
+        if ('serviceWorker' in navigator) {
+    // SW'yi kaydet
+    navigator.serviceWorker.register('./sw.js').then(reg => {
+      console.log('SW Hazır:', reg.scope);
+    });
+    // Bu sayede kullanıcı v4'e geçtiğinde, senin eklediğin yatay CSS'leri hemen görecek.
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (refreshing) return;
+      refreshing = true;
+      window.location.reload();
+    });
+  }
     </script>
 </body>
 </html>
+
 
 
