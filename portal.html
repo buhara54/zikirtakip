@@ -269,7 +269,8 @@
                     aria-label="Close"></button>
             </div>
         </div>
-    </div> <div class="modal fade" id="ozelAlertModal" tabindex="-1" aria-hidden="true">
+    </div>
+    <div class="modal fade" id="ozelAlertModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header text-white" id="ozelAlertHeader">
@@ -409,11 +410,21 @@
         function openModule(moduleName) {
             if (!currentUser) return;
 
-            let targetUrl = API_URL + "?sayfa=" + moduleName;
-            targetUrl += "&user=" + encodeURIComponent(currentUser.email);
+            let targetUrl = "";
+            let emailParam = "?user=" + encodeURIComponent(currentUser.email);
+
+            if (moduleName === 'katilim') {
+                targetUrl = "katilim.html" + emailParam;
+            } else if (moduleName === 'KutuTakip') {
+                targetUrl = "KutuTakip.html" + emailParam;
+            } else {
+                // Modül henüz yerel değilse uyarı ver veya eski linke git (tercihen uyarı)
+                ozelAlert("Bu modül henüz aktif değil.", "Bilgi");
+                return;
+            }
 
             // Open in same tab (SPA feel)
-            window.top.location.href = targetUrl;
+            window.location.href = targetUrl;
         }
 
         // --- UTILS ---
