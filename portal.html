@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <base target="_top">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buhara Yönetim Portalı</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --ana-renk: #2e7d32;
+            --arkaplan: #f5f7fa;
+        }
+
+        body {
+            background: var(--arkaplan);
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .portal-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+
+        .portal-header {
+            background: var(--ana-renk);
+            padding: 30px 20px;
+            text-align: center;
+            color: white;
+        }
+
+        .portal-logo {
+            width: 110px;
+            height: 110px;
+            background: white;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            margin-bottom: 5px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .portal-logo img {
+            width: 102px;
+            height: 102px;
+            border-radius: 50%;
+            object-fit: cover;
+            object-position: left center;
+            border: 2px solid white;
+            margin-bottom: 5px;
+        }
+
+        .module-icon-img {
+            width: 90px;
+            height: 90px;
+            object-fit: contain;
+            margin-bottom: 2px;
+        }
+
+        .portal-body {
+            padding: 20px;
+        }
+
+        /* LOGIN UI */
+        .form-floating input:focus {
+            border-color: var(--ana-renk);
+            box-shadow: 0 0 0 0.25rem rgba(46, 125, 50, 0.25);
+        }
+
+        .btn-portal {
+            background: var(--ana-renk);
+            border: none;
+            padding: 12px;
+            font-weight: bold;
+            width: 100%;
+            border-radius: 10px;
+            transition: 0.2s;
+            color: white;
+        }
+
+        .btn-portal:hover {
+            background: #1b5e20;
+        }
+
+        /* DASHBOARD UI */
+        .module-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .module-card {
+            background: #fff;
+            border: 1px solid #eee;
+            border-radius: 10px;
+            padding: 5px 5px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .module-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border-color: var(--ana-renk);
+        }
+
+        .module-icon {
+            font-size: 2.5rem;
+            color: #555;
+        }
+
+        .module-title {
+            font-weight: 700;
+            font-size: 0.95rem;
+            line-height: 1.2;
+        }
+
+        .module-katilim .module-icon {
+            color: #1976d2;
+        }
+
+        .module-kutu .module-icon {
+            color: #f57c00;
+        }
+
+        .module-disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            filter: grayscale(1);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.4s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="loader" class="text-center">
+        <div class="spinner-border text-success" role="status"></div>
+        <div class="mt-2 text-muted small">Yükleniyor...</div>
+    </div>
+
+    <div id="main-card" class="portal-card hidden fade-in">
+
+        <div class="portal-header">
+            <div class="portal-logo">
+                <img src="https://i.imgur.com/RXlFoPL.jpeg" alt="Logo">
+            </div>
+            <h4 class="m-0 fw-bold">Yönetim Portalı</h4>
+            <div id="user-welcome" class="small mt-1 opacity-75 hidden">Hoşgeldin, Misafir</div>
+        </div>
+
+        <div id="screen-login" class="portal-body hidden">
+            <h5 class="text-center mb-4 text-secondary">Personel Girişi</h5>
+
+            <div class="form-floating mb-3">
+                <input type="email" class="form-control" id="login-email" placeholder="name@example.com">
+                <label>E-Posta Adresi</label>
+            </div>
+            <div class="form-floating mb-4">
+                <input type="password" class="form-control" id="login-password" placeholder="Password">
+                <label>Şifre</label>
+            </div>
+
+            <button onclick="handleLogin()" class="btn btn-portal btn-lg mb-3">
+                GİRİŞ YAP <i class="fa fa-arrow-right ms-2"></i>
+            </button>
+
+            <div class="text-center">
+                <a href="#" onclick="ozelAlert('Lütfen İl Sorumlunuza başvurunuz.', 'Giriş Bilgisi')"
+                    class="text-decoration-none text-muted small">Şifremi Unuttum</a>
+            </div>
+        </div>
+
+        <div id="screen-dashboard" class="portal-body hidden">
+            <div class="module-grid">
+
+                <div onclick="openModule('katilim')" class="module-card module-katilim">
+                    <img src="https://raw.githubusercontent.com/buhara54/zikirtakip/main/logolar/zikirtakip.png"
+                        class="module-icon-img">
+                    <span class="module-title">Katılım Takip</span>
+                </div>
+
+                <div id="btn-kutu" onclick="openModule('KutuTakip')" class="module-card module-kutu hidden">
+                    <img src="https://raw.githubusercontent.com/buhara54/zikirtakip/main/logolar/kumbuhara.png"
+                        class="module-icon-img">
+                    <span class="module-title">kumBuhara</span>
+                </div>
+
+                <div class="module-card" onclick="ozelAlert('Buhasebe modülü geliştirme aşamasındadır.', 'Yakında')">
+                    <img src="https://raw.githubusercontent.com/buhara54/zikirtakip/main/logolar/buhasebe.png"
+                        class="module-icon-img">
+                    <span class="module-title">Buhasebe</span>
+                </div>
+
+                <div class="module-card"
+                    onclick="ozelAlert('Hayır Kapısı modülü geliştirme aşamasındadır.', 'Yakında')">
+                    <img src="https://raw.githubusercontent.com/buhara54/zikirtakip/main/logolar/hayrkapisi.png"
+                        class="module-icon-img">
+                    <span class="module-title">Hayır Kapısı</span>
+                </div>
+
+                <div class="module-card" onclick="ozelAlert('Kafile modülü geliştirme aşamasındadır.', 'Yakında')">
+                    <img src="https://raw.githubusercontent.com/buhara54/zikirtakip/main/logolar/kafile.png"
+                        class="module-icon-img">
+                    <span class="module-title">Kafile</span>
+                </div>
+
+                <div class="module-card" onclick="ozelAlert('Profil ayarları yakında eklenecek.', 'Bilgi')">
+                    <i class="fa fa-user-circle module-icon text-secondary"></i>
+                    <span class="module-title">Profilim<br>Ayarlar</span>
+                </div>
+
+            </div>
+
+            <button onclick="handleLogout()" class="btn btn-outline-danger w-100 mt-4 rounded-pill">
+                <i class="fa fa-sign-out-alt me-2"></i> Güvenli Çıkış
+            </button>
+        </div>
+
+    </div>
+
+    <div class="position-fixed bottom-0 start-50 translate-middle-x p-3" style="z-index: 11">
+        <div id="liveToast" class="toast align-items-center text-white bg-dark border-0" role="alert"
+            aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body" id="toast-msg">Mesaj</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                    aria-label="Close"></button>
+            </div>
+        </div>
+    </div> <div class="modal fade" id="ozelAlertModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header text-white" id="ozelAlertHeader">
+                    <h5 class="modal-title" id="ozelAlertTitle">Bilgi</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Kapat"></button>
+                </div>
+                <div class="modal-body" id="ozelAlertBody">
+                    ...
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Tamam</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // --- CONFIG ---
+        const API_URL = "https://script.google.com/macros/s/AKfycbyN6UOTS9mM9KXWRfGxf3Snlg3U9s2s-SoVIZ7hX46on3f_vTJnw-GUTalad1LAny2i/exec";
+
+        let currentUser = null;
+
+        // --- INIT ---
+        window.onload = function () {
+            // Check LocalStorage
+            const storedUser = localStorage.getItem("buhara_user");
+
+            setTimeout(() => {
+                document.getElementById('loader').classList.add('hidden');
+                document.getElementById('main-card').classList.remove('hidden');
+
+                if (storedUser) {
+                    try {
+                        currentUser = JSON.parse(storedUser);
+                        // Validate session with backend (optional but recommended)
+                        refreshSession(currentUser.email);
+                    } catch (e) {
+                        showLogin();
+                    }
+                } else {
+                    showLogin();
+                }
+            }, 800); // Fake splash delay for smoothness
+        };
+
+        // --- NAVIGATION ---
+        function showLogin() {
+            document.getElementById('screen-dashboard').classList.add('hidden');
+            document.getElementById('screen-login').classList.remove('hidden');
+            document.getElementById('user-welcome').classList.add('hidden');
+        }
+
+        function showDashboard() {
+            document.getElementById('screen-login').classList.add('hidden');
+            document.getElementById('screen-dashboard').classList.remove('hidden');
+
+            // Update Header
+            const welcome = document.getElementById('user-welcome');
+            welcome.innerText = "Hoşgeldin, " + currentUser.adSoyad;
+            welcome.classList.remove('hidden');
+
+            // Permission Check
+            const kutuBtn = document.getElementById('btn-kutu');
+            if (currentUser.kutuYetki && currentUser.kutuYetki !== 'yok') {
+                kutuBtn.classList.remove('hidden');
+            } else {
+                kutuBtn.classList.add('hidden');
+            }
+        }
+
+        // --- ACTIONS ---
+        function handleLogin() {
+            const email = document.getElementById('login-email').value;
+            const pass = document.getElementById('login-password').value;
+
+            if (!email || !pass) { showToast("Lütfen tüm alanları doldurun."); return; }
+
+            const btn = event.target;
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Kontrol Ediliyor...';
+            btn.disabled = true;
+
+            fetch(API_URL, {
+                method: "POST",
+                body: JSON.stringify({ islem: "giris", email: email, sifre: pass })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    btn.innerHTML = originalHTML;
+                    btn.disabled = false;
+
+                    if (data.basarili) {
+                        currentUser = data.kullanici;
+                        localStorage.setItem("buhara_user", JSON.stringify(currentUser));
+                        showToast("Giriş Başarılı!", true);
+                        showDashboard();
+                    } else {
+                        showToast(data.mesaj);
+                    }
+                })
+                .catch(err => {
+                    btn.innerHTML = originalHTML;
+                    btn.disabled = false;
+                    showToast("Bağlantı Hatası: " + err.message);
+                });
+        }
+
+        function refreshSession(email) {
+            // Background check to keep permissions updated
+            fetch(API_URL, {
+                method: "POST",
+                body: JSON.stringify({ islem: "kullanici_bilgi_getir", email: email })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.basarili) {
+                        currentUser = data.kullanici;
+                        localStorage.setItem("buhara_user", JSON.stringify(currentUser));
+                        showDashboard();
+                    } else {
+                        handleLogout(); // Session expired or user deleted
+                    }
+                })
+                .catch(() => showDashboard()); // If offline, trust localstorage
+        }
+
+        function handleLogout() {
+            if (confirm("Çıkış yapmak istediğinize emin misiniz?")) {
+                localStorage.removeItem("buhara_user");
+                currentUser = null;
+                showLogin();
+            }
+        }
+
+        function openModule(moduleName) {
+            if (!currentUser) return;
+
+            let targetUrl = API_URL + "?sayfa=" + moduleName;
+            targetUrl += "&user=" + encodeURIComponent(currentUser.email);
+
+            // Open in same tab (SPA feel)
+            window.top.location.href = targetUrl;
+        }
+
+        // --- UTILS ---
+        function ozelAlert(mesaj, baslik = "Bilgi") {
+            // 1. İçerikleri doldur
+            document.getElementById('ozelAlertBody').innerHTML = mesaj;
+            document.getElementById('ozelAlertTitle').innerText = baslik;
+
+            const header = document.getElementById('ozelAlertHeader');
+            header.className = "modal-header text-white " + (baslik === "Hata" ? "bg-danger" : "bg-primary");
+
+            // 2. Modal elementini seç
+            const modalElement = document.getElementById('ozelAlertModal');
+
+            // 3. Zaten açık bir instance (örnek) var mı kontrol et, yoksa yeni oluştur
+            const modalInstance = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
+
+            // 4. Göster
+            modalInstance.show();
+        }
+
+        function showToast(msg, isSuccess = false) {
+            const toastEl = document.getElementById('liveToast');
+            document.getElementById('toast-msg').innerText = msg;
+
+            if (isSuccess) {
+                toastEl.classList.remove('bg-dark');
+                toastEl.classList.add('bg-success');
+            } else {
+                toastEl.classList.remove('bg-success');
+                toastEl.classList.add('bg-dark');
+            }
+
+            const toast = new bootstrap.Toast(toastEl);
+            toast.show();
+        }
+    </script>
+</body>
+
+</html>
