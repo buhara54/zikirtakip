@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Katılım Takip Paneli</title>
-    <link rel="manifest" href="./manifest.json?v=3.2">
+    <link rel="manifest" href="./manifest.json?v=3.3">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
@@ -345,9 +345,7 @@
             </div>
 
             <img src="https://raw.githubusercontent.com/buhara54/zikirtakip/main/logolar/bhrlg.jpg"
-                class="header-icon-btn"
-                onclick="window.location.href='https://script.google.com/macros/s/AKfycbyN6UOTS9mM9KXWRfGxf3Snlg3U9s2s-SoVIZ7hX46on3f_vTJnw-GUTalad1LAny2i/exec?sayfa=portal'"
-                title="Yönetim Portalı">
+                class="header-icon-btn" onclick="window.location.href='portal.html'" title="Yönetim Portalı">
         </div>
     </div>
 
@@ -573,17 +571,17 @@
 
                 // --- 2. KUTU TAKİP AÇMA (EKLENDİ) ---
                 function kutuTakipAc() {
-                    if (!API_URL) { ozelAlert("API_URL hatası!"); return; }
-                    var hedefUrl = API_URL + "?sayfa=KutuTakip";
+                    // YEREL DOSYAYA YÖNLENDİR
+                    var hedefUrl = "KutuTakip.html";
                     if (currentUser && currentUser.email) {
-                        hedefUrl += "&user=" + encodeURIComponent(currentUser.email);
+                        hedefUrl += "?user=" + encodeURIComponent(currentUser.email);
                     }
-                    window.top.location.href = hedefUrl;
+                    window.location.href = hedefUrl;
                 }
 
                 // --- 3. ANA SAYFAYA DÖN (EKLENDİ) ---
                 function anaSayfayaDon() {
-                    window.top.location.href = API_URL;
+                    window.location.href = "index.html";
                 }
 
                 // --- BAŞLANGIÇ ---
@@ -715,21 +713,19 @@
                                     kutuTakipAc(); // Direkt geçiş
                                 }
                                 // 2. Durum: Katılım yetkisi VAR (veya her ikisi) -> Katılım Panelini Aç
-                                else {
-                                    ozelAlert("Hoş geldiniz: " + currentUser.adSoyad);
-                                    // Sayfayı yenile (URL'deki parametreler temizlensin)
-                                    // localStorage dolu olduğu için onload'da panelAc otomatik çalışacak
-                                    window.location.href = API_URL;
-                                }
-
-                            } else {
-                                ozelAlert(res ? res.mesaj : "Hata oluştu.");
+                                ozelAlert("Hoş geldiniz: " + currentUser.adSoyad);
+                                // Sayfayı yenilemek yerine paneli açıyoruz, böylece PWA bozulmuyor
+                                panelAc();
                             }
+
+                        } else {
+                            ozelAlert(res? res.mesaj : "Hata oluştu.");
+                }
                         })
-                        .catch(err => {
-                            btn.innerText = "Giriş Yap"; btn.disabled = false;
-                            ozelAlert("Bağlantı hatası: " + err);
-                        });
+                        .catch (err => {
+                    btn.innerText = "Giriş Yap"; btn.disabled = false;
+                    ozelAlert("Bağlantı hatası: " + err);
+                });
                 }
                 function kayitOl() {
                     // ... (Orijinal kayitOl fonksiyonunuz buraya gelecek, değiştirmedim) ...
@@ -746,7 +742,7 @@
 
                 function cikisYap() {
                     localStorage.removeItem("buhara_user");
-                    window.top.location.href = API_URL;
+                    window.location.href = "index.html";
                 }
 
                 // --- LİSTE KURULUMU (Orijinal Koddan) ---
@@ -1082,6 +1078,7 @@
                     document.getElementById('rapor-sonuc-alani').style.display = 'block';
                 }
             </script>
+
 
             <script>
                 function ozelAlert(mesaj, baslik = "Bilgi", onConfirm = null) {
