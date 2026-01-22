@@ -1,4 +1,4 @@
-const CACHE_NAME = 'zikir-takip-v3.2'; 
+const CACHE_NAME = 'zikir-takip-v3.3'; 
 const ASSETS = [
   './',
   './index.html','./kuran.html',  
@@ -68,6 +68,7 @@ self.addEventListener('fetch', (e) => {
       })
   );
 });
+
 
 
 
