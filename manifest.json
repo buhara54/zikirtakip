@@ -5,7 +5,6 @@
   "start_url": "./index.html",
   "display": "standalone",
   "theme_color": "#2e7d32",
-  "orientation": "any",
   "icons": [
     {
       "src": "./icon-192.png",
@@ -21,7 +20,3 @@
     }
   ]
 }
-
-
-
-
