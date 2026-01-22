@@ -517,9 +517,9 @@
                                 <thead>
                                     <tr style="background:#f9f9f9; color:#555;">
                                         <th>Gün</th>
-                                        <th>Toplam Katılım</th>
                                         <th>Kayıt Sayısı</th>
-                                        <th>Ortalama</th>
+                                        <th>Aylık Ort.</th>
+                                        <th>Yıllık Ort.</th>
                                     </tr>
                                 </thead>
                                 <tbody></tbody>
@@ -906,7 +906,7 @@
                     let yillikKayitSayisi = 0;
                     let genelToplamKayitSayisi = veriler.length; // Toplam işlem sayısı
 
-                    // Günlük Analiz Şablonu
+                    // Günlük Analiz Şablonu (AYLIK)
                     let gunlukAnaliz = {
                         1: { toplam: 0, adet: 0, isim: "Pazartesi" },
                         2: { toplam: 0, adet: 0, isim: "Salı" },
@@ -915,6 +915,17 @@
                         5: { toplam: 0, adet: 0, isim: "Cuma" },
                         6: { toplam: 0, adet: 0, isim: "Cumartesi" },
                         0: { toplam: 0, adet: 0, isim: "Pazar" }
+                    };
+
+                    // Günlük Analiz Şablonu (YILLIK)
+                    let gunlukAnalizYillik = {
+                        1: { toplam: 0, adet: 0 },
+                        2: { toplam: 0, adet: 0 },
+                        3: { toplam: 0, adet: 0 },
+                        4: { toplam: 0, adet: 0 },
+                        5: { toplam: 0, adet: 0 },
+                        6: { toplam: 0, adet: 0 },
+                        0: { toplam: 0, adet: 0 }
                     };
 
                     // Vekil Sayaçlarını Hazırla (Hem AY hem YIL)
@@ -949,6 +960,12 @@
                                     });
                                 }
                             } catch (e) { }
+
+                            // Yıllık Günlük Analiz Toplama
+                            if (gunlukAnalizYillik[t.haftaGunIndex]) {
+                                gunlukAnalizYillik[t.haftaGunIndex].toplam += katilimSayisi;
+                                gunlukAnalizYillik[t.haftaGunIndex].adet++;
+                            }
                         }
 
                         // B. AYLIK HESAP (Seçilen Ay İçin)
@@ -995,23 +1012,34 @@
                         const gunSirasi = [1, 2, 3, 4, 5, 6, 0]; // Pzt'den başla
                         gunSirasi.forEach(kod => {
                             const veri = gunlukAnaliz[kod];
+                            const veriYillik = gunlukAnalizYillik[kod];
+
                             if (veri) {
-                                const ort = veri.adet > 0 ? (veri.toplam / veri.adet).toFixed(1) : "-";
+                                const aylikOrt = veri.adet > 0 ? (veri.toplam / veri.adet).toFixed(1) : "-";
+                                const yillikOrt = (veriYillik && veriYillik.adet > 0) ? (veriYillik.toplam / veriYillik.adet).toFixed(1) : "-";
+
                                 const row = `
                     <tr>
                         <td style="text-align:left; font-weight:600;">${veri.isim}</td>
-                        <td>${veri.toplam}</td>
                         <td>${veri.adet}</td>
-                        <td style="font-weight:bold; color:#1565c0;">${ort}</td>
+                        <td style="font-weight:bold; color:#1565c0;">${aylikOrt}</td>
+                        <td style="font-weight:bold; color:#2e7d32;">${yillikOrt}</td>
                     </tr>`;
                                 tblAnaliz.innerHTML += row;
                             }
                         });
                     }
 
-                    // 3. Vekil Performans Tablosunu Çiz (Hem Ay Hem Yıl)
+                    // 3. Vekil Performans Tablosunu Çiz (SIRALI)
                     if (gosterVekil) {
-                        for (const [isim, stats] of Object.entries(vekilStats)) {
+                        // Sıralama Mantığı: Bu Ayki Yüzdeye Göre (Büyükten Küçüğe)
+                        const siraliVekiller = Object.entries(vekilStats).sort((a, b) => {
+                            const yuzdeA = aylikKayitSayisi > 0 ? (a[1].ay / aylikKayitSayisi) : 0;
+                            const yuzdeB = aylikKayitSayisi > 0 ? (b[1].ay / aylikKayitSayisi) : 0;
+                            return yuzdeB - yuzdeA;
+                        });
+
+                        for (const [isim, stats] of siraliVekiller) {
                             // Ay Yüzde
                             const yuzdeAy = aylikKayitSayisi > 0 ? ((stats.ay / aylikKayitSayisi) * 100).toFixed(0) : 0;
                             let renkAy = yuzdeAy > 70 ? 'var(--ana-renk)' : (yuzdeAy > 40 ? '#f57c00' : '#d32f2f');
@@ -1024,7 +1052,7 @@
                     <td>${isim}</td>
                     <td><b>${stats.ay}</b> / ${aylikKayitSayisi}</td>
                     <td>
-                        <span style="font-size:0.9em; font-weight:bold;">%${yuzdeAy}</span>
+                        <span style="font-size:0.9em; font-weight:bold; color:${renkAy}">%${yuzdeAy}</span>
                     </td>
                     <td style="border-left:2px solid #eee;"><b>${stats.yil}</b> / ${yillikKayitSayisi}</td>
                     <td>%${yuzdeYil}</td>
