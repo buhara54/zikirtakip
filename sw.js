@@ -1,8 +1,11 @@
-const CACHE_NAME = 'zikir-takip-v3.3'; 
+importScripts('config.js');
+
+const CACHE_NAME = 'zikir-takip-' + CACHE_VERSION;
 const ASSETS = [
   './',
   './index.html','./kuran.html',  
-  './data.js','./maps.js',          
+  './data.js','./maps.js', 
+  './config.js',
   './manifest.json',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css',
   'https://cdn.tailwindcss.com' 
@@ -68,6 +71,7 @@ self.addEventListener('fetch', (e) => {
       })
   );
 });
+
 
 
 
