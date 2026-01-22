@@ -716,16 +716,14 @@
                                 ozelAlert("Hoş geldiniz: " + currentUser.adSoyad);
                                 // Sayfayı yenilemek yerine paneli açıyoruz, böylece PWA bozulmuyor
                                 panelAc();
+                            } else {
+                                ozelAlert(res ? res.mesaj : "Hata oluştu.");
                             }
-
-                        } else {
-                            ozelAlert(res? res.mesaj : "Hata oluştu.");
-                }
                         })
-                        .catch (err => {
-                    btn.innerText = "Giriş Yap"; btn.disabled = false;
-                    ozelAlert("Bağlantı hatası: " + err);
-                });
+                        .catch(err => {
+                            btn.innerText = "Giriş Yap"; btn.disabled = false;
+                            ozelAlert("Bağlantı hatası: " + err);
+                        });
                 }
                 function kayitOl() {
                     // ... (Orijinal kayitOl fonksiyonunuz buraya gelecek, değiştirmedim) ...
