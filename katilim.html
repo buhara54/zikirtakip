@@ -5,7 +5,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Katılım Takip Paneli</title>
-    <link rel="manifest" href="./manifest.json?v=3.3">
+    <script src="config.js"></script>
+    <script>
+        var link = document.createElement('link');
+        link.rel = 'manifest';
+        link.href = './manifest.json?v=' + CACHE_VERSION;
+        document.head.appendChild(link);
+    </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
