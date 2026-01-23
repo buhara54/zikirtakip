@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <base target="_top">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="config.js"></script>
+    <script>
+        var link = document.createElement('link');
+        link.rel = 'manifest';
+        link.href = './manifest.json?v=' + CACHE_VERSION;
+        document.head.appendChild(link);
+    </script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background: #f8f9fa;
+            padding-bottom: 60px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        /* Header Tasarımı (Kutu Takip ile aynı gradient) */
+        .kafile-header {
+            background: linear-gradient(93deg, #0BB351, #264d3a);
+            color: white;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            border-radius: 0 0 20px 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Dashboard Kartları */
+        .dash-card {
+            border: none;
+            border-radius: 15px;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s;
+            height: 100%;
+            padding: 1rem 0.5rem;
+            text-align: center;
+        }
+
+        .dash-card:active {
+            transform: scale(0.98);
+        }
+
+        .dash-val {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+
+        .dash-label {
+            font-size: 0.8rem;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Ana Menü Butonları */
+        .menu-btn {
+            border: none;
+            border-radius: 15px;
+            padding: 1.5rem;
+            color: white;
+            font-weight: 600;
+            width: 100%;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            min-height: 120px;
+        }
+
+        .menu-btn:active {
+            transform: scale(0.97);
+        }
+
+        .btn-yolcu-ekle {
+            background: linear-gradient(135deg, #0d6efd, #0a58ca);
+        }
+
+        .btn-yolcu-ara {
+            background: linear-gradient(135deg, #17a2b8, #117a8b);
+        }
+
+        .btn-kafile-liste {
+            background: linear-gradient(135deg, #198754, #146c43);
+        }
+
+        .btn-tanim {
+            background: linear-gradient(135deg, #fd7e14, #ca6510);
+        }
+
+        .btn-yonetim {
+            background: linear-gradient(135deg, #dc3545, #b02a37);
+        }
+
+        .btn-yoklama {
+            background: linear-gradient(135deg, #6610f2, #520dc2);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Header -->
+    <div class="kafile-header d-flex justify-content-between align-items-center">
+        <div>
+            <h5 class="m-0 fw-bold"><i class="fa fa-bus me-2"></i>Kafile Yönetimi</h5>
+            <small id="user-display" style="opacity: 0.9;">Yükleniyor...</small>
+        </div>
+        <button class="btn btn-outline-light btn-sm rounded-circle" onclick="window.location.href='portal.html'"
+            style="width: 38px; height: 38px;">
+            <i class="fa fa-arrow-left"></i>
+        </button>
+    </div>
+
+    <!-- Dashboard Container -->
+    <div id="dashboard-container" class="container-fluid px-3">
+
+        <!-- Özet Kartları Row 1 -->
+        <div class="row g-3 mb-3">
+            <div class="col-6">
+                <div class="dash-card">
+                    <div class="dash-label text-primary">AKTİF SEFER</div>
+                    <div id="lbl-aktif-sefer" class="fw-bold text-dark mt-1" style="font-size: 1rem;">-</div>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="dash-card">
+                    <div class="dash-label text-danger">KALAN GÜN</div>
+                    <div id="lbl-kalan-gun" class="dash-val text-danger">-</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Özet Kartları Row 2 -->
+        <div class="row g-3 mb-4">
+            <div class="col-4">
+                <div class="dash-card border-bottom border-4 border-success">
+                    <div class="dash-label">KAYIT</div>
+                    <div id="lbl-toplam-kayit" class="dash-val text-success">-</div>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="dash-card border-bottom border-4 border-warning">
+                    <div class="dash-label">DOLULUK</div>
+                    <div id="lbl-doluluk" class="dash-val text-warning">-%</div>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="dash-card border-bottom border-4 border-info">
+                    <div class="dash-label">KAPASİTE</div>
+                    <div id="lbl-kapasite" class="dash-val text-info">-</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- İşlem Menüsü -->
+        <div class="row g-3">
+            <div class="col-6">
+                <button onclick="openModal('modalYolcuEkle')" class="menu-btn btn-yolcu-ekle">
+                    <i class="fa fa-user-plus fa-2x"></i>
+                    <span>Yolcu Ekle</span>
+                </button>
+            </div>
+            <div class="col-6">
+                <button onclick="openModal('modalYolcuAra')" class="menu-btn btn-yolcu-ara">
+                    <i class="fa fa-search fa-2x"></i>
+                    <span>Yolcu Ara</span>
+                </button>
+            </div>
+
+            <div class="col-6">
+                <button onclick="openModal('modalKafileListesi')" class="menu-btn btn-kafile-liste">
+                    <i class="fa fa-clipboard-list fa-2x"></i>
+                    <span>Kafile Listesi</span>
+                </button>
+            </div>
+            <div class="col-6">
+                <button onclick="openModal('modalRaporlar')" class="menu-btn btn-tanim">
+                    <i class="fa fa-chart-pie fa-2x"></i>
+                    <span>Raporlar</span>
+                </button>
+            </div>
+
+            <!-- Yönetim Butonları (Yetkiye Göre Görünür) -->
+            <div class="col-12 mt-2" id="admin-zone" style="display:none;">
+                <div class="row g-3">
+                    <div class="col-6">
+                        <button onclick="openModal('modalTanimlamalar')" class="menu-btn btn-secondary text-white"
+                            style="min-height: 80px;">
+                            <i class="fa fa-book"></i>
+                            <span>Tanımlamalar</span>
+                        </button>
+                    </div>
+                    <div class="col-6">
+                        <button onclick="openModal('modalKafileYonetim')" class="menu-btn btn-yonetim"
+                            style="min-height: 80px;">
+                            <i class="fa fa-bus"></i>
+                            <span>Kafile Yönetimi</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Yoklama Butonu (Sadece Başkan) -->
+            <div class="col-12 mt-2" id="baskan-zone" style="display:none;">
+                <button onclick="openModal('modalYoklama')" class="menu-btn btn-yoklama">
+                    <i class="fa fa-tasks fa-2x"></i>
+                    <span>Yoklama Modu</span>
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Modals (Placeholder) -->
+    <div class="modal fade" id="modalYolcuEkle" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-body">Yolcu Ekleme Ekranı (Yapım Aşamasında)</div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="modalYolcuAra" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-body">Yolcu Arama Ekranı (Yapım Aşamasında)</div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="modalKafileListesi" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-body">Kafile Listesi (Yapım Aşamasında)</div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="modalRaporlar" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-body">Raporlar (Yapım Aşamasında)</div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="modalTanimlamalar" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-body">Tanımlamalar (Yapım Aşamasında)</div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="modalKafileYonetim" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-body">Kafile Yönetim Ekranı (Yapım Aşamasında)</div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="modalYoklama" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-body">Yoklama Ekranı (Yapım Aşamasında)</div>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // --- TEMEL JS ---
+        let currentUser = null;
+
+        document.addEventListener('DOMContentLoaded', function () {
+            checkLogin();
+        });
+
+        function checkLogin() {
+            const userStr = localStorage.getItem('buhara_user');
+            if (!userStr) {
+                // Eğer portal üzerinden gelmediyse ve localde yoksa, portala at
+                window.location.href = 'portal.html';
+                return;
+            }
+            currentUser = JSON.parse(userStr);
+            console.log("Kullanıcı:", currentUser);
+
+            // Header Bilgisi
+            document.getElementById('user-display').innerText = `${currentUser.Ad_Soyad} (${currentUser.Birim_Kimligi || 'Bilinmiyor'})`;
+
+            // Yetki Kontrolü
+            // Master Sheet'te KafYet sütunu eklendi ancak localStorage güncellemesi gerekecek.
+            // Şimdilik existing mantıkla birim üzerinden gidelim veya localStorage'ı güncellemesi için uyaralım.
+            // Kafile için özel yetki "KafYet" -> Kullanıcı giriş yaparken bu bilgi localStorage'a atılmalı.
+            // Eğer yoksa backend'den çekmeli.
+
+            // Simüle Edilmiş Yetki Kontrolü (İleride backend'den gelecek)
+            const yetki = "il"; // TEST İÇİN
+
+            if (yetki === 'il' || yetki === 'bolge') {
+                document.getElementById('admin-zone').style.display = 'block';
+            }
+
+            // Dashboard Verilerini Çek (Mock)
+            loadDashboard();
+        }
+
+        function loadDashboard() {
+            // İleride google.script.run.getKafileDashboardData() olacak.
+            document.getElementById('lbl-aktif-sefer').innerText = "Şubat Umresi";
+            document.getElementById('lbl-kalan-gun').innerText = "25";
+            document.getElementById('lbl-toplam-kayit').innerText = "32";
+            document.getElementById('lbl-doluluk').innerText = "%78";
+            document.getElementById('lbl-kapasite').innerText = "41";
+        }
+
+        function openModal(id) {
+            const m = new bootstrap.Modal(document.getElementById(id));
+            m.show();
+        }
+    </script>
+</body>
+</html>
