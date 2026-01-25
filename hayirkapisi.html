@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <base target="_top">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Buhara Hayır Kapısı</title>
+    <!-- Bootstrap 5 & FontAwesome -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary-color: #0d5e42;
+            /* Buhara Yeşili */
+            --accent-color: #f1c40f;
+            /* Altın Sarısı */
+            --bg-color: #f8f9fa;
+        }
+
+        body {
+            background: var(--bg-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding-bottom: 80px;
+            /* Footer için boşluk */
+        }
+
+        /* HEADER */
+        .hayir-header {
+            background: linear-gradient(135deg, var(--primary-color), #1b8a63);
+            color: white;
+            padding: 1.5rem 1rem;
+            border-radius: 0 0 25px 25px;
+            box-shadow: 0 4px 15px rgba(13, 94, 66, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hayir-header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-decoration {
+            position: absolute;
+            right: -20px;
+            top: -20px;
+            font-size: 5rem;
+            opacity: 0.1;
+            transform: rotate(15deg);
+        }
+
+        /* ARAMA VE KATEGORİ */
+        .search-container {
+            margin-top: -25px;
+            padding: 0 1.5rem;
+        }
+
+        .search-box {
+            background: white;
+            border-radius: 50px;
+            padding: 0.5rem 1.5rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+            display: flex;
+            align-items: center;
+        }
+
+        .search-box input {
+            border: none;
+            outline: none;
+            width: 100%;
+            margin-left: 10px;
+            font-size: 1rem;
+        }
+
+        .category-scroll {
+            display: flex;
+            overflow-x: auto;
+            gap: 10px;
+            padding: 1rem 1rem;
+            scrollbar-width: none;
+            /* Firefox */
+        }
+
+        .category-scroll::-webkit-scrollbar {
+            display: none;
+        }
+
+        .cat-chip {
+            background: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            white-space: nowrap;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #555;
+            border: 1px solid #eee;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
+        }
+
+        .cat-chip.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+            box-shadow: 0 4px 10px rgba(13, 94, 66, 0.3);
+        }
+
+        /* ÜRÜN KARTLARI */
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            padding: 0 1rem;
+        }
+
+        @media (min-width: 768px) {
+            .products-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .product-card:active {
+            transform: scale(0.98);
+        }
+
+        .product-img-wrapper {
+            width: 100%;
+            padding-top: 100%;
+            /* 1:1 Aspect Ratio */
+            position: relative;
+            background: #eee;
+        }
+
+        .product-img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .product-info {
+            padding: 12px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .product-cat {
+            font-size: 0.75rem;
+            color: #888;
+            margin-bottom: 4px;
+        }
+
+        .product-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #333;
+            line-height: 1.3;
+            margin-bottom: 8px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .product-price {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: var(--primary-color);
+            margin-top: auto;
+        }
+
+        .badge-kampanya {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: var(--accent-color);
+            color: #333;
+            padding: 4px 10px;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            font-weight: 800;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .out-of-stock {
+            filter: grayscale(100%);
+            opacity: 0.8;
+        }
+
+        .stock-badge {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+
+        /* MODAL VE DETAY */
+        .modal-product-img {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            border-radius: 15px;
+            margin-bottom: 1rem;
+        }
+
+        .btn-whatsapp {
+            background-color: #25D366;
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 12px;
+            border-radius: 12px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 10px rgba(37, 211, 102, 0.3);
+        }
+
+        .btn-notify {
+            background-color: #ff9800;
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 12px;
+            border-radius: 12px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .loading-spinner {
+            text-align: center;
+            padding: 2rem;
+            color: #888;
+        }
+
+        /* DIAGNOSTIC CSS REMOVED - Normal behavior restored */
+        .modal-backdrop {
+            z-index: 1040;
+        }
+
+        /* STATUS GENERATOR */
+        /* Modalın kendisi backdrop gibi davranacak */
+        #statusModal {
+            background-color: rgba(0, 0, 0, 0.85) !important;
+            padding-right: 0 !important;
+        }
+
+        #statusModal .modal-dialog {
+            transform: none !important;
+            max-width: 400px;
+            margin: 20px auto;
+        }
+
+        .status-canvas-container {
+            width: 100%;
+            max-width: 350px;
+            margin: 0 auto;
+            border: 2px dashed #ddd;
+            padding: 10px;
+            background: #fff;
+            position: relative;
+        }
+
+        canvas {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .btn-indir {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 10px 30px;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Header -->
+    <div class="hayir-header">
+        <h1>
+            <img src="https://raw.githubusercontent.com/buhara54/zikirtakip/main/logolar/hayrkapisi.png" alt="Logo"
+                style="height: 45px; margin-right: 10px; background: white; border-radius: 50%; padding: 2px;">
+            Hayır Kapısı
+        </h1>
+        <p style="margin:0; opacity:0.9; font-size:0.9rem;">Buhara Vakfı</p>
+        <i class="fa-solid fa-hand-holding-heart header-decoration"></i>
+    </div>
+
+    <!-- Arama -->
+    <div class="search-container">
+        <div class="search-box">
+            <i class="fa fa-search text-muted"></i>
+            <input type="text" id="searchInput" placeholder="Ürün ara..." onkeyup="filterProducts()">
+        </div>
+    </div>
+
+    <!-- Kategoriler -->
+    <div class="category-scroll" id="categoryContainer">
+        <div class="cat-chip active" onclick="filterCategory('Tümü', this)">Tümü</div>
+        <!-- Diğer kategoriler JS ile gelecek -->
+    </div>
+
+    <!-- Ürün Listesi -->
+    <div id="loading" class="loading-spinner">
+        <div class="spinner-border text-success" role="status"></div>
+        <p class="mt-2">Ürünler yükleniyor...</p>
+    </div>
+
+    <div class="products-grid" id="productsGrid">
+        <!-- JS ile dolacak -->
+    </div>
+
+    <!-- Ürün Detay Modalı -->
+    <div class="modal fade" id="productModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border-radius: 20px; border:none;">
+                <div class="modal-body p-4">
+                    <div style="position:relative;">
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                            style="position:absolute; right:0; top:0; z-index:10; background-color:white; border-radius:50%; padding:10px;"></button>
+                        <img src="" id="modalImg" class="modal-product-img">
+                    </div>
+
+                    <span class="badge bg-secondary mb-2" id="modalCat"></span>
+                    <h4 id="modalTitle" style="font-weight:700;"></h4>
+                    <p id="modalDesc" class="text-muted small mb-3"></p>
+                    <h3 id="modalPrice" style="color:var(--primary-color); font-weight:800; margin-bottom:1.5rem;"></h3>
+
+                    <div id="modalActions">
+                        <!-- Butonlar JS ile -->
+                    </div>
+                </div>
+
+                <!-- STATUS CANVAS VIEW (Gizli Bölüm) -->
+                <div id="statusView" class="modal-body p-4 text-center" style="display:none;">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <button class="btn btn-sm btn-light rounded-circle" onclick="showProductInfos()">
+                            <i class="fa fa-arrow-left"></i>
+                        </button>
+                        <h5 class="fw-bold m-0">Durum Görseli</h5>
+                        <div style="width:32px;"></div><!-- Spacer -->
+                    </div>
+
+                    <div class="status-canvas-container mb-3">
+                        <canvas id="shareCanvas" width="1080" height="1920"></canvas>
+                    </div>
+
+                    <p class="small text-muted mb-3">Görseli indirin ve WhatsApp durumunuzda paylaşın.</p>
+
+                    <button class="btn-indir w-100 mb-2" onclick="downloadStatusImage()">
+                        <i class="fa fa-download"></i> Görseli İndir
+                    </button>
+
+                    <!-- Web Share API Button -->
+                    <button class="btn-indir w-100 mb-2" id="btnWebShare" onclick="shareStatusImage()"
+                        style="background: linear-gradient(135deg, #25D366, #128C7E); display:none;">
+                        <i class="fa fa-share-alt"></i> Paylaş
+                    </button>
+
+                    <button class="btn btn-outline-secondary w-100" onclick="showProductInfos()">
+                        <i class="fa fa-times"></i> Vazgeç
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <!-- Status Generator Modalı İPTAL EDİLDİ (Tek Modal Kullanılacak) -->
+
+    <!-- Özel Alert Modalı (Kafile.html'den alındı) -->
+    <div id="custom-modal-backdrop"
+        style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1040;">
+    </div>
+    <div id="ozelAlertModal" class="modal" tabindex="-1" style="z-index:1050;">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content shadow-lg border-0" style="border-radius: 15px;">
+                <div class="modal-header text-white" id="ozelAlertHeader"
+                    style="background: linear-gradient(93deg, #0BB351, #264d3a); border-radius: 15px 15px 0 0;">
+                    <h5 class="modal-title fw-bold" id="ozelAlertTitle">Bilgi</h5>
+                </div>
+                <div class="modal-body p-4 text-center">
+                    <p id="ozelAlertBody" class="fs-5 mb-0" style="color: #333;">Mesaj</p>
+                </div>
+                <div class="modal-footer justify-content-center border-0 pb-4">
+                    <button type="button" class="btn btn-secondary px-4 rounded-pill" id="btnAlertCancel"
+                        style="display:none;">İptal</button>
+                    <button type="button" class="btn btn-success px-5 rounded-pill fw-bold"
+                        id="btnAlertOk">Tamam</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // --- KONFIGURASYON ---
+        // Lütfen yeni oluşturduğunuz Apps Script Web App URL'sini buraya yapıştırın:
+        const API_URL_HK = "https://script.google.com/macros/s/AKfycbyXYvdsg9_G-HulvKIOY7SLyyKJNXDByYut_4DQ50IJ0OAoAUi_QFRCcrAvqgfUPX0Z9g/exec";
+
+        // GLOBAL DEĞİŞKENLER
+        let ALL_PRODUCTS = [];
+        let ACTIVE_CATEGORY = "Tümü";
+        let SELECTED_PRODUCT = null;
+
+        // SAYFA YÜKLENİNCE
+        document.addEventListener('DOMContentLoaded', function () {
+            if (API_URL_HK === "BURAYA_YENI_WEB_APP_URL_GELECEK" || API_URL_HK === "") {
+                document.getElementById('loading').innerHTML =
+                    '<div class="alert alert-warning">Lütfen <b>hayirkapisi.html</b> dosyasını açıp <b>API_URL_HK</b> satırına yeni Web App URL\'nizi yapıştırın.</div>';
+                return;
+            }
+            loadProducts();
+        });
+
+        // ÜRÜNLERİ GETİR
+        function loadProducts() {
+            fetch(API_URL_HK, {
+                method: "POST",
+                body: JSON.stringify({ islem: 'urunleri_getir' }) // urunleri_getir (standart API)
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.error) { onError(data.error); return; }
+                    onProductsLoaded(data);
+                })
+                .catch(err => onError(err));
+        }
+
+        function onProductsLoaded(data) {
+            // Eğer JSON string gelirse parse et
+            if (typeof data === 'string') data = JSON.parse(data);
+
+            ALL_PRODUCTS = data;
+            document.getElementById('loading').style.display = 'none';
+            renderCategories();
+            renderProducts();
+        }
+
+        function onError(e) {
+            document.getElementById('loading').innerHTML = '<p class="text-danger">Hata oluştu: ' + e + '</p>';
+        }
+
+        // KATEGORİLERİ RENDER ET
+        function renderCategories() {
+            const container = document.getElementById('categoryContainer');
+            // Mevcutları temizleme (Tümü kalsın)
+            container.innerHTML = '<div class="cat-chip active" onclick="filterCategory(\'Tümü\', this)">Tümü</div>';
+
+            // Benzersiz kategorileri bul
+            const cats = [...new Set(ALL_PRODUCTS.map(p => p.kategori))].filter(Boolean).sort();
+
+            cats.forEach(c => {
+                const chip = document.createElement('div');
+                chip.className = 'cat-chip';
+                chip.innerText = c;
+                chip.onclick = function () { filterCategory(c, this); };
+                container.appendChild(chip);
+            });
+        }
+
+        // KATEGORİ FİLTRELEME
+        function filterCategory(cat, el) {
+            ACTIVE_CATEGORY = cat;
+
+            // Aktif sınıfını güncelle
+            document.querySelectorAll('.cat-chip').forEach(c => c.classList.remove('active'));
+            el.classList.add('active');
+
+            renderProducts();
+        }
+
+        // ARAMA FİLTRELEME
+        function filterProducts() {
+            renderProducts();
+        }
+
+        // ÜRÜNLERİ LİSTELE
+        function renderProducts() {
+            const grid = document.getElementById('productsGrid');
+            const search = document.getElementById('searchInput').value.toLowerCase();
+
+            grid.innerHTML = "";
+
+            const filtered = ALL_PRODUCTS.filter(p => {
+                const matchCat = (ACTIVE_CATEGORY === 'Tümü') || (p.kategori === ACTIVE_CATEGORY);
+                const matchSearch = p.ad.toLowerCase().includes(search) || (p.aciklama && p.aciklama.toLowerCase().includes(search));
+                return matchCat && matchSearch;
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '<div class="col-12 text-center text-muted py-5">Ürün bulunamadı.</div>';
+                return;
+            }
+
+            filtered.forEach(p => {
+                // Stok Durumu
+                const isOutOfStock = (p.stok && (p.stok.toString().toLowerCase() === 'yok' || p.stok.toString().toLowerCase() === 'tükendi'));
+                const cardClass = isOutOfStock ? 'product-card out-of-stock' : 'product-card';
+                const stockBadge = isOutOfStock ? '<div class="stock-badge">TÜKENDİ</div>' : '';
+                const kampanyaBadge = (p.kampanya) ? `<div class="badge-kampanya">${p.kampanya}</div>` : '';
+
+                // Resim (Varsayılan yoksa placeholder)
+                const imgUrl = (p.resim && p.resim.length > 5) ? p.resim : 'https://placehold.co/400x400?text=Resim+Yok';
+
+                const html = `
+                    <div class="${cardClass}" onclick="openModal('${p.id}')">
+                        <div class="product-img-wrapper">
+                            <img src="${imgUrl}" class="product-img" loading="lazy">
+                            ${kampanyaBadge}
+                            ${stockBadge}
+                        </div>
+                        <div class="product-info">
+                            <div class="product-cat">${p.kategori || 'Genel'}</div>
+                            <div class="product-title">${p.ad}</div>
+                            <div class="product-price">${formatCurrency(p.fiyat)}</div>
+                        </div>
+                    </div>
+                `;
+                grid.innerHTML += html;
+            });
+        }
+
+        // MODAL AÇ
+        function openModal(id) {
+            // String id karşılaştırması
+            SELECTED_PRODUCT = ALL_PRODUCTS.find(p => p.id == id);
+            if (!SELECTED_PRODUCT) return;
+
+            const p = SELECTED_PRODUCT;
+            const modal = new bootstrap.Modal(document.getElementById('productModal'));
+
+            // İçeriği Doldur
+            const imgUrl = (p.resim && p.resim.length > 5) ? p.resim : 'https://placehold.co/400x400?text=Resim+Yok';
+            document.getElementById('modalImg').src = imgUrl;
+            document.getElementById('modalCat').innerText = p.kategori || 'Genel';
+            document.getElementById('modalTitle').innerText = p.ad;
+            document.getElementById('modalDesc').innerText = p.aciklama || 'Açıklama bulunmuyor.';
+            document.getElementById('modalPrice').innerText = formatCurrency(p.fiyat);
+
+            // Butonları Ayarla
+            const actionsDiv = document.getElementById('modalActions');
+            const isOutOfStock = (p.stok && (p.stok.toString().toLowerCase() === 'yok' || p.stok.toString().toLowerCase() === 'tükendi'));
+
+            if (isOutOfStock) {
+                actionsDiv.innerHTML = `
+                    <button class="btn-notify" onclick="talepGonder()">
+                        <i class="fa fa-bell"></i> Gelince Haber Ver
+                    </button>
+                    <small class="text-muted d-block text-center mt-2 mb-2">Bu ürün şu an stokta yok.</small>
+                    <button class="btn btn-outline-secondary w-100 rounded-3 py-2" onclick="openStatusModal()">
+                        <i class="fa fa-camera"></i> Vitrine Koy (Durum Yap)
+                    </button>
+                `;
+            } else {
+                // WhatsApp Sipariş
+                actionsDiv.innerHTML = `
+                    <button class="btn-whatsapp mb-3" onclick="siparisVer()">
+                        <i class="fab fa-whatsapp"></i> WhatsApp ile Sipariş Ver
+                    </button>
+                    <button class="btn btn-outline-secondary w-100 rounded-3 py-2" onclick="openStatusModal()">
+                        <i class="fa fa-camera"></i> Durum İçin Görsel Hazırla
+                    </button>
+                `;
+            }
+
+            modal.show();
+        }
+
+        // SİPARİŞ VER (WhatsApp Link)
+        function siparisVer() {
+            if (!SELECTED_PRODUCT) return;
+            const tel = "+905372823388";
+            const metin = `Selamünaleyküm, Hayır Kapısı'ndan *${SELECTED_PRODUCT.ad}* sipariş etmek istiyorum.\nFiyatı: ${SELECTED_PRODUCT.fiyat} TL.\nStok durumu nedir?\n\nÜrün Linki: ${window.location.href}`;
+
+            window.open(`https://wa.me/${tel}?text=${encodeURIComponent(metin)}`, '_blank');
+        }
+
+        // TALEP GÖNDER
+        function talepGonder() {
+            if (!SELECTED_PRODUCT) return;
+
+            // Loading göster
+            const btn = document.querySelector('.btn-notify');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> İletiliyor...';
+            btn.disabled = true;
+
+            fetch(API_URL_HK, {
+                method: "POST",
+                body: JSON.stringify({
+                    islem: 'talep_ilet',
+                    urunId: SELECTED_PRODUCT.id,
+                    urunAd: SELECTED_PRODUCT.ad
+                })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        ozelAlert("Talebimiz alındı. Ürün temin edildiğinde sizi bilgilendirebilmemiz için WhatsApp üzerinden de yazabilirsiniz.", "Talep Alındı", () => {
+                            const metin = `Selamünaleyküm, *${SELECTED_PRODUCT.ad}* ürünü tükenmiş görünüyor. Talep oluşturdum, gelince haber verebilir misiniz?`;
+                            window.open(`https://wa.me/?text=${encodeURIComponent(metin)}`, '_blank');
+                        });
+                        btn.innerHTML = '<i class="fa fa-check"></i> İletildi';
+                    } else {
+                        ozelAlert("Hata: " + (data.message || data.error), "Hata");
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                    }
+                })
+                .catch(err => {
+                    ozelAlert("Bağlantı Hatası: " + err, "Hata");
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                });
+        }
+
+        function formatCurrency(val) {
+            return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(val);
+        }
+
+        // OZEL ALERT (Kafile'den Kopyalandı)
+        function ozelAlert(mesaj, baslik = "Bilgi", onConfirm = null) {
+            const modalEl = document.getElementById('ozelAlertModal');
+            const backdrop = document.getElementById('custom-modal-backdrop');
+            const body = document.getElementById('ozelAlertBody');
+            const header = document.getElementById('ozelAlertHeader');
+            const title = document.getElementById('ozelAlertTitle');
+            const btnOk = document.getElementById('btnAlertOk');
+            const btnCancel = document.getElementById('btnAlertCancel');
+
+            if (!modalEl) { alert(mesaj); if (onConfirm) onConfirm(); return; }
+
+            body.innerHTML = mesaj;
+            title.innerText = baslik;
+
+            if (baslik === "Hata") header.style.background = "#d32f2f";
+            else if (baslik === "Talep Alındı") header.style.background = "#ff9800";
+            else header.style.background = "linear-gradient(93deg, #0BB351, #264d3a)";
+
+            // Clone buttons (clean listeners)
+            const newBtnOk = btnOk.cloneNode(true);
+            btnOk.parentNode.replaceChild(newBtnOk, btnOk);
+            const newBtnCancel = btnCancel.cloneNode(true);
+            btnCancel.parentNode.replaceChild(newBtnCancel, btnCancel);
+
+            newBtnCancel.style.display = 'none';
+            newBtnOk.innerHTML = "Tamam";
+
+            newBtnOk.onclick = () => {
+                closeOzelAlert();
+                if (onConfirm) onConfirm();
+            };
+
+            modalEl.style.display = 'block';
+            backdrop.style.display = 'block';
+            modalEl.classList.add('show');
+        }
+
+        // --- DURUM GÖRSELİ OLUŞTURUCU (CANVAS) ---
+        // --- DURUM GÖRSELİ OLUŞTURUCU (MANUEL MODE) ---
+        // --- DURUM GÖRSELİ OLUŞTURUCU (MANUEL MODE - SELF BACKDROP) ---
+        // --- SİNGLE MODAL MANAGEMENT ---
+        function showStatusView() {
+            // İçerik geçişi yap (Aynı modal içinde)
+            // modal-body'yi bul (ilk modal-body ürün detaylarıdır)
+            const productModalEl = document.getElementById('productModal');
+            const bodies = productModalEl.querySelectorAll('.modal-body');
+
+            // İlk body (detaylar) -> Gizle
+            if (bodies[0]) bodies[0].style.display = 'none';
+
+            // İkinci body (statusView) -> Göster
+            const statusView = document.getElementById('statusView');
+            if (statusView) statusView.style.display = 'block';
+
+            // Canvas Çiz
+            setTimeout(drawCanvas, 100);
+        }
+
+        function showProductInfos() {
+            const productModalEl = document.getElementById('productModal');
+            const bodies = productModalEl.querySelectorAll('.modal-body');
+
+            // İkinci body (statusView) -> Gizle
+            const statusView = document.getElementById('statusView');
+            if (statusView) statusView.style.display = 'none';
+
+            // İlk body (detaylar) -> Göster
+            if (bodies[0]) bodies[0].style.display = 'block';
+        }
+
+        // --- STATUS OPEN ---
+        function openStatusModal() {
+            if (!SELECTED_PRODUCT) return;
+            showStatusView();
+        }
+
+        // --- CANVAS DRAWING ---
+        function drawCanvas() {
+            console.log("drawCanvas BAŞLADI");
+            const cvs = document.getElementById('shareCanvas');
+            const ctx = cvs.getContext('2d');
+            const p = SELECTED_PRODUCT;
+
+            // 1. Temizle ve BEYAZ Arkaplan
+            ctx.clearRect(0, 0, cvs.width, cvs.height);
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(0, 0, cvs.width, cvs.height);
+
+            // 2. Arkaplan
+            const grd = ctx.createLinearGradient(0, 0, 0, cvs.height);
+            grd.addColorStop(0, "#fdfbf7");
+            grd.addColorStop(1, "#ebedee");
+            ctx.fillStyle = grd;
+            ctx.fillRect(0, 0, cvs.width, cvs.height);
+
+            // 3. Dekoratif Üst Bar
+            ctx.fillStyle = "#0d5e42";
+            ctx.fillRect(0, 0, cvs.width, 180);
+
+            // Başlık
+            ctx.fillStyle = "#fff";
+            ctx.font = "bold 60px 'Segoe UI', sans-serif";
+            ctx.textAlign = "center";
+            ctx.fillText("HAYIR KAPISI", cvs.width / 2, 110);
+
+            // LOGOLAR
+            const logoLeftUrl = "https://raw.githubusercontent.com/buhara54/zikirtakip/main/logolar/hayrkapisi.png";
+            // Imgur yerine alternatif bir kaynak bulmak gerekebilir ama şimdilik deneyelim
+            const logoRightUrl = "https://i.imgur.com/RXlFoPL.jpeg";
+
+            // Sol Logo (Hayır Kapısı)
+            const imgL = new Image(); imgL.crossOrigin = "Anonymous"; imgL.src = logoLeftUrl;
+            imgL.onload = () => {
+                ctx.save();
+                ctx.beginPath();
+                ctx.arc(100, 90, 50, 0, Math.PI * 2);
+                ctx.clip();
+                ctx.drawImage(imgL, 50, 40, 100, 100);
+                ctx.restore();
+            };
+
+            // Sağ Logo (Buhara Vakfı)
+            const imgR = new Image(); imgR.crossOrigin = "Anonymous"; imgR.src = logoRightUrl;
+            imgR.onload = () => {
+                ctx.save();
+                ctx.beginPath();
+                ctx.arc(cvs.width - 100, 90, 50, 0, Math.PI * 2);
+                ctx.clip();
+                // Portal ayarı: object-position: left center -> Sol Kare Kırpma
+                const size = Math.min(imgR.width, imgR.height);
+                // drawImage(image, sy, sx, sWidth, sHeight, dx, dy, dWidth, dHeight)
+                ctx.drawImage(imgR, 0, 0, size, size, cvs.width - 150, 40, 100, 100);
+                ctx.restore();
+            };
+
+            // 4. Ürün Resmi
+            const img = new Image();
+            img.crossOrigin = "Anonymous";
+            img.src = (p.resim && p.resim.length > 5) ? p.resim : 'https://placehold.co/400x400?text=Resim+Yok';
+
+            img.onload = function () {
+                const targetSize = 980;
+                const targetX = 50;
+                const targetY = 300;
+
+                // Beyaz çerçeve
+                ctx.save();
+                ctx.fillStyle = "white";
+                ctx.fillRect(targetX - 20, targetY - 20, targetSize + 40, targetSize + 40);
+                ctx.restore();
+
+                // Resmi çiz
+                const ratio = img.width / img.height;
+                let drawW = targetSize;
+                let drawH = targetSize;
+                let offsetX = 0;
+                let offsetY = 0;
+
+                if (ratio > 1) { // Yatay
+                    drawW = targetSize * ratio;
+                    offsetX = (drawW - targetSize) / 2;
+                } else { // Dikey
+                    drawH = targetSize / ratio;
+                    offsetY = (drawH - targetSize) / 2;
+                }
+
+                ctx.save();
+                ctx.beginPath();
+                ctx.rect(targetX, targetY, targetSize, targetSize);
+                ctx.clip();
+                ctx.drawImage(img, targetX - offsetX, targetY - offsetY, drawW, drawH);
+                ctx.restore();
+
+                drawTextDetails(ctx, p, cvs);
+            };
+
+            img.onerror = () => {
+                ctx.fillStyle = "#ccc";
+                ctx.fillRect(50, 300, 980, 980);
+                drawTextDetails(ctx, p, cvs);
+            };
+        }
+
+        function drawTextDetails(ctx, p, cvs) {
+            // 5. Ürün Bilgileri (Alt Kısım)
+            const startY = 1400;
+
+            // Başlık (Ürün Adı)
+            ctx.fillStyle = "#2c3e50";
+            ctx.font = "bold 90px sans-serif";
+            let title = p.ad;
+            if (title.length > 25) title = title.substring(0, 25) + "...";
+            ctx.fillText(title, cvs.width / 2, startY);
+
+            // Fiyat (Yeşil Rozet)
+            const priceY = startY + 200;
+            ctx.beginPath();
+            ctx.roundRect(cvs.width / 2 - 250, priceY - 70, 500, 140, 70);
+            ctx.fillStyle = "#0d5e42";
+            ctx.fill();
+
+            ctx.fillStyle = "#fff";
+            ctx.font = "bold 80px sans-serif";
+            ctx.fillText(formatCurrency(p.fiyat), cvs.width / 2, priceY + 25);
+
+            // Footer
+            ctx.fillStyle = "#7f8c8d";
+            ctx.font = "40px sans-serif";
+            ctx.fillText("Sipariş için: BuharaHayırKapısı", cvs.width / 2, cvs.height - 100);
+
+            // Web Share destekleniyor mu? Kontrol et ve göster
+            if (navigator.share) {
+                const btnShare = document.getElementById('btnWebShare');
+                if (btnShare) btnShare.style.display = 'inline-block';
+            }
+        }
+
+        function downloadStatusImage() {
+            const link = document.createElement('a');
+            link.download = 'hayir_kapisi_durum.png';
+            link.href = document.getElementById('shareCanvas').toDataURL("image/png");
+            link.click();
+        }
+
+        async function shareStatusImage() {
+            const cvs = document.getElementById('shareCanvas');
+            cvs.toBlob(async (blob) => {
+                const file = new File([blob], "hayir_kapisi.png", { type: "image/png" });
+                try {
+                    await navigator.share({
+                        title: 'Hayır Kapısı',
+                        text: 'Bu ürüne göz atın!',
+                        files: [file]
+                    });
+                } catch (err) {
+                    console.error("Paylaşım hatası:", err);
+                }
+            });
+        }
+
+
+    </script>
+</body>
+
+</html>
