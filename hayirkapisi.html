@@ -29,20 +29,37 @@
         .hayir-header {
             background: linear-gradient(135deg, var(--primary-color), #1b8a63);
             color: white;
-            padding: 1.5rem 1rem;
-            border-radius: 0 0 25px 25px;
-            box-shadow: 0 4px 15px rgba(13, 94, 66, 0.2);
+            padding: 0.8rem 1rem;
+            border-radius: 0 0 20px 20px;
+            box-shadow: 0 4px 10px rgba(13, 94, 66, 0.2);
             position: relative;
             overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 60px;
         }
 
         .hayir-header h1 {
-            font-size: 1.8rem;
+            font-size: 1.2rem;
             font-weight: 700;
             margin: 0;
             display: flex;
             align-items: center;
-            gap: 10px;
+            justify-content: space-between;
+            width: 100%;
+        }
+
+        .header-title-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .header-title-right {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            font-weight: 400;
         }
 
         .header-decoration {
@@ -56,8 +73,12 @@
 
         /* ARAMA VE KATEGORİ */
         .search-container {
-            margin-top: -25px;
+            margin-top: 10px;
+            /* Headerın altına */
             padding: 0 1.5rem;
+            position: relative;
+            z-index: 5;
+            /* Header süslerinin üstüne */
         }
 
         .search-box {
@@ -198,8 +219,40 @@
             padding: 4px 10px;
             border-radius: 10px;
             font-size: 0.75rem;
-            font-weight: 800;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            z-index: 2;
+        }
+
+        /* Kampanya Pozisyonları */
+        .badge-kampanya.pos-lu {
+            top: 10px;
+            left: 10px;
+        }
+
+        /* Sol Üst (Varsayılan) */
+        .badge-kampanya.pos-ru {
+            top: 10px;
+            left: auto;
+            right: 10px;
+        }
+
+        /* Sağ Üst */
+        .badge-kampanya.pos-ld {
+            top: auto;
+            bottom: 10px;
+            left: 10px;
+        }
+
+        /* Sol Alt */
+        .badge-kampanya.pos-rd {
+            top: auto;
+            bottom: 10px;
+            left: auto;
+            right: 10px;
+        }
+
+        /* Sağ Alt */
+        font-weight: 800;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
 
         .out-of-stock {
@@ -320,8 +373,6 @@
                 style="height: 45px; margin-right: 10px; background: white; border-radius: 50%; padding: 2px;">
             Hayır Kapısı
         </h1>
-        <p style="margin:0; opacity:0.9; font-size:0.9rem;">Buhara Vakfı</p>
-        <i class="fa-solid fa-hand-holding-heart header-decoration"></i>
     </div>
 
     <!-- Arama -->
@@ -536,7 +587,24 @@
                 const isOutOfStock = (p.stok && (p.stok.toString().toLowerCase() === 'yok' || p.stok.toString().toLowerCase() === 'tükendi'));
                 const cardClass = isOutOfStock ? 'product-card out-of-stock' : 'product-card';
                 const stockBadge = isOutOfStock ? '<div class="stock-badge">TÜKENDİ</div>' : '';
-                const kampanyaBadge = (p.kampanya) ? `<div class="badge-kampanya">${p.kampanya}</div>` : '';
+
+                // Kampanya Badge ve Konumu
+                let kampanyaHtml = '';
+                if (p.kampanya) {
+                    let posClass = 'pos-lu'; // Varsayılan Sol Üst
+                    const code = (p.kampanyaKonumu || '').toLowerCase(); // LD, LU, RD, RU
+                    if (code === 'ld') posClass = 'pos-ld';
+                    else if (code === 'ru') posClass = 'pos-ru';
+                    else if (code === 'rd') posClass = 'pos-rd';
+                    else if (code === 'lu') posClass = 'pos-lu';
+
+                    let style = '';
+                    if (p.kampanyaRenk && p.kampanyaRenk.startsWith('#')) {
+                        style = `style="background-color: ${p.kampanyaRenk} !important; color: white;"`;
+                    }
+
+                    kampanyaHtml = `<div class="badge-kampanya ${posClass}" ${style}>${p.kampanya}</div>`;
+                }
 
                 // Resim (Varsayılan yoksa placeholder)
                 const imgUrl = (p.resim && p.resim.length > 5) ? p.resim : 'https://placehold.co/400x400?text=Resim+Yok';
@@ -545,7 +613,7 @@
                     <div class="${cardClass}" onclick="openModal('${p.id}')">
                         <div class="product-img-wrapper">
                             <img src="${imgUrl}" class="product-img" loading="lazy">
-                            ${kampanyaBadge}
+                            ${kampanyaHtml}
                             ${stockBadge}
                         </div>
                         <div class="product-info">
@@ -763,6 +831,17 @@
             ctx.textAlign = "center";
             ctx.fillText("HAYIR KAPISI", cvs.width / 2, 110);
 
+            // HELPER: CORS PROXY
+            // Google Drawings veya başka kaynaklardan gelen görselleri Canvas'ta çizebilmek için
+            // weserv.nl proxy servisini kullanıyoruz.
+            const corsUrl = (url) => {
+                if (!url) return "";
+                if (url.startsWith("data:")) return url; // Base64 ise elleme
+                // Zaten proxy varsa elleme
+                if (url.includes("images.weserv.nl")) return url;
+                return `https://images.weserv.nl/?url=${encodeURIComponent(url)}&w=1000&output=png`;
+            };
+
             // LOGOLAR
             const logoLeftUrl = "https://raw.githubusercontent.com/buhara54/zikirtakip/main/logolar/hayrkapisi.png";
             // Imgur yerine alternatif bir kaynak bulmak gerekebilir ama şimdilik deneyelim
@@ -796,7 +875,8 @@
             // 4. Ürün Resmi
             const img = new Image();
             img.crossOrigin = "Anonymous";
-            img.src = (p.resim && p.resim.length > 5) ? p.resim : 'https://placehold.co/400x400?text=Resim+Yok';
+            const rawImgUrl = (p.resim && p.resim.length > 5) ? p.resim : 'https://placehold.co/400x400?text=Resim+Yok';
+            img.src = corsUrl(rawImgUrl);
 
             img.onload = function () {
                 const targetSize = 980;
