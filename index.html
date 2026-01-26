@@ -585,7 +585,12 @@
     <div id="zikir-ana-ekran">
         <div class="header">
             <img src="./icon-192.png" class="header-logo" onclick="gizliButonTikla()">
-            <h1>Zikir Takip</h1>
+            <h1>
+                Zikir Takip
+                <i id="header-settings-btn" class="fa fa-cog"
+                    style="float:right; font-size:1.5rem; display:none; cursor:pointer;"
+                    onclick="navGit('ayarlar', this)"></i>
+            </h1>
         </div>
 
         <div class="container">
@@ -606,15 +611,9 @@
                     <div style="font-weight:bold; color:#333;">Kur'an-ı Kerim Oku</div>
                     <div style="font-size:0.8rem; color:#888;">Serbest okuma yapmak için tıkla</div>
                 </div>
-                    <!-- HAYIR KAPISI (HERKESE AÇIK) -->
-                <div class="kart" style="text-align:center; cursor:pointer; margin-top: 15px;"
-                    onclick="window.location.href='hayirkapisi.html'">
-                    <div style="font-size:1.5rem; color:#e67e22; margin-bottom:5px;">
-                        <i class="fa fa-gift"></i>
-                    </div>
-                    <div style="font-weight:bold; color:#333;">Hayır Kapısı</div>
-                    <div style="font-size:0.8rem; color:#888;">Kermes ve Destek Ürünleri</div>
-                </div>
+
+                <!-- HAYIR KAPISI KARTI KALDIRILDI (NAV'A EKLENDİ) -->
+
                 <div class="kart" style="background:#e3f2fd; border-left:5px solid #1565c0;">
                     <div class="kart-baslik" style="color:#1565c0;">
                         <span><i class="fa fa-globe"></i> Online Ortak Hatim</span>
@@ -848,8 +847,8 @@
             <button class="nav-item" onclick="navGit('hatim', this)">
                 <i class="fa-solid fa-book-quran"></i> Hatim
             </button>
-            <button class="nav-item" onclick="navGit('ayarlar', this)">
-                <i class="fa fa-cog"></i> Ayarlar
+            <button class="nav-item" onclick="window.location.href='hayirkapisi.html'">
+                <i class="fa fa-gift"></i> Hayır
             </button>
             <button class="nav-item" onclick="navGit('iletisim', this)">
                 <i class="fa fa-comment-dots"></i> İletişim
@@ -937,10 +936,11 @@
                 </div>
             </div>
         </div>
+
         <script src="config.js"></script>
         <script>
             // --- VERİ YAPISI ---
-           // const APP_VERSION = "v3.3";
+            // const APP_VERSION = "v2.8"; // Artık config.js'den geliyor
             const API_URL = "https://script.google.com/macros/s/AKfycbyN6UOTS9mM9KXWRfGxf3Snlg3U9s2s-SoVIZ7hX46on3f_vTJnw-GUTalad1LAny2i/exec";
             // HATIM İÇİN ESKİ STABİL API (Çünkü Yeni Scriptte henüz Hatim kodu yok)
             const HATIM_API_URL = "https://script.google.com/macros/s/AKfycbyjgcqxphx1289d7I6huxpj-ImqUbOscgg5pM6waojHhU-r9NoQnJ_4DpPmgw9WtOYJ/exec";
@@ -1008,7 +1008,8 @@
 
                     // Gecikmeli yönlendirme
                     setTimeout(() => {
-                         var hedefUrl = "katilim.html";
+                        // SOMUT ÇÖZÜM: window.location.href yerine DOĞRUDAN portal.html kullanıyoruz.
+                        var hedefUrl = "katilim.html";
 
                         // Kullanıcı bilgisini de ekleyelim ki karşı taraf tanısın
                         if (currentUser && currentUser.email) {
@@ -1046,7 +1047,19 @@
                 document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('aktif'));
                 document.getElementById('tab-' + tabId).classList.add('aktif');
                 document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('aktif'));
-                btn.classList.add('aktif');
+
+                // Eğer buton verilmişse (Header'dan çağrılmadıysa) aktif yap
+                if (btn && btn.classList.contains('nav-item')) {
+                    btn.classList.add('aktif');
+                }
+
+                // Ayarlar İkonunu Sadece İletişim Sekmesinde Göster
+                const settingsBtn = document.getElementById('header-settings-btn');
+                if (tabId === 'iletisim') {
+                    settingsBtn.style.display = 'block';
+                } else {
+                    settingsBtn.style.display = 'none';
+                }
 
                 if (tabId === 'hatim') {
                     onlineHatimYukle();
@@ -1508,6 +1521,7 @@
                         ozelAlert("Bağlantı hatası.", "Hata");
                     });
             }
+
             function alinanlariListele() {
                 let list = JSON.parse(localStorage.getItem("online_sayfalarim") || "[]");
                 let html = "";
@@ -1542,13 +1556,16 @@
             }
 
             function sayfaAc(sayfaNo) {
-                window.location.href = `kuran.html?sayfa=${sayfaNo}`;}
+                window.location.href = `kuran.html?sayfa=${sayfaNo}`;
+            }
+
             function hatimUyariKontrol() {
                 let gosterme = localStorage.getItem("hatim_uyari_gosterme");
                 if (gosterme === "true") return;
                 let modal = document.getElementById("modal-hatim-uyari");
                 if (modal) modal.style.display = "flex";
             }
+
             function kapatHatimUyari() {
                 let chk = document.getElementById("chk-hatim-uyari-kalici");
                 if (chk && chk.checked) {
@@ -1579,6 +1596,7 @@
                     showUpdateBar();
                 }
             }
+
             function manuelArsivle(index, hNo, sayfaNo) {
                 if (!confirm("Sayfa " + sayfaNo + " arşive taşınacak. Onaylıyor musunuz?")) return;
 
@@ -1614,6 +1632,7 @@
                     arsivRenderEt();
                 }
             }
+
             function arsivRenderEt() {
                 let arsiv = JSON.parse(localStorage.getItem("hatim_arsivi") || "[]");
                 let container = document.getElementById("arsiv-alani");
@@ -1644,6 +1663,7 @@
 
                 container.innerHTML = html;
             }
+
             function ozelAlert(mesaj, baslik = "Bilgi") {
                 document.getElementById("custom-alert-msg").innerText = mesaj;
                 document.getElementById("custom-alert-title").innerText = baslik;
@@ -1655,15 +1675,30 @@
                 document.querySelector(".modal-ikon").innerText = ikon;
                 document.getElementById("custom-alert").style.display = "flex";
             }
+
             function kapatAlert() {
                 document.getElementById("custom-alert").style.display = "none";
             }
+
+            // GÜNCELLEME KONTROL
+            function guncellemeKontrol() {
+                let btn = event ? event.target : null;
+                // Eğer içi ikonlu buttonsan (içindeki elementi tıklamış olabilir)
+                if (btn && btn.tagName !== 'BUTTON') btn = btn.closest('button');
+
+                if (btn) {
+                    btn.innerHTML = '<i class="fa fa-sync fa-spin"></i> Kontrol Ediliyor...';
+                    btn.disabled = true;
+                }
+
+                // Cache Buster ile reload
+                setTimeout(() => {
+                    // Gerçek bir kontrol mekanizması olmadığı için (Tarayıcı cache'ine güveniyoruz)
+                    // Sayfayı zorla yeniliyoruz. Sw varsa o devreye girecek.
+                    window.location.reload(true);
+                }, 1500);
+            }
         </script>
 </body>
+
 </html>
-
-
-
-
-
-
