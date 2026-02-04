@@ -1,5 +1,5 @@
-const APP_VERSION = "v3.5.7";
-const CACHE_VERSION = "3.5.7";
+const APP_VERSION = "v3.5.4";
+const CACHE_VERSION = "3.5.4";
 
 // HTML tarfında kullanmak için:
 // document.getElementById('uygulama-versiyon').innerText = APP_VERSION;
