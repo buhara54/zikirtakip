@@ -198,7 +198,7 @@
         </div>
 
         <div id="screen-login" class="portal-body hidden">
-            <h5 class="text-center mb-4 text-secondary">Personel Girişi</h5>
+            <h5 class="text-center mb-4 text-secondary">Kullanıcı Girişi</h5>
 
             <div class="form-floating mb-3">
                 <input type="email" class="form-control" id="login-email" placeholder="name@example.com">
@@ -234,7 +234,7 @@
                     <span class="module-title">kumBuhara</span>
                 </div>
 
-                <div class="module-card" onclick="ozelAlert('Buhasebe modülü geliştirme aşamasındadır.', 'Yakında')">
+                <div id="btn-kutu" onclick="openModule('buhsabe')" class="module-card module-kutu hidden">
                     <img src="https://raw.githubusercontent.com/buhara54/zikirtakip/main/logolar/buhasebe.png"
                         class="module-icon-img">
                     <span class="module-title">Buhasebe</span>
@@ -427,7 +427,9 @@
            } else if (moduleName === 'kafile') {
                 targetUrl = "kafile.html" + emailParam;
            } else if (moduleName === 'HayirKapisi') {
-                targetUrl = "hayirkapisi.html"; // Herkese açık
+                targetUrl = "hayirkapisi.html"; 
+                } else if (moduleName === 'buhasebe') {
+                targetUrl = "buhasebe.html"; + emailParam;
             } else {
                 // Modül henüz yerel değilse uyarı ver veya eski linke git (tercihen uyarı)
                 ozelAlert("Bu modül henüz aktif değil.", "Bilgi");
