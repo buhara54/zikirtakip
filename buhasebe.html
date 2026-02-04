@@ -1161,7 +1161,7 @@
             // Sadece Dashboard Container Görünsün
             if (document.getElementById('dashboard-container')) document.getElementById('dashboard-container').classList.remove('d-none');
 
-            fetch(API_URL_HK, {
+            fetch(API_URL, {
                 method: "POST",
                 body: JSON.stringify({ islem: "buhasebe_dashboard", username: currentUser.email })
             })
