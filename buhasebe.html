@@ -1059,8 +1059,18 @@
             const userEmail = urlParams.get('user');
             const storedUser = localStorage.getItem("buhara_user");
 
-            if (storedUser) currentUser = JSON.parse(storedUser);
-            if (userEmail) currentUser = { email: userEmail, adSoyad: userEmail }; // Fallback
+            if (storedUser) {
+                const parsed = JSON.parse(storedUser);
+                // Eğer URL'deki mail ile Storage'daki mail aynıysa (veya URL'de mail yoksa) Storage'ı kullan
+                if (!userEmail || parsed.email === userEmail) {
+                    currentUser = parsed;
+                }
+            }
+
+            // Storage yoksa veya Storage'daki mail farklıysa URL'den yenisini oluştur (Kısıtlı Bilgi)
+            if (!currentUser && userEmail) {
+                currentUser = { email: userEmail, adSoyad: userEmail };
+            }
 
             if (currentUser) {
                 document.getElementById('user-display').innerText = currentUser.adSoyad;
