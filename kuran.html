@@ -1,25 +1,30 @@
 <!DOCTYPE html>
 <html lang="tr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Dijital Kuran</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Scheherazade+New:wght@400;700&display=swap" rel="stylesheet">
+    <script src="./tailwind.js"></script>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Scheherazade+New:wght@400;700&display=swap"
+        rel="stylesheet">
 
     <style>
         /* --- YEREL FONTLAR (fonts klasöründen) --- */
         /* Klasöründeki dosya isimlerinin AYNISI olduğundan emin ol */
-        
+
         @font-face {
             font-family: 'Hafs';
             src: url('fonts/UthmanicHafs_V22.ttf') format('truetype');
         }
+
         @font-face {
             font-family: 'Warsh';
             src: url('fonts/UthmanicWarsh_V21.ttf') format('truetype');
         }
+
         @font-face {
             font-family: 'Kufi';
             src: url('fonts/KFGQPC-KufiStyV14.ttf') format('truetype');
@@ -28,103 +33,78 @@
         /* Ana Metin Ayarları */
         .arabic-text {
             /* Varsayılan font (Javascript ile değişecek) */
-            font-family: 'Hafs', serif; 
-            text-align: justify;       
-            text-align-last: center;   
+            font-family: 'Hafs', serif;
+            text-align: justify;
+            text-align-last: center;
             direction: rtl;
-            text-justify: inter-word;  
+            text-justify: inter-word;
         }
 
-        .sajdah-ayah { color: #dc2626; }
+        .sajdah-ayah {
+            color: #dc2626;
+        }
+
         .ayah-symbol {
-            font-family: sans-serif; 
+            font-family: sans-serif;
             font-size: 0.8em;
             color: #d97706;
             margin: 0 5px;
             display: inline-block;
         }
 
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-       /* --- YATAY EKRAN (LANDSCAPE) AYARLARI (GÜNCELLENDİ) --- */
-@media screen and (orientation: landscape) and (max-width: 900px) {
-    
-    /* 1. Sadece Üst Menüyü ve Ayarları Gizle (Yer Kazan) */
-    .h-14,         /* Üst Header (Sure Seçimi) */
-    #settingsPanel /* Ayar Paneli */ 
-    {
-        display: none !important;
-    }
-    /* 2. Alt Menüyü (İleri-Geri) GÖSTER ve Sabitle */
-    .h-16 {
-        display: flex !important;
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        z-index: 50; /* En üstte kalsın */
-        height: 30px !important; /* Biraz daha ince yapalım, yer kalsın */
-    }
-    /* 3. İçeriği Alt Menüye Göre Ayarla */
-    #scrollContainer {
-        height: calc(100vh - 50px) !important; /* Ekran - Alt Menü */
-        margin-top: 0 !important;
-        padding-bottom: 0 !important;
-    }
-    /* 4. Sayfa İçeriğini Genişlet */
-    #scrollContainer > div {
-        max-width: none !important;
-        border: none;
-        box-shadow: none;
-    }
-    /* 5. Yazı Alanını Rahatlat */
-    #pageContent {
-        padding: 10px 40px !important; /* Yanlardan boşluk bırak */
-        font-size: 1.1em; /* Yazıyı biraz büyüt */
-    }
-    /* Body kilidini aç (Dönmeyi sağlamak için) */
-    body, html {
-        height: 100%;
-        overflow: hidden; /* Genel scroll'u kapat, sadece metin scroll olsun */
-    }
-}
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
     </style>
 </head>
+
 <body class="bg-stone-100 h-screen flex flex-col overflow-hidden select-none">
 
     <div class="bg-white border-b border-stone-200 p-2 shadow-sm z-20 flex justify-between items-center h-14 shrink-0">
-    
-    <div class="flex items-center gap-1">
-        <button onclick="toggleAyarlar()" class="p-2 text-stone-600 hover:bg-stone-100 rounded">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-        </button>
 
-        <a href="index.html" class="flex items-center gap-1 bg-emerald-700 text-white hover:bg-emerald-800 px-3 py-1.5 rounded shadow-md text-sm font-bold no-underline transition-colors border-b-2 border-emerald-900">
-    <span class="text-lg">&larr;</span>
-    <span class="hidden md:block">Ana Menü</span>
-</a>
-    </div>
-    
-    <div class="flex gap-2 items-center">
-        <select id="surahSelect" class="border border-stone-300 p-1 rounded w-28 md:w-36 text-sm bg-stone-50 font-semibold" onchange="sureDegistir()">
-            <option>Yükleniyor...</option>
-        </select>
-        <div class="flex items-center border border-stone-300 rounded bg-white overflow-hidden h-8">
-            <input type="number" id="pageInput" min="0" max="604" value="1" 
-                   class="w-10 text-center outline-none text-sm font-bold" onchange="sayfayaGitInput()">
+        <div class="flex items-center gap-1">
+            <button onclick="toggleAyarlar()" class="p-2 text-stone-600 hover:bg-stone-100 rounded">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+            </button>
+
+            <a href="index.html"
+                class="flex items-center gap-1 bg-emerald-700 text-white hover:bg-emerald-800 px-3 py-1.5 rounded shadow-md text-sm font-bold no-underline transition-colors border-b-2 border-emerald-900">
+                <span class="text-lg">&larr;</span>
+                <span class="hidden md:block">Ana Menü</span>
+            </a>
+        </div>
+
+        <div class="flex gap-2 items-center">
+            <select id="surahSelect"
+                class="border border-stone-300 p-1 rounded w-28 md:w-36 text-sm bg-stone-50 font-semibold"
+                onchange="sureDegistir()">
+                <option>Yükleniyor...</option>
+            </select>
+            <div class="flex items-center border border-stone-300 rounded bg-white overflow-hidden h-8">
+                <input type="number" id="pageInput" min="0" max="604" value="1"
+                    class="w-10 text-center outline-none text-sm font-bold" onchange="sayfayaGitInput()">
+            </div>
         </div>
     </div>
-</div>
 
     <div id="settingsPanel" class="hidden absolute top-14 left-0 w-full bg-white border-b p-4 shadow-lg z-30">
         <div class="flex flex-col gap-4 max-w-sm mx-auto">
-            
+
             <div>
                 <label class="text-xs font-bold text-gray-500 mb-1 block">Yazı Tipi</label>
-                <select id="fontSelect" class="w-full border p-2 rounded bg-stone-50" onchange="ayarGuncelle('fontFamily', this.value)">
+                <select id="fontSelect" class="w-full border p-2 rounded bg-stone-50"
+                    onchange="ayarGuncelle('fontFamily', this.value)">
                     <option value="Hafs">Klassik (Hafs)</option>
                     <option value="Amiri">Amiri (Okunaklı)</option>
                     <option value="Scheherazade New">Scheherazade (Kıvrımlı)</option>
@@ -135,18 +115,20 @@
 
             <div>
                 <label class="text-xs font-bold text-gray-500">Yazı Boyutu</label>
-                <input type="range" min="18" max="60" value="28" class="w-full accent-emerald-600" oninput="ayarGuncelle('fontSize', this.value)">
+                <input type="range" min="18" max="60" value="28" class="w-full accent-emerald-600"
+                    oninput="ayarGuncelle('fontSize', this.value)">
             </div>
             <div>
                 <label class="text-xs font-bold text-gray-500">Satır Aralığı</label>
-                <input type="range" min="1.5" max="4.5" step="0.1" value="2.5" class="w-full accent-emerald-600" oninput="ayarGuncelle('lineHeight', this.value)">
+                <input type="range" min="1.5" max="4.5" step="0.1" value="2.5" class="w-full accent-emerald-600"
+                    oninput="ayarGuncelle('lineHeight', this.value)">
             </div>
         </div>
     </div>
 
     <div class="flex-1 overflow-y-auto no-scrollbar bg-stone-100 relative" id="scrollContainer">
         <div class="max-w-2xl mx-auto bg-white min-h-full shadow-lg border-x border-stone-200 flex flex-col pb-20">
-            
+
             <div id="pageContent" class="flex-1 px-4 py-6 md:px-10 md:py-10 arabic-text text-stone-900">
                 Yükleniyor...
             </div>
@@ -158,10 +140,12 @@
     </div>
 
     <div class="bg-white border-t border-stone-200 flex h-16 shrink-0 z-20">
-        <button onclick="sayfaDegis(1)" class="flex-1 bg-emerald-800 text-white flex flex-col items-center justify-center border-r border-emerald-900 active:bg-emerald-900">
+        <button onclick="sayfaDegis(1)"
+            class="flex-1 bg-emerald-800 text-white flex flex-col items-center justify-center border-r border-emerald-900 active:bg-emerald-900">
             <span class="text-lg font-bold">&larr; Sonraki</span>
         </button>
-        <button onclick="sayfaDegis(-1)" class="flex-1 bg-emerald-800 text-white flex flex-col items-center justify-center active:bg-emerald-900">
+        <button onclick="sayfaDegis(-1)"
+            class="flex-1 bg-emerald-800 text-white flex flex-col items-center justify-center active:bg-emerald-900">
             <span class="text-lg font-bold">Önceki &rarr;</span>
         </button>
     </div>
@@ -180,37 +164,37 @@
             fontFamily: localStorage.getItem('quran_font') || 'Hafs'
         };
 
-       window.onload = function() {
-    // Veri Dosyası Kontrolü
-    if(typeof quranData === 'undefined' || typeof pageMappings === 'undefined') {
-        document.getElementById('pageContent').innerHTML = "<br>HATA: data.js veya maps.js yüklenemedi.";
-        return;
-    }
+        window.onload = function () {
+            // Veri Dosyası Kontrolü
+            if (typeof quranData === 'undefined' || typeof pageMappings === 'undefined') {
+                document.getElementById('pageContent').innerHTML = "<br>HATA: data.js veya maps.js yüklenemedi.";
+                return;
+            }
 
-    // 1. Ayarları Uygula
-    applySettings();
-    document.querySelector('input[oninput*="fontSize"]').value = userSettings.fontSize;
-    document.querySelector('input[oninput*="lineHeight"]').value = userSettings.lineHeight;
-    document.getElementById('fontSelect').value = userSettings.fontFamily;
+            // 1. Ayarları Uygula
+            applySettings();
+            document.querySelector('input[oninput*="fontSize"]').value = userSettings.fontSize;
+            document.querySelector('input[oninput*="lineHeight"]').value = userSettings.lineHeight;
+            document.getElementById('fontSelect').value = userSettings.fontFamily;
 
-    // 2. Sure Listesini Doldur
-    sureListesiniDoldur();
+            // 2. Sure Listesini Doldur
+            sureListesiniDoldur();
 
-    // 3. KRİTİK DÜZELTME: URL'den Sayfa Numarasını Al
-    const urlParams = new URLSearchParams(window.location.search);
-    const gelenSayfa = urlParams.get('sayfa'); // Linkteki ?sayfa=XX değerini al
+            // 3. KRİTİK DÜZELTME: URL'den Sayfa Numarasını Al
+            const urlParams = new URLSearchParams(window.location.search);
+            const gelenSayfa = urlParams.get('sayfa'); // Linkteki ?sayfa=XX değerini al
 
-    if (gelenSayfa) {
-        // Eğer linkten geldiyse (Hatimden) o sayfayı aç
-        aktifSayfa = parseInt(gelenSayfa);
-    } else {
-        // Serbest okuma ise en son kaldığı yeri hafızadan al (yoksa 1)
-        aktifSayfa = parseInt(localStorage.getItem('son_kaldigim_sayfa')) || 1;
-    }
+            if (gelenSayfa) {
+                // Eğer linkten geldiyse (Hatimden) o sayfayı aç
+                aktifSayfa = parseInt(gelenSayfa);
+            } else {
+                // Serbest okuma ise en son kaldığı yeri hafızadan al (yoksa 1)
+                aktifSayfa = parseInt(localStorage.getItem('son_kaldigim_sayfa')) || 1;
+            }
 
-    // 4. Sayfayı Çiz
-    sayfayiCiz(aktifSayfa);
-};
+            // 4. Sayfayı Çiz
+            sayfayiCiz(aktifSayfa);
+        };
         function applySettings() {
             const content = document.getElementById('pageContent');
             content.style.fontSize = userSettings.fontSize + 'px';
@@ -220,9 +204,9 @@
 
         function ayarGuncelle(tip, deger) {
             userSettings[tip] = deger;
-            if(tip === 'fontSize') localStorage.setItem('quran_fs', deger);
-            if(tip === 'lineHeight') localStorage.setItem('quran_lh', deger);
-            if(tip === 'fontFamily') localStorage.setItem('quran_font', deger);
+            if (tip === 'fontSize') localStorage.setItem('quran_fs', deger);
+            if (tip === 'lineHeight') localStorage.setItem('quran_lh', deger);
+            if (tip === 'fontFamily') localStorage.setItem('quran_font', deger);
             applySettings();
         }
 
@@ -241,115 +225,100 @@
             });
         }
 
-       function sayfayiCiz(sayfaNo) {
-    const div = document.getElementById('pageContent');
-    const lblPage = document.getElementById('lblPage');
-    const pageInput = document.getElementById('pageInput');
+        function sayfayiCiz(sayfaNo) {
+            const div = document.getElementById('pageContent');
+            const lblPage = document.getElementById('lblPage');
+            const pageInput = document.getElementById('pageInput');
 
-    // --- 1. GÖRSEL KISIM ---
-    // Eğer sayfa 0 ise ekranda "Fâtiha (0)" yazsın
-    if (sayfaNo === 0) {
-        lblPage.innerText = "Fâtiha (0)";
-        pageInput.value = 0;
-    } else {
-        lblPage.innerText = sayfaNo;
-        pageInput.value = sayfaNo;
-    }
-    
-    div.innerHTML = "";   
-    // --- 2. HARİTA EŞLEŞTİRME ---
-    const map = pageMappings[sayfaNo + 1]; 
-    if(!map) { 
-        // 603. sayfayı geçince hata vermemesi için uyarı
-        div.innerHTML = "<div class='text-center mt-10'>Sayfa sonu.</div>"; 
-        return; 
-    }
-    let html = "";
-    map.forEach(item => {
-        const sure = quranData.find(s => s.id === item.surah);
-        if(!sure) return;
+            // --- 1. GÖRSEL KISIM ---
+            // Eğer sayfa 0 ise ekranda "Fâtiha (0)" yazsın
+            if (sayfaNo === 0) {
+                lblPage.innerText = "Fâtiha (0)";
+                pageInput.value = 0;
+            } else {
+                lblPage.innerText = sayfaNo;
+                pageInput.value = sayfaNo;
+            }
 
-        // Sure Başlığı
-        if(item.start === 1) {
-            html += `<div class="w-full flex justify-center mt-4 mb-4">
+            div.innerHTML = "";
+            // --- 2. HARİTA EŞLEŞTİRME ---
+            const map = pageMappings[sayfaNo + 1];
+            if (!map) {
+                // 603. sayfayı geçince hata vermemesi için uyarı
+                div.innerHTML = "<div class='text-center mt-10'>Sayfa sonu.</div>";
+                return;
+            }
+            let html = "";
+            map.forEach(item => {
+                const sure = quranData.find(s => s.id === item.surah);
+                if (!sure) return;
+
+                // Sure Başlığı
+                if (item.start === 1) {
+                    html += `<div class="w-full flex justify-center mt-4 mb-4">
                         <div class="border-y-2 border-stone-300 w-full text-center py-2 bg-stone-50">
                             <span class="text-xl font-bold text-stone-700 font-serif">${sure.name}</span>
                         </div>
                      </div>`;
-            
-            // Fatiha ve Tevbe hariç Besmele
-            if(sure.id !== 1 && sure.id !== 9) {
-                html += `<div class="w-full text-center mb-4 mt-2 text-2xl">بِسۡمِ ٱللَّهِ ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ</div>`;
-            }
-        }
-        // Ayetler
-        const ayetler = sure.verses.filter(v => v.id >= item.start && v.id <= item.end);
-        ayetler.forEach(v => {
-            let isSajdah = secdeAyetleri[sure.id] && secdeAyetleri[sure.id].includes(v.id);
-            let textClass = isSajdah ? "sajdah-ayah" : "";
-            html += `<span class="${textClass}">${v.text} <span class="ayah-symbol select-none text-xl">&#64831;${v.id}&#64830;</span></span> `;
-        });
-    });
 
-    div.innerHTML = html;
-    document.getElementById('scrollContainer').scrollTop = 0;
-    localStorage.setItem('son_kaldigim_sayfa', sayfaNo); 
-}
+                    // Fatiha ve Tevbe hariç Besmele
+                    if (sure.id !== 1 && sure.id !== 9) {
+                        html += `<div class="w-full text-center mb-4 mt-2 text-2xl">بِسۡمِ ٱللَّهِ ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ</div>`;
+                    }
+                }
+                // Ayetler
+                const ayetler = sure.verses.filter(v => v.id >= item.start && v.id <= item.end);
+                ayetler.forEach(v => {
+                    let isSajdah = secdeAyetleri[sure.id] && secdeAyetleri[sure.id].includes(v.id);
+                    let textClass = isSajdah ? "sajdah-ayah" : "";
+                    html += `<span class="${textClass}">${v.text} <span class="ayah-symbol select-none text-xl">&#64831;${v.id}&#64830;</span></span> `;
+                });
+            });
+
+            div.innerHTML = html;
+            document.getElementById('scrollContainer').scrollTop = 0;
+            localStorage.setItem('son_kaldigim_sayfa', sayfaNo);
+        }
         function sayfaDegis(yon) {
             let yeni = aktifSayfa + yon;
-            if(yeni >= 0 && yeni <= 604) { aktifSayfa = yeni; sayfayiCiz(aktifSayfa); }
+            if (yeni >= 0 && yeni <= 604) { aktifSayfa = yeni; sayfayiCiz(aktifSayfa); }
         }
 
-       function sayfayaGitInput() {
-    let val = parseInt(document.getElementById('pageInput').value);
-    // Arkada işleyen mantık 1-604 arası olduğu için. Kullanıcının yazdığına 1 ekleyip sisteme veriyoruz.
-    // Örn: Kullanıcı 0 yazarsa -> 1. Sayfa (Fatiha) açılır.
-    let gercekSayfa = val;
+        function sayfayaGitInput() {
+            let val = parseInt(document.getElementById('pageInput').value);
+            // Arkada işleyen mantık 1-604 arası olduğu için. Kullanıcının yazdığına 1 ekleyip sisteme veriyoruz.
+            // Örn: Kullanıcı 0 yazarsa -> 1. Sayfa (Fatiha) açılır.
+            let gercekSayfa = val;
 
-    if(gercekSayfa >= 0 && gercekSayfa <= 604) {
-        aktifSayfa = gercekSayfa;
-        sayfayiCiz(aktifSayfa);
-    }
-}
+            if (gercekSayfa >= 0 && gercekSayfa <= 604) {
+                aktifSayfa = gercekSayfa;
+                sayfayiCiz(aktifSayfa);
+            }
+        }
 
         function sureDegistir() {
-    let id = parseInt(document.getElementById('surahSelect').value);
-    
-    // Yardımcı fonksiyonu içerde de kullanabilirsin veya globalde tanımlı ise:
-    // Haritadan sayfa numarasını buluyoruz
-    let hedefSayfa = 1;
-    for(var p in pageMappings){ 
-        var m = pageMappings[p]; 
-        for(var i=0; i<m.length; i++){ 
-            if(m[i].surah == id && m[i].start == 1) {
-                hedefSayfa = parseInt(p);
-                break;
+            let id = parseInt(document.getElementById('surahSelect').value);
+
+            // Yardımcı fonksiyonu içerde de kullanabilirsin veya globalde tanımlı ise:
+            // Haritadan sayfa numarasını buluyoruz
+            let hedefSayfa = 1;
+            for (var p in pageMappings) {
+                var m = pageMappings[p];
+                for (var i = 0; i < m.length; i++) {
+                    if (m[i].surah == id && m[i].start == 1) {
+                        hedefSayfa = parseInt(p);
+                        break;
+                    }
+                }
             }
-        } 
-    }
-    
-    // BULUNAN SAYFADAN 1 ÇIKARIYORUZ
-    // Çünkü harita 1 diyor, bizim sistem 0 tabanlı çalışıyor.
-    aktifSayfa = hedefSayfa - 1; 
-    
-    sayfayiCiz(aktifSayfa);
-}
-        if ('serviceWorker' in navigator) {
-    // SW'yi kaydet
-    navigator.serviceWorker.register('./sw.js').then(reg => {
-      console.log('SW Hazır:', reg.scope);
-    });
-    // Bu sayede kullanıcı v4'e geçtiğinde, senin eklediğin yatay CSS'leri hemen görecek.
-    let refreshing = false;
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-      if (refreshing) return;
-      refreshing = true;
-      window.location.reload();
-    });
-  }
+
+            // BULUNAN SAYFADAN 1 ÇIKARIYORUZ
+            // Çünkü harita 1 diyor, bizim sistem 0 tabanlı çalışıyor.
+            aktifSayfa = hedefSayfa - 1;
+
+            sayfayiCiz(aktifSayfa);
+        }
     </script>
 </body>
+
 </html>
-
-
-
