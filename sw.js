@@ -8,7 +8,7 @@ const ASSETS = [
   './config.js',
   './manifest.json',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css',
-  'https://cdn.tailwindcss.com' 
+  './tailwind.js' 
 ];
 
 // 1. YÜKLEME (INSTALL)
@@ -71,6 +71,7 @@ self.addEventListener('fetch', (e) => {
       })
   );
 });
+
 
 
 
