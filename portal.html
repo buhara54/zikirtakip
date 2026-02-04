@@ -222,7 +222,7 @@
         <div id="screen-dashboard" class="portal-body hidden">
             <div class="module-grid">
 
-                <div onclick="openModule('katilim')" class="module-card module-katilim">
+                <div class="module-card module-katilim" onclick="openModule('katilim')">
                     <img src="https://raw.githubusercontent.com/buhara54/zikirtakip/main/logolar/zikirtakip.png"
                         class="module-icon-img">
                     <span class="module-title">Katılım Takip</span>
@@ -234,20 +234,19 @@
                     <span class="module-title">kumBuhara</span>
                 </div>
 
-                <div id="btn-kutu" onclick="openModule('buhasebe')" class="module-card module-kutu hidden">
+                <div id="btn-buhasebe" onclick="openModule('Buhasebe')" class="module-card">
                     <img src="https://raw.githubusercontent.com/buhara54/zikirtakip/main/logolar/buhasebe.png"
                         class="module-icon-img">
                     <span class="module-title">Buhasebe</span>
                 </div>
 
-                <div class="module-card"
-                    <div class="module-card" onclick="openModule('HayirKapisi')">
+                <div class="module-card" onclick="openModule('HayirKapisi')">
                     <img src="https://raw.githubusercontent.com/buhara54/zikirtakip/main/logolar/hayrkapisi.png"
                         class="module-icon-img">
                     <span class="module-title">Hayır Kapısı</span>
                 </div>
 
-                <div class="module-card" onclick="openModule('kafile')" class="module-card module-kutu hidden">
+                <div class="module-card" onclick="openModule('Kafile')">
                     <img src="https://raw.githubusercontent.com/buhara54/zikirtakip/main/logolar/kafile.png"
                         class="module-icon-img">
                     <span class="module-title">Kafile</span>
@@ -424,12 +423,12 @@
                 targetUrl = "katilim.html" + emailParam;
             } else if (moduleName === 'KutuTakip') {
                 targetUrl = "KutuTakip.html" + emailParam;
-           } else if (moduleName === 'kafile') {
+            } else if (moduleName === 'Kafile') {
                 targetUrl = "kafile.html" + emailParam;
-           } else if (moduleName === 'HayirKapisi') {
-                targetUrl = "hayirkapisi.html"; 
-           } else if (moduleName === 'buhasebe') {
-                targetUrl = "buhasebe.html"; + emailParam;
+            } else if (moduleName === 'HayirKapisi') {
+                targetUrl = "hayirkapisi.html"; // Herkese açık
+            } else if (moduleName === 'Buhasebe') {
+                targetUrl = "buhasebe.html" + emailParam;
             } else {
                 // Modül henüz yerel değilse uyarı ver veya eski linke git (tercihen uyarı)
                 ozelAlert("Bu modül henüz aktif değil.", "Bilgi");
