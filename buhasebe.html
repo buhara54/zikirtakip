@@ -1237,6 +1237,7 @@
                 globalData.ayarlar = ayarlar || { gelir: [], gider: [], proje: [], kasa: [] };
                 // Backend can return {basarili: false} or Array. Check both.
                 globalData.cariler = (Array.isArray(cariler) && !cariler.error) ? cariler : [];
+                globalData.hesaplar = globalData.cariler; // FIX: Alias for POS logic usage
                 globalData.stok = (Array.isArray(stok) && !stok.error) ? stok : [];
 
                 if (cariler && cariler.basarili === false) globalData.cariler = [];
@@ -3036,8 +3037,8 @@
             if (odemeYontemi === 'Peşin') {
                 if (globalData.hesaplar && globalData.hesaplar.length > 0) {
                     // "Kasa" türünde ve adı "Nakit" olanı bul, yoksa ilk KASA türündeki hesabı al
-                    const kasaAcc = globalData.hesaplar.find(h => h.tur === 'Kasa' && h.ad.toLowerCase().includes('nakit'))
-                        || globalData.hesaplar.find(h => h.tur === 'Kasa');
+                    const kasaAcc = globalData.hesaplar.find(h => (h.tur || "").toLowerCase() === 'kasa' && h.ad.toLowerCase().includes('nakit'))
+                        || globalData.hesaplar.find(h => (h.tur || "").toLowerCase() === 'kasa');
 
                     if (kasaAcc) {
                         kasaId = kasaAcc.id;
