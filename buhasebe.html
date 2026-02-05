@@ -1237,7 +1237,6 @@
                 globalData.ayarlar = ayarlar || { gelir: [], gider: [], proje: [], kasa: [] };
                 // Backend can return {basarili: false} or Array. Check both.
                 globalData.cariler = (Array.isArray(cariler) && !cariler.error) ? cariler : [];
-                globalData.hesaplar = globalData.cariler; // FIX: Alias for POS logic usage
                 globalData.stok = (Array.isArray(stok) && !stok.error) ? stok : [];
 
                 if (cariler && cariler.basarili === false) globalData.cariler = [];
@@ -1847,7 +1846,7 @@
                 bas = "2000-01-01";
                 bit = new Date().toISOString().split('T')[0];
                 // Toast mesajı ile bilgi ver
-                // showToast("Tüm Geçmiş taranıyor..."); // REMOVED
+                showToast("Tüm Geçmiş taranıyor...");
             }
 
             if (!bas || !bit) {
@@ -2225,94 +2224,6 @@
                 } else {
                     groupKeys.forEach((key, index) => {
                         const group = groups[key];
-
-                        // HIERARCHICAL GROUPING (Main Cat -> Sub Cat -> Product)
-                        const subGroups = {};
-                        if (group.detay) {
-                            group.detay.forEach(d => {
-                                // Level 2: Sub Category (Gıda, Kumanya vs.)
-                                const sKey = d.altTur || "Genel";
-                                if (!subGroups[sKey]) subGroups[sKey] = { total: 0, products: {} };
-                                subGroups[sKey].total += d.tutar;
-
-                                // Level 3: Product Name (Çay, Yoğurt vs.)
-                                const pKey = d.urunAd || "Diğer";
-                                if (!subGroups[sKey].products[pKey]) subGroups[sKey].products[pKey] = { total: 0, items: [] };
-                                subGroups[sKey].products[pKey].total += d.tutar;
-                                subGroups[sKey].products[pKey].items.push(d);
-                            });
-                        }
-
-                        let groupContentHtml = "";
-
-                        // Render Sub Groups
-                        Object.keys(subGroups).forEach(subKey => {
-                            const subGroup = subGroups[subKey];
-
-                            // SUB CATEGORY HEADER (e.g. Gıda) - Only show if valid subkey
-                            if (subKey !== 'Genel' || Object.keys(subGroups).length > 1) {
-                                groupContentHtml += `
-                                    <div class="bg-light p-2 border-bottom d-flex justify-content-between align-items-center">
-                                        <span class="fw-bold text-secondary text-uppercase small"><i class="fa fa-folder-open me-1"></i> ${subKey}</span>
-                                        <span class="badge bg-secondary text-white">${formatMoney(subGroup.total)}</span>
-                                    </div>
-                                `;
-                            }
-
-                            // Render Products
-                            Object.keys(subGroup.products).forEach(prodKey => {
-                                const products = subGroup.products[prodKey];
-
-                                // PRODUCT HEADER (e.g. Çay)
-                                // If Product Name matches Sub Category or is 'Diğer', simplified view
-                                const isRedundant = (prodKey === subKey || prodKey === 'Diğer');
-                                const indent = (subKey !== 'Genel') ? "ms-3" : ""; // Indent if under a sub-category
-
-                                if (!isRedundant) {
-                                    groupContentHtml += `
-                                        <div class="p-1 px-2 border-bottom bg-white d-flex justify-content-between align-items-center ${indent}" style="background-color:#fefefe">
-                                            <span class="fw-bold text-dark small"><i class="fa fa-box me-1 text-muted"></i> ${prodKey}</span>
-                                            <span class="small fw-bold text-dark">${formatMoney(products.total)}</span>
-                                        </div>
-                                     `;
-                                }
-
-                                // Transactions
-                                let itemRows = "";
-                                products.items.forEach(d => {
-                                    const cariBilgi = (d.cari && d.cari !== "-") ? `<span class="fw-bold text-primary">${d.cari}</span>` : "";
-                                    let desc = d.aciklama || "";
-                                    if (desc.startsWith('(') && desc.endsWith(')')) desc = desc.slice(1, -1);
-                                    if (desc === d.tur || desc === key || desc === prodKey) desc = "";
-
-                                    let mainContent = `${cariBilgi} <span class="text-dark small">${desc}</span>`;
-
-                                    let amountProps = 'text-dark';
-                                    if (d.tur === 'Gider' || d.tur === 'Borclandirma') amountProps = 'text-danger';
-                                    else if (d.tur === 'Gelir' || d.tur === 'Satis' || d.tur === 'Tahsilat') amountProps = 'text-success';
-                                    else if (d.tur === 'BorcOdeme') amountProps = 'text-primary fw-bold';
-
-                                    // Deep Indent for items
-                                    const itemIndent = isRedundant ? indent : (indent + " ms-3");
-
-                                    itemRows += `
-                                        <div class="d-flex justify-content-between border-bottom py-1 pe-2 ${itemIndent}" style="font-size:0.8rem; border-color:#f0f0f0 !important">
-                                            <div class="text-truncate" style="max-width:70%">
-                                                ${mainContent}
-                                                <div class="text-muted" style="font-size:0.65rem">${formatDateTR(d.tarih)}</div>
-                                            </div>
-                                            <span class="fw-bold text-end ${amountProps}">${formatMoney(d.tutar)}</span>
-                                        </div>
-                                    `;
-                                });
-                                groupContentHtml += itemRows;
-                            });
-                        });
-
-                        // If no detail lines (shouldn't happen if total > 0)
-                        if (groupContentHtml === "") groupContentHtml = `<div class="text-muted p-2 small">Detay yok.</div>`;
-
-                        // Sub-Header for Main Group (e.g. Paid/Debt info for Expenses)
                         let subHdr = "";
                         if (isExpense) {
                             subHdr = `
@@ -2323,6 +2234,43 @@
                                 `;
                         }
 
+                        let detayRows = "";
+                        if (group.detay) {
+                            group.detay.forEach(d => {
+                                const cariBilgi = (d.cari && d.cari !== "-") ? `<span class="fw-bold text-primary">${d.cari}</span>` : "";
+                                let desc = d.aciklama || "";
+                                // DUPLICATE TEXT FIX:
+                                // Eğer açıklama "(Borç Ödeme)" gibi parantezliyse ve içi zaten belliyse temizle
+                                if (desc.startsWith('(') && desc.endsWith(')')) {
+                                    desc = desc.slice(1, -1); // Parantezleri kaldır
+                                }
+                                // Eğer açıklama hala Tür veya Kategori ismine çok benziyorsa gizle veya sadeleştir
+                                if (desc === d.tur || desc === key) desc = "";
+
+                                let mainContent = "";
+                                if (showDetails) {
+                                    if (d.urunBilgi) mainContent = `${cariBilgi} <span class="badge bg-secondary rounded-pill me-1" style="font-size:0.75rem">${d.urunBilgi}</span>`;
+                                    else mainContent = `${cariBilgi} <span class="text-dark">${desc}</span>`;
+                                } else {
+                                    mainContent = `${cariBilgi} <span class="text-dark">${desc}</span>`;
+                                }
+
+                                let amountProps = 'text-dark';
+                                if (d.tur === 'Gider' || d.tur === 'Borclandirma') amountProps = 'text-danger';
+                                else if (d.tur === 'Gelir' || d.tur === 'Satis' || d.tur === 'Tahsilat') amountProps = 'text-success';
+                                else if (d.tur === 'BorcOdeme') amountProps = 'text-primary fw-bold';
+
+                                detayRows += `
+                                    <div class="d-flex justify-content-between border-bottom py-2 ps-2" style="font-size:0.85rem">
+                                        <div>
+                                            <div class="mb-1">${mainContent}</div>
+                                            <div style="font-size:0.7rem; color:#999">${formatDateTR(d.tarih)}</div>
+                                        </div>
+                                        <span class="fw-bold text-end ${amountProps}" style="min-width:70px">${formatMoney(d.tutar)}</span>
+                                    </div>
+                                `;
+                            });
+                        }
                         const isOpen = showDetails ? 'show' : '';
                         rows += `
                             <div class="border rounded mb-2 bg-light">
@@ -2334,7 +2282,7 @@
                                     <span class="fw-bold text-dark">${formatMoney(group.toplam)}</span>
                                 </div>
                                 <div id="${id}-grp-${index}" class="collapse ${isOpen} bg-white border-top">
-                                    <div class="p-0">${groupContentHtml}</div>
+                                    <div class="p-2">${detayRows}</div>
                                 </div>
                             </div>
                         `;
@@ -2528,7 +2476,7 @@
 
             let opts = [];
             if (ana === 'Hayrat') opts = ["Kumanya", "Kandil Simidi"];
-            else if (ana === 'Ticari') opts = ["Gıda", "Çay", "Kahve", "Tost", "Meşrubat", "Kahvaltı"];
+            else if (ana === 'Ticari') opts = ["Gıda"];
             else if (ana === 'Kermes') opts = ["Unlu Mamüller", "Hediyelik", "Giyim", "El İşi"];
             else if (ana === 'Dergi') opts = ["Kitap", "Dergi"];
 
@@ -3088,8 +3036,8 @@
             if (odemeYontemi === 'Peşin') {
                 if (globalData.hesaplar && globalData.hesaplar.length > 0) {
                     // "Kasa" türünde ve adı "Nakit" olanı bul, yoksa ilk KASA türündeki hesabı al
-                    const kasaAcc = globalData.hesaplar.find(h => (h.tur || "").toLowerCase() === 'kasa' && h.ad.toLowerCase().includes('nakit'))
-                        || globalData.hesaplar.find(h => (h.tur || "").toLowerCase() === 'kasa');
+                    const kasaAcc = globalData.hesaplar.find(h => h.tur === 'Kasa' && h.ad.toLowerCase().includes('nakit'))
+                        || globalData.hesaplar.find(h => h.tur === 'Kasa');
 
                     if (kasaAcc) {
                         kasaId = kasaAcc.id;
@@ -3109,7 +3057,6 @@
                 user: currentUser.email,
                 islemTuru: 'Satis', // FIX: tur -> islemTuru
                 altTur: posActiveCategory,
-                kategori: posActiveCategory, // FIX: Report grouping relies on this field
                 stokId: posSelectedProduct.id,
                 adet: adet,
                 tutar: adet * fiyat,
@@ -3165,7 +3112,8 @@
             if (globalData.cariler && globalData.cariler.length > 0) {
                 globalData.cariler.forEach(c => {
                     const tur = (c.tur || "").toLowerCase().trim();
-                    if (tur === 'uye' || tur === 'üye' || tur === 'bağışçı') { // Genişletilmiş kontrol
+                    // Sadece Tedarikçileri gizle, gerisini göster (Üye, Bağışçı, Boş vb.)
+                    if (!tur.includes('tedarik')) {
                         const opt = document.createElement('option');
                         opt.value = c.id;
                         opt.innerText = c.ad;
