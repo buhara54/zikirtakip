@@ -46,11 +46,8 @@ self.addEventListener('activate', (e) => {
 
 // 3. YAKALAMA VE GÖSTERME (FETCH - NETWORK FIRST)
 self.addEventListener('fetch', (e) => {
-    // Sadece http/https isteklerini işle
+    // Sadece http/https isteklerini işle (chrome-extension vb. hataları önlemek için)
     if (!e.request.url.startsWith('http')) return;
-
-    // POST isteklerini (API çağrıları) Service Worker işlememeli, direkt ağa gitmeli.
-    if (e.request.method === 'POST') return;
 
     e.respondWith(
         // ÖNCE İNTERNETE GİT (En güncelini al)
