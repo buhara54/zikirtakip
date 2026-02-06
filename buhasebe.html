@@ -2223,7 +2223,8 @@
                     rows = `<div class="text-center text-muted fst-italic p-2 small">Veri Yok (0 TL)</div>`;
                 } else {
                     groupKeys.forEach((key, index) => {
-                        const group = groups[key];
+                        const group = groups[key]; // { toplam: X, detay: [...] }
+
                         let subHdr = "";
                         if (isExpense) {
                             subHdr = `
@@ -2234,43 +2235,75 @@
                                 `;
                         }
 
-                        let detayRows = "";
-                        if (group.detay) {
+                        // --- HİYERARŞİK GRUPLAMA (ALT TUR) ---
+                        // group.detay dizisini altTur'a göre grupla
+                        let subGroups = {};
+                        if (group.detay && group.detay.length > 0) {
                             group.detay.forEach(d => {
-                                const cariBilgi = (d.cari && d.cari !== "-") ? `<span class="fw-bold text-primary">${d.cari}</span>` : "";
-                                let desc = d.aciklama || "";
-                                // DUPLICATE TEXT FIX:
-                                // Eğer açıklama "(Borç Ödeme)" gibi parantezliyse ve içi zaten belliyse temizle
-                                if (desc.startsWith('(') && desc.endsWith(')')) {
-                                    desc = desc.slice(1, -1); // Parantezleri kaldır
-                                }
-                                // Eğer açıklama hala Tür veya Kategori ismine çok benziyorsa gizle veya sadeleştir
-                                if (desc === d.tur || desc === key) desc = "";
-
-                                let mainContent = "";
-                                if (showDetails) {
-                                    if (d.urunBilgi) mainContent = `${cariBilgi} <span class="badge bg-secondary rounded-pill me-1" style="font-size:0.75rem">${d.urunBilgi}</span>`;
-                                    else mainContent = `${cariBilgi} <span class="text-dark">${desc}</span>`;
-                                } else {
-                                    mainContent = `${cariBilgi} <span class="text-dark">${desc}</span>`;
-                                }
-
-                                let amountProps = 'text-dark';
-                                if (d.tur === 'Gider' || d.tur === 'Borclandirma') amountProps = 'text-danger';
-                                else if (d.tur === 'Gelir' || d.tur === 'Satis' || d.tur === 'Tahsilat') amountProps = 'text-success';
-                                else if (d.tur === 'BorcOdeme') amountProps = 'text-primary fw-bold';
-
-                                detayRows += `
-                                    <div class="d-flex justify-content-between border-bottom py-2 ps-2" style="font-size:0.85rem">
-                                        <div>
-                                            <div class="mb-1">${mainContent}</div>
-                                            <div style="font-size:0.7rem; color:#999">${formatDateTR(d.tarih)}</div>
-                                        </div>
-                                        <span class="fw-bold text-end ${amountProps}" style="min-width:70px">${formatMoney(d.tutar)}</span>
-                                    </div>
-                                `;
+                                const subKey = d.altTur || "Diğer";
+                                if (!subGroups[subKey]) subGroups[subKey] = [];
+                                subGroups[subKey].push(d);
                             });
                         }
+
+                        let detayHtml = "";
+                        const subGroupKeys = Object.keys(subGroups);
+
+                        // Eğer hiç detay yoksa veya sadece detaysızlar varsa
+                        if (subGroupKeys.length === 0) {
+                            detayHtml = `<div class="text-muted small ps-2">Detay yok.</div>`;
+                        } else {
+                            subGroupKeys.forEach(subKey => {
+                                const items = subGroups[subKey];
+                                // Alt Başlık (Eğer birden fazla grup varsa veya grup ismi 'Genel' değilse göster)
+                                if (subGroupKeys.length > 1 || (subKey !== 'Genel' && subKey !== 'Diğer')) {
+                                    detayHtml += `<div class="bg-light px-2 py-1 mt-2 mb-1 border-bottom fw-bold text-secondary small" style="border-left: 3px solid #ccc;">${subKey}</div>`;
+                                }
+
+                                items.forEach(d => {
+                                    // 1. CARİ ADI (KİM?)
+                                    // Backend 'cari' alanını gönderiyor. Eğer 'Perakende' ise veya boş ise kontrol et.
+                                    // Eğer Cari Adı boşsa ama açıklama doluysa açıklamayı öne çıkar.
+                                    let cariDisplay = "";
+                                    if (d.cari && d.cari !== "-" && d.cari !== "") {
+                                        cariDisplay = `<span class="fw-bold text-primary d-block" style="font-size:0.9rem">${d.cari}</span>`;
+                                    } else {
+                                        // Cari yoksa (örn. Perakende), belki açıklamada yazıyordur.
+                                        // Ama biz yine de bir şey yazalım.
+                                        // cariDisplay = `<span class="fw-bold text-muted d-block small">Perakende / İsimsiz</span>`;
+                                    }
+
+                                    // 2. AÇIKLAMA / ÜRÜN
+                                    let desc = d.aciklama || "";
+                                    // Temizlik
+                                    if (desc.startsWith('(') && desc.endsWith(')')) desc = desc.slice(1, -1);
+                                    if (desc === d.tur || desc === key || desc === subKey) desc = "";
+
+                                    // Ürün Bilgisi Varsa Ekle
+                                    if (d.urunBilgi) {
+                                        desc = `${d.urunBilgi} <small class="text-muted">(${desc})</small>`;
+                                    }
+
+                                    // 3. TUTAR RENKLENDİRME
+                                    let amountProps = 'text-dark';
+                                    if (d.tur === 'Gider' || d.tur === 'Borclandirma') amountProps = 'text-danger';
+                                    else if (d.tur === 'Gelir' || d.tur === 'Satis' || d.tur === 'Tahsilat') amountProps = 'text-success';
+                                    else if (d.tur === 'BorcOdeme') amountProps = 'text-primary fw-bold';
+
+                                    detayHtml += `
+                                        <div class="d-flex justify-content-between border-bottom py-2 ps-2 align-items-center" style="font-size:0.85rem">
+                                            <div>
+                                                ${cariDisplay}
+                                                <div class="text-dark">${desc}</div>
+                                                <div style="font-size:0.7rem; color:#999">${formatDateTR(d.tarih)}</div>
+                                            </div>
+                                            <span class="fw-bold text-end ${amountProps}" style="min-width:80px">${formatMoney(d.tutar)}</span>
+                                        </div>
+                                    `;
+                                });
+                            });
+                        }
+
                         const isOpen = showDetails ? 'show' : '';
                         rows += `
                             <div class="border rounded mb-2 bg-light">
@@ -2282,7 +2315,7 @@
                                     <span class="fw-bold text-dark">${formatMoney(group.toplam)}</span>
                                 </div>
                                 <div id="${id}-grp-${index}" class="collapse ${isOpen} bg-white border-top">
-                                    <div class="p-2">${detayRows}</div>
+                                    <div class="p-2">${detayHtml}</div>
                                 </div>
                             </div>
                         `;
