@@ -522,7 +522,7 @@
                         class="fa fa-boxes me-2 text-muted"></i> Stok Yönetimi</button>
                 <button class="list-group-item list-group-item-action p-3" onclick="switchTab('tab-rapor')"><i
                         class="fa fa-chart-bar me-2 text-muted"></i> Raporlar</button>
-                <button class="list-group-item list-group-item-action p-3" onclick="alert('Yakında: Ayarlar')"><i
+                <button class="list-group-item list-group-item-action p-3" onclick="openSettingsModal()"><i
                         class="fa fa-cog me-2 text-muted"></i> Ayarlar</button>
             </div>
         </div>
@@ -666,6 +666,34 @@
                 <div class="modal-footer border-0">
                     <button type="button" class="btn btn-danger w-100 fw-bold" onclick="runTopluAidat()">DAĞITIMI
                         BAŞLAT</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- AYARLAR MODAL -->
+    <div class="modal fade" id="modalSettings" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-secondary text-white">
+                    <h5 class="modal-title fw-bold">Ayarlar</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-check form-switch p-3 border rounded mb-3 bg-light">
+                        <input class="form-check-input" type="checkbox" id="set-aidat-takip"
+                            onchange="toggleAidatSetting(this.checked)">
+                        <label class="form-check-label fw-bold ms-2" for="set-aidat-takip">
+                            Aidat Alacak Takibi Yapılsın mı?
+                        </label>
+                        <div class="form-text mt-2 small">
+                            <i class="fa fa-info-circle"></i>
+                            <strong>Açık:</strong> Aidat borçlandırmaları "Alacaklar" listesinde görünür.<br>
+                            <strong>Kapalı:</strong> Aidat borçları raporlarda gizlenir. Sadece tahsilat (gelir) olarak
+                            işlenir.
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -2215,81 +2243,97 @@
 
         function renderGeneralReport(res, container, showDetails) {
             function generateAccordionItem(title, id, groups, total, isExpense, headerClass) {
-                const groupKeys = Object.keys(groups || {});
-                if (total === 0 && groupKeys.length === 0 && id !== 'gelir') return "";
+                // AYAR KONTROLÜ
+                const isAidatEnabled = localStorage.getItem('aidat_takip') !== 'false'; // Default TRUE
 
-                let rows = "";
-                if (groupKeys.length === 0) {
-                    rows = `<div class="text-center text-muted fst-italic p-2 small">Veri Yok (0 TL)</div>`;
-                } else {
-                    groupKeys.forEach((key, index) => {
-                        const group = groups[key]; // { toplam: X, detay: [...] }
+                Object.keys(groups).forEach((key, index) => {
+                    const group = groups[key];
 
-                        let subHdr = "";
-                        if (isExpense) {
-                            subHdr = `
-                                    <div class="d-flex gap-3 text-muted" style="font-size:0.75rem">
-                                        <span><i class="fa fa-check-circle text-success"></i> Ödenen: ${formatMoney(group.odenen)}</span>
-                                        <span><i class="fa fa-clock text-danger"></i> Borç: ${formatMoney(group.borc)}</span>
-                                    </div>
-                                `;
+                    // ALACAK RAPORU ÖZEL FİLTRE:
+                    let filteredDetay = group.detay;
+                    if (id === 'alacak') {
+
+                        // FİLTRE 1: AİDAT AYARI KAPALIYSA AİDAT GRUPLARINI GİZLE
+                        const lowerKey = key.toLowerCase();
+                        if (!isAidatEnabled && (lowerKey.includes('aidat') || lowerKey.includes('yıllık'))) {
+                            return; // Bu grubu atla (Döngüden çıkma, forEach'te return=continue)
                         }
 
-                        // --- HİYERARŞİK GRUPLAMA (ALT TUR) ---
-                        // group.detay dizisini altTur'a göre grupla
-                        let subGroups = {};
-                        if (group.detay && group.detay.length > 0) {
-                            group.detay.forEach(d => {
-                                const subKey = d.altTur || "Diğer";
-                                if (!subGroups[subKey]) subGroups[subKey] = [];
-                                subGroups[subKey].push(d);
-                            });
-                        }
+                        // FİLTRE 2: BORCU BİTENLERİ GİZLE
+                        // 1. Bakiyeleri Hesapla
+                        const balances = {};
+                        group.detay.forEach(d => {
+                            if (!balances[d.cariId]) balances[d.cariId] = 0;
+                            if (d.tur === 'Borclandirma' || d.tur === 'Gider' || (d.tur === 'Satis')) {
+                                balances[d.cariId] += d.tutar;
+                            } else if (d.tur === 'Tahsilat' || d.tur === 'Gelir') {
+                                balances[d.cariId] -= d.tutar;
+                            }
+                        });
 
-                        let detayHtml = "";
-                        const subGroupKeys = Object.keys(subGroups);
+                        // 2. Bakiyesi 0 veya altı olanları listeden çıkar
+                        filteredDetay = group.detay.filter(d => {
+                            if (!d.cariId) return true; // ID yoksa gizleme
+                            // Sadece +Bakiyesi olanları göster
+                            return balances[d.cariId] > 0.05;
+                        });
 
-                        // Eğer hiç detay yoksa veya sadece detaysızlar varsa
-                        if (subGroupKeys.length === 0) {
-                            detayHtml = `<div class="text-muted small ps-2">Detay yok.</div>`;
-                        } else {
-                            subGroupKeys.forEach(subKey => {
-                                const items = subGroups[subKey];
-                                // Alt Başlık (Eğer birden fazla grup varsa veya grup ismi 'Genel' değilse göster)
-                                if (subGroupKeys.length > 1 || (subKey !== 'Genel' && subKey !== 'Diğer')) {
-                                    detayHtml += `<div class="bg-light px-2 py-1 mt-2 mb-1 border-bottom fw-bold text-secondary small" style="border-left: 3px solid #ccc;">${subKey}</div>`;
+                        if (filteredDetay.length === 0) return;
+                    }
+
+                    // Alt Gruplama (Sub Category)
+                    // filteredDetay kullanacağız artık
+                    const subGroups = {};
+                    filteredDetay.forEach(d => {
+                        const subKey = d.altTur || "Diğer";
+                        if (!subGroups[subKey]) subGroups[subKey] = [];
+                        subGroups[subKey].push(d);
+                    });
+
+                    let detayHtml = "";
+                    const subGroupKeys = Object.keys(subGroups);
+
+                    // Eğer hiç detay yoksa veya sadece detaysızlar varsa
+                    if (subGroupKeys.length === 0) {
+                        detayHtml = `<div class="text-muted small ps-2">Detay yok.</div>`;
+                    } else {
+                        subGroupKeys.forEach(subKey => {
+                            const items = subGroups[subKey];
+                            // Alt Başlık (Eğer birden fazla grup varsa veya grup ismi 'Genel' değilse göster)
+                            if (subGroupKeys.length > 1 || (subKey !== 'Genel' && subKey !== 'Diğer')) {
+                                detayHtml += `<div class="bg-light px-2 py-1 mt-2 mb-1 border-bottom fw-bold text-secondary small" style="border-left: 3px solid #ccc;">${subKey}</div>`;
+                            }
+
+                            items.forEach(d => {
+                                // 1. CARİ ADI (KİM?)
+                                // Backend 'cari' alanını gönderiyor. Eğer 'Perakende' ise veya boş ise kontrol et.
+                                // Eğer Cari Adı boşsa ama açıklama doluysa açıklamayı öne çıkar.
+                                let cariDisplay = "";
+                                if (d.cari && d.cari !== "-" && d.cari !== "") {
+                                    cariDisplay = `<span class="fw-bold text-primary d-block" style="font-size:0.9rem">${d.cari}</span>`;
+                                } else {
+                                    // Cari yoksa (Perakende Satış gibi), boş bırakma, bilgilendir.
+                                    cariDisplay = `<span class="fw-bold text-muted d-block small">Perakende / İsimsiz</span>`;
                                 }
 
-                                items.forEach(d => {
-                                    // 1. CARİ ADI (KİM?)
-                                    // Backend 'cari' alanını gönderiyor. Eğer 'Perakende' ise veya boş ise kontrol et.
-                                    // Eğer Cari Adı boşsa ama açıklama doluysa açıklamayı öne çıkar.
-                                    let cariDisplay = "";
-                                    if (d.cari && d.cari !== "-" && d.cari !== "") {
-                                        cariDisplay = `<span class="fw-bold text-primary d-block" style="font-size:0.9rem">${d.cari}</span>`;
-                                    } else {
-                                        // Cari yoksa (Perakende Satış gibi), boş bırakma, bilgilendir.
-                                        cariDisplay = `<span class="fw-bold text-muted d-block small">Perakende / İsimsiz</span>`;
-                                    }
+                                // 2. AÇIKLAMA / ÜRÜN
+                                let desc = d.aciklama || "";
+                                // Temizlik
+                                if (desc.startsWith('(') && desc.endsWith(')')) desc = desc.slice(1, -1);
+                                if (desc === d.tur || desc === key || desc === subKey) desc = "";
 
-                                    // 2. AÇIKLAMA / ÜRÜN
-                                    let desc = d.aciklama || "";
-                                    // Temizlik
-                                    if (desc.startsWith('(') && desc.endsWith(')')) desc = desc.slice(1, -1);
-                                    if (desc === d.tur || desc === key || desc === subKey) desc = "";
+                                // Ürün Bilgisi Varsa Ekle
+                                if (d.urunBilgi) {
+                                    desc = `${d.urunBilgi} <small class="text-muted">(${desc})</small>`;
+                                }
 
-                                    // Ürün Bilgisi Varsa Ekle
-                                    if (d.urunBilgi) {
-                                        desc = `${d.urunBilgi} <small class="text-muted">(${desc})</small>`;
-                                    }
+                                // 3. TUTAR RENKLENDİRME
+                                let amountProps = 'text-dark';
+                                if (d.tur === 'Gider' || d.tur === 'Borclandirma') amountProps = 'text-danger';
+                                else if (d.tur === 'Gelir' || d.tur === 'Satis' || d.tur === 'Tahsilat') amountProps = 'text-success';
+                                else if (d.tur === 'BorcOdeme') amountProps = 'text-primary fw-bold';
 
-                                    // 3. TUTAR RENKLENDİRME
-                                    let amountProps = 'text-dark';
-                                    if (d.tur === 'Gider' || d.tur === 'Borclandirma') amountProps = 'text-danger';
-                                    else if (d.tur === 'Gelir' || d.tur === 'Satis' || d.tur === 'Tahsilat') amountProps = 'text-success';
-                                    else if (d.tur === 'BorcOdeme') amountProps = 'text-primary fw-bold';
-
-                                    detayHtml += `
+                                detayHtml += `
                                         <div class="d-flex justify-content-between border-bottom py-2 ps-2 align-items-center" style="font-size:0.85rem">
                                             <div>
                                                 ${cariDisplay}
@@ -2299,12 +2343,12 @@
                                             <span class="fw-bold text-end ${amountProps}" style="min-width:80px">${formatMoney(d.tutar)}</span>
                                         </div>
                                     `;
-                                });
                             });
-                        }
+                        });
+                    }
 
-                        const isOpen = showDetails ? 'show' : '';
-                        rows += `
+                    const isOpen = showDetails ? 'show' : '';
+                    rows += `
                             <div class="border rounded mb-2 bg-light">
                                 <div class="d-flex justify-content-between align-items-center p-2" data-bs-toggle="collapse" data-bs-target="#${id}-grp-${index}" style="cursor:pointer">
                                     <div>
@@ -2318,10 +2362,10 @@
                                 </div>
                             </div>
                         `;
-                    });
-                }
+                });
+            }
 
-                return `
+            return `
                     <div class="accordion-item mb-3 border shadow-sm">
                         <h2 class="accordion-header">
                             <button class="accordion-button ${(id !== 'gelir' && !showDetails) ? 'collapsed' : ''} ${headerClass} fw-bold py-3" type="button" data-bs-toggle="collapse" data-bs-target="#acc-${id}">
@@ -2338,17 +2382,17 @@
                         </div>
                     </div>
                 `;
-            }
+        }
 
-            const mainDiv = document.createElement('div');
-            mainDiv.className = "accordion";
-            let printBtnHtml = `
+        const mainDiv = document.createElement('div');
+        mainDiv.className = "accordion";
+        let printBtnHtml = `
                 <div class="d-flex justify-content-end mb-2 no-print">
                      <button class="btn btn-dark btn-sm" onclick="window.print()">
                         <i class="fa fa-print me-1"></i> YAZDIR
                     </button>
                 </div>`;
-            let ozetHtml = `
+        let ozetHtml = `
             <div class="row g-2 mb-3">
                 <div class="col-4">
                     <div class="p-2 rounded bg-success bg-opacity-10 border border-success text-center">
@@ -2370,12 +2414,12 @@
                 </div>
             </div>
             `;
-            let accHtml = "";
-            accHtml += generateAccordionItem("GELİRLER", "gelir", res.gelirGruplari, res.ozet.gelir, false, "bg-success bg-opacity-10 border border-success text-success");
-            accHtml += generateAccordionItem("GİDERLER", "gider", res.giderGruplari, res.ozet.gider, true, "bg-danger bg-opacity-10 border border-danger text-danger");
-            accHtml += generateAccordionItem("ALACAKLAR", "alacak", res.alacakGruplari, res.ozet.alacak, false, "bg-warning bg-opacity-10 border border-warning text-dark");
+        let accHtml = "";
+        accHtml += generateAccordionItem("GELİRLER", "gelir", res.gelirGruplari, res.ozet.gelir, false, "bg-success bg-opacity-10 border border-success text-success");
+        accHtml += generateAccordionItem("GİDERLER", "gider", res.giderGruplari, res.ozet.gider, true, "bg-danger bg-opacity-10 border border-danger text-danger");
+        accHtml += generateAccordionItem("ALACAKLAR", "alacak", res.alacakGruplari, res.ozet.alacak, false, "bg-warning bg-opacity-10 border border-warning text-dark");
 
-            container.innerHTML = printBtnHtml + ozetHtml + accHtml;
+        container.innerHTML = printBtnHtml + ozetHtml + accHtml;
         }
 
         // --- NEW REPORT UI HELPER ---
@@ -2496,7 +2540,49 @@
                     showToast("Hata: " + (res.mesaj || res.error || "Bilinmeyen hata"));
                 }
             });
+
         }
+
+        // --- SETTINGS LOGIC ---
+        function openSettingsModal() {
+            const val = localStorage.getItem('aidat_takip') !== 'false';
+            document.getElementById('set-aidat-takip').checked = val;
+            new bootstrap.Modal(document.getElementById('modalSettings')).show();
+        }
+
+        function toggleAidatSetting(isChecked) {
+            localStorage.setItem('aidat_takip', isChecked);
+            applySettings();
+            // Rapor açıksa yenile
+            const activeTab = document.querySelector('.tab-pane.active');
+            if (activeTab && activeTab.id === 'tab-rapor') {
+                getReport(); // Re-fetch or re-render
+            }
+        }
+
+        function applySettings() {
+            const isEnabled = localStorage.getItem('aidat_takip') !== 'false';
+
+            // 1. Aidat Dağıt Butonunu Gizle/Göster (Cari Listesindeki)
+            const btnAidat = document.getElementById('btn-aidat-dagit'); // Eğer ID verdiyseniz
+            // ID yoksa class veya yerinden bulalım. Şuan ID yok sanırım, eklemeliyiz veya JS ile bulmalıyız.
+            // Cari listesindeki butonu bulalım.
+            const cariActionDiv = document.querySelector('#tab-cari .d-flex.gap-2');
+            if (cariActionDiv) {
+                // Aidat Dağıt butonunu bul (İçinde 'Dağıt' yazan)
+                Array.from(cariActionDiv.children).forEach(btn => {
+                    if (btn.innerText.includes('Dağıt')) {
+                        if (isEnabled) btn.classList.remove('d-none');
+                        else btn.classList.add('d-none');
+                    }
+                });
+            }
+        }
+
+        // Initialize Settings on Load
+        document.addEventListener('DOMContentLoaded', () => {
+            applySettings();
+        });
 
         // --- YENİ EKLENEN FONKSİYONLAR ---
 
