@@ -1,5 +1,5 @@
-const APP_VERSION = "v3.5.17";
-const CACHE_VERSION = "3.5.17";
+const APP_VERSION = "v3.5.18";
+const CACHE_VERSION = "3.5.18";
 
 // HTML tarfında kullanmak için:
 // document.getElementById('uygulama-versiyon').innerText = APP_VERSION;
@@ -9,4 +9,4 @@ const CACHE_VERSION = "3.5.17";
 // const CACHE_NAME = "zikir-takip-" + CACHE_VERSION;
 
 const API_URL = "https://script.google.com/macros/s/AKfycbyN6UOTS9mM9KXWRfGxf3Snlg3U9s2s-SoVIZ7hX46on3f_vTJnw-GUTalad1LAny2i/exec";
-const API_URL_HK = "https://script.google.com/macros/s/AKfycbzntFDEYnVLkcOtStqQS4KIQCWCXfxrKWvbcfxTWNPYjJJq2QwRczLIgFxy2b5NrQ9gpw/exec";
+const API_URL_HK = "https://script.google.com/macros/s/AKfycbwk6FOvLAOolCqf4grMm0TDQIDDP0zxHjlHiCwAQ7sWKspqjhGe1VfH896K27bTH28r7g/exec";
