@@ -1270,13 +1270,15 @@
 
 
 
-                // --- CRITICAL FIX: Refresh active tab if needed ---
                 // Eğer kullanıcı şu an "Cari" sekmesindeyse, veriler geldiği an listeyi tekrar çiz.
                 // Aksi takdirde "Kayıt bulunamadı" yazar.
                 const activeTab = document.querySelector('.tab-pane.active');
                 if (activeTab && activeTab.id === 'tab-cari') {
                     renderCariList();
                 }
+
+                // FIX: POS Cari Listesini de doldur
+                loadPosCariList();
             });
         }
 
@@ -1845,8 +1847,6 @@
             if (isFull) {
                 bas = "2000-01-01";
                 bit = new Date().toISOString().split('T')[0];
-                // Toast mesajı ile bilgi ver
-                showToast("Tüm Geçmiş taranıyor...");
             }
 
             if (!bas || !bit) {
@@ -2268,9 +2268,8 @@
                                     if (d.cari && d.cari !== "-" && d.cari !== "") {
                                         cariDisplay = `<span class="fw-bold text-primary d-block" style="font-size:0.9rem">${d.cari}</span>`;
                                     } else {
-                                        // Cari yoksa (örn. Perakende), belki açıklamada yazıyordur.
-                                        // Ama biz yine de bir şey yazalım.
-                                        // cariDisplay = `<span class="fw-bold text-muted d-block small">Perakende / İsimsiz</span>`;
+                                        // Cari yoksa (Perakende Satış gibi), boş bırakma, bilgilendir.
+                                        cariDisplay = `<span class="fw-bold text-muted d-block small">Perakende / İsimsiz</span>`;
                                     }
 
                                     // 2. AÇIKLAMA / ÜRÜN
@@ -2928,6 +2927,9 @@
             const modal = new bootstrap.Modal(document.getElementById('modalHizliSatis'));
             modal.show();
 
+            // Listeyi her açılışta tazele (Garanti olsun)
+            loadPosCariList();
+
             // Sıfırla ve Yükle
             posProductCache = null;
             const grid = document.getElementById('pos-products');
@@ -3067,16 +3069,26 @@
             // KASA ID BULMA (Nakit İşlem İçin)
             let kasaId = "";
             if (odemeYontemi === 'Peşin') {
-                if (globalData.hesaplar && globalData.hesaplar.length > 0) {
-                    // "Kasa" türünde ve adı "Nakit" olanı bul, yoksa ilk KASA türündeki hesabı al
-                    const kasaAcc = globalData.hesaplar.find(h => h.tur === 'Kasa' && h.ad.toLowerCase().includes('nakit'))
-                        || globalData.hesaplar.find(h => h.tur === 'Kasa');
+                // KASA ID BULMA (Nakit İşlem İçin)
+                if (globalData.cariler && globalData.cariler.length > 0) {
+                    // "Kasa" veya "KasaHesabi" türünde bir hesap bul (Case Insensitive)
+                    // Öncelik: Adı "Nakit" veya "Merkez" içeren.
+
+                    // DEBUG: Tüm carileri konsola yazalım ki hatayı görelim
+                    // console.log("Account Search:", globalData.cariler.map(c => `${c.tur} - ${c.ad}`));
+
+                    let candidates = globalData.cariler.filter(h =>
+                        (h.tur && h.tur.toLowerCase().includes('kasa'))
+                    );
+
+                    const kasaAcc = candidates.find(h => h.ad.toLowerCase().includes('nakit') || h.ad.toLowerCase().includes('merkez'))
+                        || candidates[0]; // Yoksa ilkini al
 
                     if (kasaAcc) {
                         kasaId = kasaAcc.id;
                     } else {
                         // Kasa türünde hesap yoksa
-                        console.error("DEBUG: Kasa türünde hesap bulunamadı. Hesaplar:", globalData.hesaplar);
+                        console.error("DEBUG: Kasa (Nakit) hesabı bulunamadı. Lütfen Hesaplar sayfasında Türü 'Kasa' olan bir hesap tanımlayın.", globalData.cariler);
                     }
                 }
 
@@ -3142,7 +3154,15 @@
             sel.appendChild(optPer);
 
             // 3. Üyeler (Global Data'dan)
+            console.log("loadPosCariList running. Count:", globalData.cariler ? globalData.cariler.length : 'null');
+
             if (globalData.cariler && globalData.cariler.length > 0) {
+                // DEBUG: Bir tane bilgi options ekle
+                // const info = document.createElement('option');
+                // info.innerText = `--- Toplam ${globalData.cariler.length} Kişi ---`;
+                // info.disabled = true;
+                // sel.appendChild(info);
+
                 globalData.cariler.forEach(c => {
                     const tur = (c.tur || "").toLowerCase().trim();
                     // Sadece Tedarikçileri gizle, gerisini göster (Üye, Bağışçı, Boş vb.)
@@ -3154,12 +3174,17 @@
                     }
                 });
             } else {
-                // Debug indicator if empty
-                // const optErr = document.createElement('option');
-                // optErr.innerText = "(Liste Yükleniyor...)";
-                // optErr.disabled = true;
-                // sel.appendChild(optErr);
+                // Liste Boşsa
+                const optErr = document.createElement('option');
+                optErr.innerText = "(Üye Listesi Alınamadı veya Boş)";
+                optErr.disabled = true;
+                sel.appendChild(optErr);
             }
+            // Debug indicator if empty
+            // const optErr = document.createElement('option');
+            // optErr.innerText = "(Liste Yükleniyor...)";
+            // optErr.disabled = true;
+            // sel.appendChild(optErr);
         }
 
         function handlePosCariChange() {
