@@ -2363,9 +2363,9 @@
                             </div>
                         `;
                 });
-            }
 
-            return `
+
+                return `
                     <div class="accordion-item mb-3 border shadow-sm">
                         <h2 class="accordion-header">
                             <button class="accordion-button ${(id !== 'gelir' && !showDetails) ? 'collapsed' : ''} ${headerClass} fw-bold py-3" type="button" data-bs-toggle="collapse" data-bs-target="#acc-${id}">
@@ -2382,17 +2382,17 @@
                         </div>
                     </div>
                 `;
-        }
+            }
 
-        const mainDiv = document.createElement('div');
-        mainDiv.className = "accordion";
-        let printBtnHtml = `
+            const mainDiv = document.createElement('div');
+            mainDiv.className = "accordion";
+            let printBtnHtml = `
                 <div class="d-flex justify-content-end mb-2 no-print">
                      <button class="btn btn-dark btn-sm" onclick="window.print()">
                         <i class="fa fa-print me-1"></i> YAZDIR
                     </button>
                 </div>`;
-        let ozetHtml = `
+            let ozetHtml = `
             <div class="row g-2 mb-3">
                 <div class="col-4">
                     <div class="p-2 rounded bg-success bg-opacity-10 border border-success text-center">
@@ -2414,12 +2414,12 @@
                 </div>
             </div>
             `;
-        let accHtml = "";
-        accHtml += generateAccordionItem("GELİRLER", "gelir", res.gelirGruplari, res.ozet.gelir, false, "bg-success bg-opacity-10 border border-success text-success");
-        accHtml += generateAccordionItem("GİDERLER", "gider", res.giderGruplari, res.ozet.gider, true, "bg-danger bg-opacity-10 border border-danger text-danger");
-        accHtml += generateAccordionItem("ALACAKLAR", "alacak", res.alacakGruplari, res.ozet.alacak, false, "bg-warning bg-opacity-10 border border-warning text-dark");
+            let accHtml = "";
+            accHtml += generateAccordionItem("GELİRLER", "gelir", res.gelirGruplari, res.ozet.gelir, false, "bg-success bg-opacity-10 border border-success text-success");
+            accHtml += generateAccordionItem("GİDERLER", "gider", res.giderGruplari, res.ozet.gider, true, "bg-danger bg-opacity-10 border border-danger text-danger");
+            accHtml += generateAccordionItem("ALACAKLAR", "alacak", res.alacakGruplari, res.ozet.alacak, false, "bg-warning bg-opacity-10 border border-warning text-dark");
 
-        container.innerHTML = printBtnHtml + ozetHtml + accHtml;
+            container.innerHTML = printBtnHtml + ozetHtml + accHtml;
         }
 
         // --- NEW REPORT UI HELPER ---
