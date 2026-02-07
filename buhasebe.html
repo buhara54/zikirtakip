@@ -1295,6 +1295,19 @@
 
                 // FIX: POS Cari Listesini de doldur
                 loadPosCariList();
+
+                // --- GÖRÜNÜRLÜK AYARLARI (Sayfa Yüklenince) ---
+                if (globalData.ayarlar && globalData.ayarlar.aidatAlacak) {
+                    const isAktif = globalData.ayarlar.aidatAlacak === 'Aktif';
+                    const btnAidat = document.getElementById('btn-toplu-aidat');
+                    if (btnAidat) {
+                        if (isAktif) btnAidat.classList.remove('d-none');
+                        else btnAidat.classList.add('d-none');
+                    }
+                    // Sidebar Checkbox Sync
+                    const chk = document.getElementById('chk-aidat-alacak');
+                    if (chk) chk.checked = isAktif;
+                }
             });
         }
 
