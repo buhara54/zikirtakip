@@ -316,8 +316,8 @@
                         title="Otomatik kira vb. tanımla">
                         <i class="fa fa-calendar-check"></i> Sabit Gider
                     </button>
-                    <button class="btn btn-sm btn-danger flex-shrink-0" onclick="openTopluAidatModal()"><i
-                            class="fa fa-layer-group"></i> Aidat Dağıt</button>
+                    <button class="btn btn-sm btn-danger flex-shrink-0" id="btn-toplu-aidat-2"
+                        onclick="openTopluAidatModal()"><i class="fa fa-layer-group"></i> Aidat Dağıt</button>
                     <button class="btn btn-sm btn-primary flex-shrink-0" onclick="openCariModal()"><i
                             class="fa fa-plus"></i> Yeni
                     </button>
@@ -1299,16 +1299,26 @@
                 // --- GÖRÜNÜRLÜK AYARLARI (Sayfa Yüklenince) ---
                 if (globalData.ayarlar && globalData.ayarlar.aidatAlacak) {
                     const isAktif = globalData.ayarlar.aidatAlacak === 'Aktif';
-                    const btnAidat = document.getElementById('btn-toplu-aidat');
-                    if (btnAidat) {
-                        if (isAktif) btnAidat.classList.remove('d-none');
-                        else btnAidat.classList.add('d-none');
-                    }
+                    toggleAidatButtons(isAktif);
+
                     // Sidebar Checkbox Sync
                     const chk = document.getElementById('chk-aidat-alacak');
                     if (chk) chk.checked = isAktif;
                 }
             });
+        }
+
+        function toggleAidatButtons(isAktif) {
+            const btn1 = document.getElementById('btn-toplu-aidat');
+            const btn2 = document.getElementById('btn-toplu-aidat-2');
+
+            if (isAktif) {
+                if (btn1) btn1.classList.remove('d-none');
+                if (btn2) btn2.classList.remove('d-none');
+            } else {
+                if (btn1) btn1.classList.add('d-none');
+                if (btn2) btn2.classList.add('d-none');
+            }
         }
 
         // --- MODAL EVENT LISTENER ---
@@ -1525,10 +1535,12 @@
             const radioVeresiye = document.getElementById('radio-veresiye');
 
             if (rawTur === 'Satis' || rawTur === 'StokGiris') {
-                divOdeme.classList.remove('d-none');
-                // Seçimsiz Beklesin (Checked kaldır)
-                radioPesin.checked = false;
-                radioVeresiye.checked = false;
+                // Sadece gizliyken açılıyorsa resetle. Zaten açıksa dokunma (Kullanıcı seçim yapıyor).
+                if (divOdeme.classList.contains('d-none')) {
+                    divOdeme.classList.remove('d-none');
+                    radioPesin.checked = false;
+                    radioVeresiye.checked = false;
+                }
             } else {
                 divOdeme.classList.add('d-none');
                 // Diğerlerinde otomatik Peşin
@@ -1569,7 +1581,7 @@
 
             // 1. GİDER GRUBU
             if (tur === 'BorcOdeme' || tur === 'StokGiris') {
-                filtered = globalData.cariler.filter(c => c.tur === 'Tedarikci' || c.tur === 'Tedarikçi');
+                filtered = globalData.cariler.filter(c => c.tur === 'Tedarikci' || c.tur === 'Tedarikçi' || c.tur === 'Diger' || c.tur === 'Diğer');
             }
             // 2. GELİR GRUBU
             else if (tur.startsWith('Gelir') || tur === 'Satis' || tur === 'Tahsilat') {
@@ -2486,7 +2498,7 @@
                     document.getElementById('cari-ad').value = person.ad;
                     document.getElementById('cari-tur').value = person.tur;
                     document.getElementById('cari-tel').value = person.telefon || "";
-                    document.getElementById('cari-email').value = person.email || "";
+                    // Email input removed as requested
                     document.getElementById('cari-aidat').value = person.aidat || ""; // 0 yerine boş gelsin ki placeholder görünsün
                 }
 
