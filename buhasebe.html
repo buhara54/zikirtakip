@@ -3455,4 +3455,33 @@
 
     <!-- MODAL: CARİ EKLE -->
 
+    <script>
+        function saveAidatSetting() {
+            const isChecked = document.getElementById('chk-aidat-alacak').checked;
+
+            // UI Feedback
+            if (isChecked) {
+                const btn = document.getElementById('btn-toplu-aidat');
+                if (btn) btn.parentElement.classList.remove('d-none');
+            } else {
+                const btn = document.getElementById('btn-toplu-aidat');
+                if (btn) btn.parentElement.classList.add('d-none');
+            }
+
+            // Backend Save
+            const val = isChecked ? "Aktif" : "Pasif";
+            postAPI("buhasebe_ayar_kaydet", { anahtar: "AidatAlacak", deger: val }).then(res => {
+                if (res.basarili) {
+                    showToast("Ayar Kaydedildi: " + val);
+                    // Update Global Data
+                    if (!globalData.ayarlar) globalData.ayarlar = {};
+                    globalData.ayarlar.aidatAlacak = val;
+                } else {
+                    showToast("Hata: " + res.mesaj);
+                    document.getElementById('chk-aidat-alacak').checked = !isChecked;
+                }
+            });
+        }
+    </script>
+
 </html>
