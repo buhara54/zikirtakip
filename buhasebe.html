@@ -295,7 +295,7 @@
                     <i class="fa fa-users text-info"></i>
                     <span>Cari Kartlar</span>
                 </div>
-                <div class="menu-item" onclick="openTopluAidatModal()">
+                <div class="menu-item" id="btn-toplu-aidat" onclick="openTopluAidatModal()">
                     <i class="fa fa-envelope-open-text text-secondary"></i>
                     <span>Aidat Dağıt</span>
                 </div>
@@ -1421,8 +1421,8 @@
                 // Buton Gizle/Göster
                 const btnAidat = document.getElementById('btn-toplu-aidat');
                 if (btnAidat) {
-                    if (isAktif) btnAidat.parentElement.classList.remove('d-none');
-                    else btnAidat.parentElement.classList.add('d-none');
+                    if (isAktif) btnAidat.classList.remove('d-none');
+                    else btnAidat.classList.add('d-none');
                 }
             }
 
@@ -3462,10 +3462,10 @@
             // UI Feedback
             if (isChecked) {
                 const btn = document.getElementById('btn-toplu-aidat');
-                if (btn) btn.parentElement.classList.remove('d-none');
+                if (btn) btn.classList.remove('d-none');
             } else {
                 const btn = document.getElementById('btn-toplu-aidat');
-                if (btn) btn.parentElement.classList.add('d-none');
+                if (btn) btn.classList.add('d-none');
             }
 
             // Backend Save
