@@ -522,8 +522,24 @@
                         class="fa fa-boxes me-2 text-muted"></i> Stok Yönetimi</button>
                 <button class="list-group-item list-group-item-action p-3" onclick="switchTab('tab-rapor')"><i
                         class="fa fa-chart-bar me-2 text-muted"></i> Raporlar</button>
-                <button class="list-group-item list-group-item-action p-3" onclick="alert('Yakında: Ayarlar')"><i
-                        class="fa fa-cog me-2 text-muted"></i> Ayarlar</button>
+
+                <!-- AYARLAR & ARAÇLAR -->
+                <div class="list-group-item bg-light fw-bold text-muted small mt-2">AYARLAR</div>
+                <div class="list-group-item p-3">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="chk-aidat-alacak" checked
+                            onchange="saveAidatSetting()">
+                        <label class="form-check-label small fw-bold" for="chk-aidat-alacak">Aidatları Alacak (Borç)
+                            Yaz</label>
+                    </div>
+                    <div class="text-muted mt-1" style="font-size:0.75em; line-height:1.2">
+                        Kapalıysa: Aidatlar borç listesinde görünmez, şahıs bakiyesini etkilemez (sadece ödeme
+                        alırsınız).
+                    </div>
+                </div>
+                <button class="list-group-item list-group-item-action p-3" onclick="fixBalances()">
+                    <i class="fa fa-tools me-2 text-muted"></i> Bakiye Düzeltme Aracı
+                </button>
             </div>
         </div>
     </div>
@@ -1394,6 +1410,20 @@
                 infoText.innerText = msg;
             } else {
                 infoBubble.classList.add('d-none');
+            }
+
+            // --- AYARLARI YÜKLE ---
+            if (globalData.ayarlar && globalData.ayarlar.aidatAlacak) {
+                const isAktif = globalData.ayarlar.aidatAlacak === 'Aktif';
+                const chk = document.getElementById('chk-aidat-alacak');
+                if (chk) chk.checked = isAktif;
+
+                // Buton Gizle/Göster
+                const btnAidat = document.getElementById('btn-toplu-aidat');
+                if (btnAidat) {
+                    if (isAktif) btnAidat.parentElement.classList.remove('d-none');
+                    else btnAidat.parentElement.classList.add('d-none');
+                }
             }
 
             // --- CATEGORY POPULATION ---
