@@ -65,6 +65,21 @@
         }
 
         /* CUSTOM REPORT BUTTONS */
+        /* POS Responsive Container */
+        .pos-products-container {
+            overflow-y: visible;
+            height: auto;
+            margin-bottom: 1rem;
+        }
+
+        @media (min-width: 768px) {
+            .pos-products-container {
+                overflow-y: auto !important;
+                height: 60vh !important;
+                margin-bottom: 0 !important;
+            }
+        }
+
         .btn-custom {
             background-color: #9a6b2a;
             border-color: #9a6b2a;
@@ -628,11 +643,11 @@
                         <div class="row g-2 mt-2">
                             <div class="col-6">
                                 <label class="form-label small fw-bold text-muted">Satış Fiyatı (TL)</label>
-                                <input type="number" id="stok-fiyat" class="form-control" placeholder="0">
+                                <input type="number" id="stok-fiyat" class="form-control" placeholder="0" step="0.01">
                             </div>
                             <div class="col-6">
                                 <label class="form-label small fw-bold text-muted">Maliyet (Opsiyonel)</label>
-                                <input type="number" id="stok-maliyet" class="form-control" placeholder="0">
+                                <input type="number" id="stok-maliyet" class="form-control" placeholder="0" step="0.01">
                             </div>
                         </div>
                     </form>
@@ -682,6 +697,31 @@
                 <div class="modal-footer border-0">
                     <button type="button" class="btn btn-danger w-100 fw-bold" onclick="runTopluAidat()">DAĞITIMI
                         BAŞLAT</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DRILL-DOWN MODAL -->
+    <div class="modal fade" id="modalDrillDown" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title fw-bold" id="drillDownTitle">Detaylar</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <table class="table table-hover table-striped mb-0 small">
+                        <thead class="table-light sticky-top" id="drillDownTableHead">
+                            <!-- JS Fill -->
+                        </thead>
+                        <tbody id="drillDownTableBody">
+                            <!-- JS Fill -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer bg-light p-1 justify-content-center">
+                    <small class="text-muted fst-italic">Detay görmek için satıra tıklayınız.</small>
                 </div>
             </div>
         </div>
@@ -762,7 +802,8 @@
                         <div class="row g-2 mb-3">
                             <div class="col-6">
                                 <label class="form-label small fw-bold text-muted" for="inp-tutar">Tutar (TL)</label>
-                                <input type="number" id="inp-tutar" class="form-control fw-bold" placeholder="0.00">
+                                <input type="number" id="inp-tutar" class="form-control fw-bold" placeholder="0.00"
+                                    step="0.01">
                                 <div class="form-text small d-none text-danger" id="hlp-tutar"></div>
                                 <!-- Açıklama için -->
                             </div>
@@ -785,7 +826,7 @@
                         <div class="row g-2 mb-3 align-items-end">
                             <div class="col-12" id="div-adet">
                                 <label class="form-label small fw-bold text-muted">Adet / Miktar</label>
-                                <input type="number" id="inp-adet" class="form-control" placeholder="1">
+                                <input type="number" id="inp-adet" class="form-control" placeholder="1" step="0.01">
                                 <div class="form-text small d-none text-danger" id="hlp-adet"></div>
                             </div>
                         </div>
@@ -795,7 +836,7 @@
                             <label class="form-label small fw-bold text-muted">Ödeme Yöntemi</label>
                             <div class="btn-group w-100" role="group">
                                 <input type="radio" class="btn-check" name="btnradio" id="radio-pesin"
-                                    autocomplete="off" checked onchange="toggleFormFields()">
+                                    autocomplete="off" onchange="toggleFormFields()">
                                 <label class="btn btn-outline-success" for="radio-pesin">
                                     <i class="fa fa-money-bill-wave me-1"></i> Peşin (Kasa)
                                 </label>
@@ -896,7 +937,7 @@
                             </div>
                             <div class="mb-3">
                                 <label class="form-label small fw-bold">Aylık Tutar (TL)</label>
-                                <input type="number" id="sg-tutar" class="form-control" placeholder="0.00">
+                                <input type="number" id="sg-tutar" class="form-control" placeholder="0.00" step="0.01">
                             </div>
                             <div class="row g-2 mb-3">
                                 <div class="col-6">
@@ -1280,7 +1321,8 @@
                 populateSelect('inp-cari', globalData.cariler.map(c => ({ val: c.id, txt: c.ad })), true);
 
                 // Stok Seçimi (Hem İşlem Hem Rapor İçin)
-                const stokOpts = globalData.stok.map(s => ({ val: s.id, txt: s.ad + ' (Stok: ' + s.miktar + ')' }));
+                // Stok Seçimi (Hem İşlem Hem Rapor İçin)
+                const stokOpts = globalData.stok.map(s => ({ val: s.id, txt: s.ad + ' (Stok: ' + Number(s.miktar).toFixed(2) + ')' }));
                 populateSelect('inp-stok', stokOpts, true);
                 populateSelect('rep-stok-secimi', stokOpts, true); // Report filter population
 
@@ -1389,14 +1431,40 @@
                 ];
             }
 
-            opts.forEach(o => {
-                const opt = document.createElement('option');
-                opt.value = o.v; opt.innerText = o.t;
-                el.appendChild(opt);
-            });
+            if (opts.length > 0) {
+                opts.forEach(o => {
+                    const opt = document.createElement('option');
+                    opt.value = o.v; opt.innerText = o.t;
+                    el.appendChild(opt);
+                });
+                // Varsayılan İlki Seç
+                el.selectedIndex = 0;
+            }
 
+            // FIX: Kategori ve diğer alanların hemen dolması için tetikle
             toggleFormFields();
         }
+
+        document.getElementById('inp-stok').addEventListener('change', function () {
+            const val = this.value;
+            const adetInput = document.getElementById('inp-adet');
+
+            if (val && globalData.stoklar) {
+                const stok = globalData.stoklar.find(s => String(s.id) === String(val));
+                if (stok) {
+                    const birim = (stok.birim || "").toLowerCase();
+                    // Kg, Lt, M, Metre gibi birimler ondalıklı olabilir
+                    if (birim === 'kg' || birim === 'lt' || birim === 'm' || birim === 'metre') {
+                        adetInput.step = "0.01";
+                        adetInput.placeholder = "0.00";
+                    } else {
+                        adetInput.step = "1";
+                        adetInput.placeholder = "1";
+                        // Eğer şu anki değer ondalıklıysa yuvarla? Hayır, kullanıcı düzeltsin.
+                    }
+                }
+            }
+        });
 
         function toggleFormFields() {
             const rawTur = document.getElementById('inp-tur').value;
@@ -1526,7 +1594,13 @@
 
             // --- CARI FILTERING (SEARCHABLE) ---
             // Old select logic is removed. Now using global filter.
-            updateActiveCariList(rawTur);
+            // --- CARI FILTERING (SEARCHABLE) ---
+            // Old select logic is removed. Now using global filter.
+            // FIX: Don't reset if type hasn't changed (to prevent clearing on Payment toggle)
+            if (document.body.getAttribute('data-last-tur') !== rawTur) {
+                updateActiveCariList(rawTur);
+                document.body.setAttribute('data-last-tur', rawTur);
+            }
 
             // --- ÖDEME YÖNTEMİ ---
             // Sadece Satış ve StokGiris'te göster.
@@ -1543,8 +1617,8 @@
                 }
             } else {
                 divOdeme.classList.add('d-none');
-                // Diğerlerinde otomatik Peşin
-                radioPesin.checked = true;
+                // Diğerlerinde otomatik Peşin seçimi İPTAL (Arka planda saveIslem yönetecek)
+                // radioPesin.checked = true; 
             }
 
             // Hibe Label
@@ -1580,8 +1654,14 @@
             let filtered = globalData.cariler;
 
             // 1. GİDER GRUBU
+            // 1. GİDER GRUBU
             if (tur === 'BorcOdeme' || tur === 'StokGiris') {
-                filtered = globalData.cariler.filter(c => c.tur === 'Tedarikci' || c.tur === 'Tedarikçi' || c.tur === 'Diger' || c.tur === 'Diğer');
+                // REVERT: User insists on filtering only Suppliers.
+                // Robust check: Tedarik, Diger
+                filtered = globalData.cariler.filter(c => {
+                    const t = (c.tur || "").toLowerCase();
+                    return t.includes('tedarik') || t.includes('diger') || t.includes('diğer');
+                });
             }
             // 2. GELİR GRUBU
             else if (tur.startsWith('Gelir') || tur === 'Satis' || tur === 'Tahsilat') {
@@ -1736,10 +1816,10 @@
                 user: currentUser.email,
                 islemTuru: islemTuru,
                 rawTur: rawTur, // Backend detay gerekirse diye gönderelim
-                odemeYontemi: isPesin ? 'Pesin' : 'Veresiye', // Eğer ikisi de unchecked ise (validation geçse bile) undefined olabilir mi? Hayır, biri checked olmalı. 
-                // Wait, if validation passed, one is checked. But strict logic:
-                // If hidden, default 'Pesin'. If visible, user selection.
-                // In toggleFormFields I set 'checked=true' if hidden. So safe.
+                rawTur: rawTur, // Backend detay gerekirse diye gönderelim
+                // FIX: Eğer ödeme yöntemi gizliyse (Gelir/Gider vb.) varsayılan 'Pesin' kabul et.
+                // Görünürse kullanıcı seçimini (isPesin) baz al.
+                odemeYontemi: (divOdeme.classList.contains('d-none')) ? 'Pesin' : (isPesin ? 'Pesin' : 'Veresiye'),
 
                 tutar: document.getElementById('inp-tutar').value,
                 adet: document.getElementById('inp-adet').value,
@@ -2005,19 +2085,30 @@
                             let val = (u.miktar || 0) * (u.fiyat || 0);
                             totalVal += val;
                             html += `<tr>
-                                        <td class="fw-bold">${u.ad}</td>
-                                        <td>${u.tur}</td>
-                                        <td><span class="badge bg-secondary">${u.miktar}</span></td>
-                                        <td>${u.birim}</td>
-                                        <td>${formatMoney(u.fiyat)}</td>
-                                        ${detay ? `<td>${formatMoney(u.maliyet)}</td><td class="${u.kar > 0 ? 'text-success' : 'text-danger'}">${formatMoney(u.kar)}</td>` : ''}
-                                        <td class="fw-bold">${formatMoney(val)}</td>
-                                      </tr>`;
+                                    <td class="fw-bold">${u.ad}</td>
+                                    <td>${u.tur}</td>
+                                    <td><span class="badge bg-secondary">${Number(u.miktar).toFixed(2)}</span></td>
+                                    <td>${u.birim}</td>
+                                    <td>${formatMoney(u.fiyat)}</td>
+                                    ${detay ? `<td>${formatMoney(u.maliyet)}</td><td class="${u.kar > 0 ? 'text-success' : 'text-danger'}">${formatMoney(u.kar)}</td>` : ''}
+                                    <td class="fw-bold">${formatMoney(val)}</td>
+                                  </tr>`;
                         });
                         html += `</tbody>
                                 <tfoot class="table-light fw-bold"><tr><td colspan="${detay ? 7 : 5}" class="text-end">TOPLAM STOK DEĞERİ:</td><td>${formatMoney(totalVal)}</td></tr></tfoot>
                                 </table></div>`;
+                        html += `</tbody>
+                                <tfoot class="table-light fw-bold"><tr><td colspan="${detay ? 7 : 5}" class="text-end">TOPLAM STOK DEĞERİ:</td><td>${formatMoney(totalVal)}</td></tr></tfoot>
+                                </table></div>
+                                
+                                <!-- STOK SATIŞ DETAYI (INJECTED) -->
+                                <div id="stok-detay-wrapper" class="mt-4"></div>`;
                         container.innerHTML = html;
+
+                        // FEATURE: Eğer Detay açıksa ve Tek Ürün seçiliyse, Satış Geçmişini Getir
+                        if (detay && selectedStokId) {
+                            loadStokSalesDetail(selectedStokId);
+                        }
                     } else {
                         container.innerHTML = `<div class="alert alert-danger">${res.mesaj || "Veri yok"}</div>`;
                     }
@@ -2449,7 +2540,13 @@
                 }
             });
 
-            // 2. Update Hidden Select
+            // 2. Clear Previous Report & UI
+            const reportDiv = document.getElementById('rapor-sonuc');
+            if (reportDiv) reportDiv.classList.add('d-none');
+            const dynDiv = document.getElementById('dynamic-report-div');
+            if (dynDiv) dynDiv.remove();
+
+            // 3. Update Hidden Select
             const sel = document.getElementById('rep-tur-secimi');
             if (sel) {
                 sel.value = type;
@@ -2974,15 +3071,19 @@
         }
 
         // --- HIZLI SATIŞ (POS) MODÜLÜ ---
-        let posSelectedProduct = null;
         let posActiveCategory = "Ticari";
-        let posProductCache = null; // Cache variable
+        let posProductCache = null;
+        let posBasket = []; // SEPET DİZİSİ
 
         function openPosModal() {
             const modal = new bootstrap.Modal(document.getElementById('modalHizliSatis'));
             modal.show();
 
-            // Listeyi her açılışta tazele (Garanti olsun)
+            // Reset Basket
+            posBasket = [];
+            renderPosBasket();
+
+            // Listeyi her açılışta tazele
             loadPosCariList();
 
             // Sıfırla ve Yükle
@@ -3023,7 +3124,6 @@
             const grid = document.getElementById('pos-products');
 
             if (!posProductCache) {
-                // Eğer cache henüz dolmadıysa (Çok hızlı tıklayanlar için)
                 grid.innerHTML = '<div class="text-center w-100"><i class="fa fa-spinner fa-spin"></i> Bekleyiniz...</div>';
                 return;
             }
@@ -3040,155 +3140,263 @@
             filtered.sort((a, b) => a.ad.localeCompare(b.ad));
 
             filtered.forEach(u => {
-                const btn = document.createElement('button');
-                btn.className = "btn btn-outline-dark text-start position-relative p-2";
-                btn.style.width = "calc(50% - 5px)"; // 2 kolon
-                btn.onclick = () => selectPosProduct(u);
+                const btn = document.createElement('div');
+                btn.className = "btn btn-outline-dark text-center position-relative p-1 d-flex flex-column justify-content-center gap-0";
+                btn.style.width = "calc(33% - 6px)";
+                btn.style.height = "65px"; // Reduced Height
+                btn.onclick = () => addToBasket(u);
+
+                const basketItem = posBasket.find(i => i.id === u.id);
+                const badge = basketItem ? `<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-light">${basketItem.adet}</span>` : "";
 
                 btn.innerHTML = `
-                        <div class="fw-bold small text-truncate">${u.ad}</div>
-                        <div class="text-success fw-bold small">${formatMoney(u.fiyat)}</div>
+                        <div class="fw-bold text-truncate w-100" style="font-size: 0.75rem; line-height:1.1;">${u.ad}</div>
+                        <div class="text-success fw-bold mt-1" style="font-size: 0.8rem;">${formatMoney(u.fiyat)}</div>
+                        ${badge}
                     `;
                 grid.appendChild(btn);
             });
         }
 
-        function selectPosProduct(u) {
-            posSelectedProduct = u;
-            // Formu Doldur
-            document.getElementById('pos-urun-ad').value = u.ad;
-            document.getElementById('pos-fiyat').value = u.fiyat;
-            document.getElementById('pos-adet').value = 1;
+        // --- SEPET MANTIĞI ---
+        function addToBasket(u) {
+            // Birim Kontrolü (kg/lt/metre ise Miktar 0 olarak ekle, manuel giriş zorunlu)
+            const birim = (u.birim || "").toLowerCase();
+            const isDecimal = (birim === 'kg' || birim === 'lt' || birim === 'm' || birim === 'metre');
 
-            // Highlight efekti (Kurumsal Kahverengi - btn-custom)
-            const grid = document.getElementById('pos-products');
-            Array.from(grid.children).forEach(b => {
-                b.classList.remove('btn-custom', 'text-white');
-                b.classList.add('btn-outline-dark');
-            });
-            event.currentTarget.classList.remove('btn-outline-dark');
-            event.currentTarget.classList.add('btn-custom', 'text-white');
-        }
+            // Sepette var mı?
+            const existing = posBasket.find(i => i.id === u.id);
 
-        function changePosAdet(delta) {
-            const inp = document.getElementById('pos-adet');
-            let v = parseInt(inp.value) || 1;
-            v += delta;
-            if (v < 1) v = 1;
-            inp.value = v;
-        }
-
-        function submitPosSale() {
-            if (!posSelectedProduct) { showToast("Lütfen bir ürün seçin."); return; }
-
-            const adet = parseInt(document.getElementById('pos-adet').value);
-            const fiyat = parseFloat(document.getElementById('pos-fiyat').value);
-
-            // STOK KONTROLÜ
-            if (posSelectedProduct.miktar < adet) {
-                showToast(`Hata: Yetersiz Stok! (Mevcut: ${posSelectedProduct.miktar})`);
-                return;
-            }
-
-            const cariVal = document.getElementById('pos-cari').value;
-            const odemeYontemi = document.querySelector('input[name="pos-odeme"]:checked').value;
-
-            // VALIDASYONLAR
-            if (!cariVal || cariVal === "") {
-                showToast("Lütfen Müşteri Seçiniz (Perakende veya Üye).");
-                return;
-            }
-
-            // Cari ID ve İsim Belirleme
-            let cariId = cariVal;
-            let cariAd = "Perakende Satış";
-
-            if (cariVal === 'Perakende') {
-                cariId = ""; // Backend'e boş gidince Perakende sayar veya "Perakende" stringi yollarız
-                // Backend mantığına göre: Eğer cari boş ise ve işlem türü Satış ise, isimsiz satış olur.
-                // Ancak raporda "Perakende Satış" gözükmesi için Açıklamaya veya Cari Adına yazmalıyız.
-                // Biz 'cari' alanına 'Perakende' yazıp gönderelim, backend bunu Cari ID sanmasın diye kontrol edelim.
-                // Backend 'buhasebe_islem_kaydet' genellikle ID bekler.
-                // Şimdilik ID'yi boş bırakalım (""), Açıklamaya ekleyelim.
-                cariId = "";
+            if (existing) {
+                if (isDecimal) {
+                    showOzelAlert("Bu ürün zaten sepette. Sağ taraftan miktarını güncelleyebilirsiniz.", "tamam");
+                } else {
+                    // Adet Kontrolü (Strict)
+                    if (existing.adet + 1 > existing.stokMiktar) {
+                        showOzelAlert(`Stok yetersiz! Stok miktarı: ${existing.stokMiktar}`, "hata");
+                        return;
+                    }
+                    existing.adet++;
+                    existing.tutar = existing.adet * existing.fiyat;
+                }
             } else {
-                // Seçilen üye
-                cariId = cariVal;
+                // Yeni Ekle (Adet Kontrolü - İlk eklemede genelde 1 olur ama stok 0 ise?)
+                if (!isDecimal && u.miktar < 1) {
+                    showOzelAlert("Stokta ürün kalmadı!", "hata");
+                    return;
+                }
+
+                posBasket.push({
+                    id: u.id,
+                    ad: u.ad,
+                    fiyat: Number(u.fiyat),
+                    adet: isDecimal ? "" : 1,
+                    birim: u.birim,
+                    stokMiktar: Number(u.miktar), // Ensure Number
+                    isDecimal: isDecimal,
+                    tutar: isDecimal ? 0 : Number(u.fiyat)
+                });
+            }
+
+            renderPosBasket();
+            renderPosCategories(posActiveCategory);
+        }
+
+        function removeFromBasket(index) {
+            posBasket.splice(index, 1);
+            renderPosBasket();
+            renderPosCategories(posActiveCategory);
+        }
+
+        function updateBasketItem(index, val) {
+            const item = posBasket[index];
+            const cleanVal = val.replace(',', '.');
+
+            if (cleanVal === "" || isNaN(cleanVal)) {
+                // Boş bırakırsa bekle
+                item.adet = "";
+                item.tutar = 0;
+            } else {
+                let yeniAdet = parseFloat(cleanVal);
+
+                // STOK KONTROLU (Strict)
+                if (yeniAdet > item.stokMiktar) {
+                    showOzelAlert(`Stok yetersiz! Mevcut stok: ${item.stokMiktar}`, "hata");
+                    yeniAdet = item.stokMiktar; // Max'a eşitle
+                }
+
+                item.adet = yeniAdet;
+                item.tutar = item.adet * item.fiyat;
+            }
+
+            renderPosBasket();
+        }
+
+        function renderPosBasket() {
+            const listEl = document.getElementById('pos-basket-list');
+            const countEl = document.getElementById('pos-basket-count');
+            const totalEl = document.getElementById('pos-basket-total');
+
+            countEl.innerText = posBasket.length;
+
+            let grandTotal = 0;
+            let html = "";
+
+            if (posBasket.length === 0) {
+                listEl.innerHTML = `
+                    <div class="text-center text-muted mt-5">
+                       <i class="fa fa-shopping-cart fa-3x mb-3 text-secondary opacity-50"></i><br>
+                       Sepetiniz Boş<br>
+                       <small>Ürün eklemek için soldaki listeye tıklayın.</small>
+                    </div>`;
+                totalEl.innerText = "0,00 TL";
+                return;
+            }
+
+            posBasket.forEach((item, index) => {
+                grandTotal += (item.tutar || 0); // Tutar yoksa 0 (kg bekleyenler)
+
+                const step = item.isDecimal ? "0.01" : "1";
+                const val = (item.adet === "") ? "" : item.adet;
+                const warningClass = (item.adet === "") ? "border-danger bg-warning-subtle" : "";
+
+                html += `
+                    <div class="card mb-2 shadow-sm border-0">
+                        <div class="card-body p-2 d-flex align-items-center gap-2">
+                            <button class="btn btn-sm btn-outline-danger" onclick="removeFromBasket(${index})">
+                                <i class="fa fa-trash"></i>
+                            </button>
+                            
+                            <div class="flex-grow-1" style="min-width:0">
+                                <div class="fw-bold text-truncate small">${item.ad}</div>
+                                <div class="text-muted small">${formatMoney(item.fiyat)}</div>
+                            </div>
+                            
+                            <div style="width: 80px;">
+                                <input type="number" class="form-control form-control-sm fw-bold text-center ${warningClass}" 
+                                       value="${val}" step="${step}" min="0.01" placeholder="Miktar"
+                                       onchange="updateBasketItem(${index}, this.value)">
+                            </div>
+                            
+                            <div class="fw-bold text-end" style="width: 70px; font-size:0.9rem">
+                                ${formatMoney(item.tutar || 0)}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            listEl.innerHTML = html;
+            totalEl.innerText = formatMoney(grandTotal);
+        }
+
+        async function submitPosBasket() {
+            if (posBasket.length === 0) {
+                showOzelAlert("Sepet boş!", "hata");
+                return;
+            }
+
+            // VALIDASYON: Boş Miktarlar Var mı?
+            const invalidItems = posBasket.filter(i => i.adet === "" || i.adet <= 0);
+            if (invalidItems.length > 0) {
+                showOzelAlert("Lütfen tüm ürünlerin miktarını giriniz!", "hata");
+                return;
+            }
+
+            // CARİ KONTROL
+            const cariVal = document.getElementById('pos-cari').value;
+            const odemeEl = document.querySelector('input[name="pos-odeme"]:checked');
+            if (!odemeEl) { showOzelAlert("Ödeme Yöntemi seçiniz.", "hata"); return; }
+
+            const odemeYontemi = odemeEl.value;
+
+            if (!cariVal) {
+                showOzelAlert("Lütfen Müşteri Seçiniz. (Perakende veya Üye)", "hata");
+                return;
             }
 
             if (odemeYontemi === 'Veresiye' && cariVal === 'Perakende') {
-                showToast("İsimsiz (Perakende) satışta Veresiye olamaz.");
+                showOzelAlert("Perakende satış Veresiye olamaz.", "hata");
                 return;
             }
 
-            // KASA ID BULMA (Nakit İşlem İçin)
-            let kasaId = "";
-            if (odemeYontemi === 'Peşin') {
-                // KASA ID BULMA (Nakit İşlem İçin)
-                if (globalData.cariler && globalData.cariler.length > 0) {
-                    // "Kasa" veya "KasaHesabi" türünde bir hesap bul (Case Insensitive)
-                    // Öncelik: Adı "Nakit" veya "Merkez" içeren.
-
-                    // DEBUG: Tüm carileri konsola yazalım ki hatayı görelim
-                    // console.log("Account Search:", globalData.cariler.map(c => `${c.tur} - ${c.ad}`));
-
-                    let candidates = globalData.cariler.filter(h =>
-                        (h.tur && h.tur.toLowerCase().includes('kasa'))
-                    );
-
-                    const kasaAcc = candidates.find(h => h.ad.toLowerCase().includes('nakit') || h.ad.toLowerCase().includes('merkez'))
-                        || candidates[0]; // Yoksa ilkini al
-
-                    if (kasaAcc) {
-                        kasaId = kasaAcc.id;
-                    } else {
-                        // Kasa türünde hesap yoksa
-                        console.error("DEBUG: Kasa (Nakit) hesabı bulunamadı. Lütfen Hesaplar sayfasında Türü 'Kasa' olan bir hesap tanımlayın.", globalData.cariler);
-                    }
-                }
-
-                if (!kasaId) {
-                    showToast("Hata: Sistemde Tanımlı Kasa (Nakit Hesabı) Bulunamadı! Lütfen Ayarlardan Kasa ekleyin.");
+            // STOK KONTROL (Strict Blocking)
+            // Sepetteki sayı stoktan fazlaysa engelle
+            for (let item of posBasket) {
+                if (item.stokMiktar < item.adet) {
+                    showOzelAlert(`<b>${item.ad}</b> için stok yetersiz!<br>Stok: ${item.stokMiktar}<br>Talep: ${item.adet}`, "hata");
                     return;
                 }
             }
 
-            const submitForm = {
+            // CARİ / KASA BELİRLEME
+            let cariId = (cariVal === 'Perakende') ? "" : cariVal;
+            let kasaId = "";
+
+            if (odemeYontemi === 'Peşin') {
+                if (globalData.cariler) {
+                    let candidates = globalData.cariler.filter(h => (h.tur && h.tur.toLowerCase().includes('kasa')));
+                    const kasaAcc = candidates.find(h => h.ad.toLowerCase().includes('nakit') || h.ad.toLowerCase().includes('merkez')) || candidates[0];
+                    if (kasaAcc) kasaId = kasaAcc.id;
+                }
+                if (!kasaId) { showOzelAlert("Kasa Hesabı Bulunamadı!", "hata"); return; }
+            }
+
+            // HAZIRLIK
+            const btn = document.getElementById('btn-pos-submit');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> İşleniyor...';
+
+            // Backend Formu
+            let grandTotal = 0;
+            posBasket.forEach(i => grandTotal += i.tutar);
+
+            const form = {
                 user: currentUser.email,
-                islemTuru: 'Satis', // FIX: tur -> islemTuru
-                altTur: posActiveCategory,
-                stokId: posSelectedProduct.id,
-                adet: adet,
-                tutar: adet * fiyat,
-                cariId: cariId, // FIX: cari -> cariId
-                kasaId: kasaId, // FIX: kasa -> kasaId (Real ID)
-                tarih: new Date().toISOString().split('T')[0],
-                aciklama: (cariVal === 'Perakende') ? `Perakende Satış: ${posSelectedProduct.ad}` : `POS Satış: ${posSelectedProduct.ad}`,
-                odemeYontemi: odemeYontemi
+                items: posBasket,
+                total: grandTotal,
+                odemeYontemi: odemeYontemi,
+                cariId: cariId,
+                kasaId: kasaId,
+                aciklama: "Sepet Satış"
             };
 
-            const btn = document.getElementById('btn-pos-submit');
-            const org = btn.innerHTML;
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i>';
+            try {
+                const res = await postAPI("savePosBasket", { form: form });
+                console.log("POS Submit Result:", res);
 
-            postAPI("buhasebe_islem_kaydet", { form: submitForm }).then(res => {
                 btn.disabled = false;
-                btn.innerHTML = org;
-                if (res.basarili) {
-                    showToast("Satış Yapıldı! 💰");
-                    // Reset
-                    document.getElementById('pos-adet').value = 1;
-                    posSelectedProduct = null;
-                    document.getElementById('pos-urun-ad').value = "";
-                    document.getElementById('pos-cari').value = ""; // Seçiniz'e dön
-                    handlePosCariChange(); // UI Reset
-                    renderPosCategories(posActiveCategory);
-                } else {
-                    showToast("Hata: " + res.mesaj);
+                btn.innerHTML = 'SATIŞI TAMAMLA <i class="fa fa-check-circle ms-2"></i>';
+
+                if (!res) {
+                    showOzelAlert("Hata: Sunucudan boş yanıt geldi.", "hata");
+                    return;
                 }
-            });
+
+                if (res.basarili) {
+                    const fisNo = (res.mesaj && res.mesaj.includes('Fiş: ')) ? res.mesaj.split('Fiş: ')[1] : "-";
+                    showOzelAlert("Satış Başarılı!<br>Fiş No: " + fisNo, "tamam");
+
+                    posBasket = [];
+                    renderPosBasket();
+                    renderPosCategories(posActiveCategory);
+                    document.getElementById('pos-cari').value = "";
+
+                    // Mobile Reset
+                    const mobCari = document.getElementById('pos-cari-mobile');
+                    if (mobCari) mobCari.value = "";
+
+                } else {
+                    showOzelAlert("Hata: " + (res.mesaj || "Bilinmeyen Hata"), "hata");
+                }
+            } catch (err) {
+                console.error(err);
+                btn.disabled = false;
+                btn.innerHTML = 'SATIŞI TAMAMLA <i class="fa fa-check-circle ms-2"></i>';
+                showOzelAlert("Bir hata oluştu: " + err.message, "hata");
+            }
         }
+
 
         // --- POS CARİ YÖNETİMİ ---
         function loadPosCariList() {
@@ -3401,82 +3609,87 @@
         });
 
     </script>
-    <!-- MODAL: HIZLI SATIŞ (POS) -->
+    <!-- MODAL: HIZLI SATIŞ (POS - SEPET MODU) -->
     <div class="modal fade" id="modalHizliSatis" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-fullscreen-sm-down">
+        <div class="modal-dialog modal-fullscreen">
             <div class="modal-content">
                 <div class="modal-header text-white" style="background: linear-gradient(93deg, #0BB351, #264d3a);">
-                    <h5 class="modal-title fw-bold"><i class="fa fa-shopping-cart me-2"></i>Hızlı Satış</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    <h5 class="modal-title fw-bold">
+                        <i class="fa fa-shopping-basket me-2"></i>Hızlı Satış
+                    </h5>
+                    <div class="ms-auto d-flex align-items-center gap-3">
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
                 </div>
-                <div class="modal-body bg-light p-2">
-                    <!-- 1. KATEGORİ SEKMELERİ -->
-                    <div class="btn-group w-100 mb-3" id="pos-tabs">
-                        <!-- JS ile dolacak -->
-                    </div>
-
-                    <!-- 2. ÜRÜN GRİDİ -->
-                    <div id="pos-products" class="d-flex flex-wrap gap-2 mb-3"
-                        style="max-height: 250px; overflow-y: auto;">
-                        <!-- JS ile dolacak -->
-                    </div>
-
-                    <!-- 3. İŞLEM FORMU -->
-                    <div class="card border-0 shadow-sm">
-                        <div class="card-body p-3">
-                            <div class="input-group input-group-sm mb-2">
-                                <span class="input-group-text bg-white fw-bold">Ürün</span>
-                                <input type="text" id="pos-urun-ad" class="form-control bg-white" readonly
-                                    placeholder="Seçim Yapılmadı">
+                <div class="modal-body bg-light p-0 position-relative">
+                    <div class="row g-0 h-100">
+                        <!-- SOL: ÜRÜN LİSTESİ (GRİD) -->
+                        <div class="col-12 col-md-7 col-lg-8 p-2 d-flex flex-column mb-0 pos-products-container">
+                            <!-- Kategori Sekmeleri -->
+                            <div class="btn-group w-100 mb-2 shadow-sm" id="pos-tabs">
+                                <!-- JS ile dolacak -->
                             </div>
 
-                            <div class="row g-2 mb-2">
-                                <div class="col-6">
-                                    <label class="small text-muted fw-bold">Miktar</label>
-                                    <div class="input-group input-group-sm">
-                                        <button class="btn btn-outline-secondary" onclick="changePosAdet(-1)">-</button>
-                                        <input type="number" id="pos-adet" class="form-control text-center fw-bold"
-                                            value="1">
-                                        <button class="btn btn-outline-secondary" onclick="changePosAdet(1)">+</button>
-                                    </div>
+                            <!-- Ürün Grid -->
+                            <div id="pos-products" class="d-flex flex-wrap align-content-start gap-1 flex-grow-1">
+                                <!-- JS ile dolacak -->
+                            </div>
+                        </div>
+
+                        <!-- SAĞ: SEPET (FİŞ) - RESPONSIVE (MOBİLDE ALTA GELİR) -->
+                        <div class="col-12 col-md-5 col-lg-4 bg-white border-start d-flex flex-column shadow-lg"
+                            style="height: auto; min-height: 400px;">
+                            <div
+                                class="p-3 bg-secondary text-white fw-bold d-flex justify-content-between align-items-center">
+                                <span><i class="fa fa-list-ol me-2"></i>SEPET</span>
+                                <span id="pos-basket-count" class="badge bg-danger rounded-pill">0</span>
+                            </div>
+
+                            <div class="flex-grow-1 p-2" id="pos-basket-list"
+                                style="overflow-y: auto; background-color: #f8f9fa;">
+                                <!-- Basket Items (Desktop) -->
+                            </div>
+
+                            <div class="p-3 border-top bg-light" id="pos-checkout-area">
+                                <div class="d-flex justify-content-between mb-3">
+                                    <span class="fs-5 fw-bold text-muted">TOPLAM:</span>
+                                    <span class="fs-4 fw-bold text-success" id="pos-basket-total">0,00 TL</span>
                                 </div>
-                                <div class="col-6">
-                                    <label class="small text-muted fw-bold">Birim Fiyat</label>
-                                    <input type="number" id="pos-fiyat" class="form-control form-control-sm">
+
+                                <div class="mb-2">
+                                    <select id="pos-cari" class="form-select form-select-sm fw-bold border-secondary"
+                                        onchange="handlePosCariChange()">
+                                        <option value="">Müşteri Seçiniz...</option>
+                                    </select>
                                 </div>
-                            </div>
 
-                            <div class="mb-2">
-                                <label class="small text-muted fw-bold">Müşteri (Zorunlu)</label>
-                                <select id="pos-cari" class="form-select form-select-sm"
-                                    onchange="handlePosCariChange()">
-                                    <option value="">Lütfen Seçiniz...</option>
-                                    <!-- JS ile doldurulacak -->
-                                </select>
-                            </div>
+                                <div class="btn-group w-100 mb-3" role="group">
+                                    <input type="radio" class="btn-check" name="pos-odeme" id="pos-nakit" value="Peşin"
+                                        checked>
+                                    <label class="btn btn-outline-success fw-bold" for="pos-nakit">
+                                        <i class="fa fa-money-bill-wave me-1"></i>NAKİT
+                                    </label>
 
-                            <div class="d-flex gap-2">
-                                <input type="radio" class="btn-check" name="pos-odeme" id="pos-nakit" value="Peşin"
-                                    checked>
-                                <label class="btn btn-outline-success flex-grow-1 fw-bold" for="pos-nakit">Nakit /
-                                    Peşin</label>
+                                    <input type="radio" class="btn-check" name="pos-odeme" id="pos-veresiye"
+                                        value="Veresiye">
+                                    <label class="btn btn-outline-danger fw-bold" for="pos-veresiye">
+                                        <i class="fa fa-user-clock me-1"></i>VERESİYE
+                                    </label>
+                                </div>
 
-                                <input type="radio" class="btn-check" name="pos-odeme" id="pos-veresiye"
-                                    value="Veresiye">
-                                <label class="btn btn-outline-danger flex-grow-1 fw-bold"
-                                    for="pos-veresiye">Veresiye</label>
+                                <button id="btn-pos-submit" class="btn btn-success w-100 fw-bold py-3 fs-5 shadow-sm"
+                                    onclick="submitPosBasket()">
+                                    SATIŞI TAMAMLA <i class="fa fa-check-circle ms-2"></i>
+                                </button>
                             </div>
                         </div>
                     </div>
-                </div>
-                <div class="modal-footer p-2">
-                    <button id="btn-pos-submit" class="btn btn-success w-100 fw-bold btn-lg" onclick="submitPosSale()">
-                        SATIŞI TAMAMLA <i class="fa fa-check ms-2"></i>
-                    </button>
+
                 </div>
             </div>
         </div>
     </div>
+    <!-- Duplicate POS Modal Removed -->
 
     <!-- MODAL: CARİ EKLE -->
 
@@ -3507,6 +3720,390 @@
                 }
             });
         }
+        // --- DASHBOARD DRILL-DOWN LOGIC ---
+
+        // Helper: Loading
+        function showLoadingModal() {
+            // Check if exists
+            let overlay = document.getElementById('loading-overlay');
+            if (!overlay) {
+                overlay = document.createElement('div');
+                overlay.id = 'loading-overlay';
+                overlay.style = "position:fixed; top:0; left:0; width:100%; height:100%; bg-color:rgba(0,0,0,0.5); z-index:9999; display:flex; justify-content:center; align-items:center;";
+                overlay.innerHTML = '<div class="spinner-border text-light" role="status"><span class="visually-hidden">Yükleniyor...</span></div>';
+                document.body.appendChild(overlay);
+            }
+            overlay.style.display = 'flex';
+        }
+
+        function hideLoadingModal() {
+            const overlay = document.getElementById('loading-overlay');
+            if (overlay) overlay.style.display = 'none';
+        }
+
+        function openDrillDown(type) {
+            console.log("DrillDown Opened:", type); // DEBUG
+            try {
+                // 1. Modal Başlığı ve İçeriği Hazırla
+                const modalTitle = document.getElementById('drillDownTitle');
+                const tableBody = document.getElementById('drillDownTableBody');
+                const tableHead = document.getElementById('drillDownTableHead');
+
+                if (!modalTitle || !tableBody || !tableHead) {
+                    alert("Hata: Modal elementleri bulunamadı!");
+                    return;
+                }
+
+                tableBody.innerHTML = "";
+                tableHead.innerHTML = "";
+
+                let list = [];
+                let total = 0;
+
+                // 2. Veriyi Hazırla
+                if (type === 'BORC') {
+                    modalTitle.innerText = "Borçlu Olduğumuz Kişiler (Tedarikçiler)";
+                    modalTitle.className = "modal-title fw-bold text-danger";
+
+                    // Header
+                    tableHead.innerHTML = `<tr><th>Cari Adı</th><th class="text-end">Borç Tutarı</th></tr>`;
+
+                    // Data Filter: Bakiye < 0 (Borç)
+                    console.log("Checking Cariler for BORC:", globalData.cariler); // DEBUG
+                    if (globalData.cariler) {
+                        list = globalData.cariler.filter(h => {
+                            // Robust Number Parsing
+                            let val = h.bakiye;
+                            if (typeof val === 'string') val = parseFloat(val.replace('.', '').replace(',', '.'));
+                            return val < -0.01;
+                        }).map(h => ({
+                            id: h.id,
+                            ad: h.ad,
+                            tutar: Math.abs(typeof h.bakiye === 'string' ? parseFloat(h.bakiye.replace('.', '').replace(',', '.')) : h.bakiye)
+                        }));
+                    } else {
+                        console.warn("globalData.cariler is undefined/null!");
+                    }
+
+                } else if (type === 'ALACAK') {
+                    modalTitle.innerText = "Bize Borcu Olanlar (Alacaklar)";
+                    modalTitle.className = "modal-title fw-bold text-primary";
+
+                    // Header
+                    tableHead.innerHTML = `<tr><th>Cari Adı</th><th class="text-end">Alacak Tutarı</th></tr>`;
+
+                    // Data Filter: Bakiye > 0 (Alacak)
+                    console.log("Checking Cariler for ALACAK:", globalData.cariler); // DEBUG
+                    if (globalData.cariler) {
+                        list = globalData.cariler.filter(h => {
+                            // Robust Number Parsing
+                            let val = h.bakiye;
+                            if (typeof val === 'string') val = parseFloat(val.replace('.', '').replace(',', '.'));
+                            return val > 0.01;
+                        }).map(h => ({
+                            id: h.id,
+                            ad: h.ad,
+                            tutar: typeof h.bakiye === 'string' ? parseFloat(h.bakiye.replace('.', '').replace(',', '.')) : h.bakiye
+                        }));
+                    } else {
+                        console.warn("globalData.cariler is undefined/null!");
+                    }
+
+                } else if (type === 'STOK') {
+                    modalTitle.innerText = "Stok Değer Raporu";
+                    modalTitle.className = "modal-title fw-bold text-warning";
+
+                    // Header
+                    tableHead.innerHTML = `<tr><th>Ürün</th><th class="text-center">Miktar</th><th class="text-end">Top. Değer</th></tr>`;
+
+                    showLoadingModal();
+                    // FIX: Use postAPI instead of google.script.run for consistency
+                    postAPI("buhasebe_stok_rapor_getir", {}).then(res => {
+                        hideLoadingModal();
+                        if (res.basarili) {
+                            renderDrillDownTable(res.urunler, 'STOK');
+                            new bootstrap.Modal(document.getElementById('modalDrillDown')).show();
+                        } else {
+                            alert("Veri alınamadı: " + res.mesaj);
+                        }
+                    }).catch(err => {
+                        hideLoadingModal();
+                        alert("Sistem Hatası: " + err);
+                    });
+                    return; // Async bekle
+                }
+
+                // 3. Listeyi Render Et (Borç/Alacak için)
+                console.log("Rendering List:", list); // DEBUG
+                renderDrillDownTable(list, type);
+                new bootstrap.Modal(document.getElementById('modalDrillDown')).show();
+
+            } catch (err) {
+                console.error("DrillDown Error:", err);
+                alert("Beklenmedik Hata: " + err.message);
+            }
+        }
+
+
+
+        function renderDrillDownTable(list, type) {
+            const tableBody = document.getElementById('drillDownTableBody');
+            tableBody.innerHTML = "";
+            let total = 0;
+
+            if (list.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="3" class="text-center text-muted">Kayıt yok.</td></tr>`;
+                return;
+            }
+
+            list.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.style.cursor = "pointer";
+
+                if (type === 'STOK') {
+                    // Item: {ad, miktar, birim, maliyet, fiyat, kalan, ciro, kar}
+                    // Dashboard "Stok Maliyeti" dediği için Maliyet kullanıyoruz.
+                    const val = (item.kalan || 0) * (item.maliyet || 0);
+                    if (val <= 0) return; // Değersizleri gösterme
+                    total += val;
+
+                    tr.onclick = () => goToStokRapor(item.id);
+                    tr.innerHTML = `
+                        <td class="fw-bold text-dark">${item.ad} <i class="fa fa-external-link-alt small ms-1 text-muted"></i></td>
+                        <td class="text-center">${Number(item.kalan).toFixed(2)} ${item.birim}</td>
+                        <td class="text-end font-monospace">${formatMoney(val)}</td>
+                    `;
+                } else {
+                    // BORC / ALACAK
+                    total += item.tutar;
+                    tr.onclick = () => goToCariRapor(item.id); // REDIRECT TO REPORT
+                    tr.innerHTML = `
+                        <td class="fw-bold text-primary text-decoration-underline">${item.ad} <i class="fa fa-external-link-alt small ms-1 text-muted"></i></td>
+                        <td class="text-end font-monospace fw-bold">${formatMoney(item.tutar)}</td>
+                    `;
+                }
+                tableBody.appendChild(tr);
+            });
+
+            // Footer Row (Total)
+            const trTotal = document.createElement('tr');
+            trTotal.className = "table-light fw-bold";
+            if (type === 'STOK') {
+                // Backend'den gelen toplamMaliyet varsa onu kullan (daha kesin), yoksa hesaplanan 'total'
+                // Not: 'list' parametresi sadece array, globalData veya response objesi değil. 
+                // O yüzden 'total' değişkenini kullanmaya devam ediyoruz, çünkü 'val' maliyet üzerinden hesaplanıyor.
+                trTotal.innerHTML = `<td>TOPLAM</td><td></td><td class="text-end">${formatMoney(total)}</td>`;
+            } else {
+                trTotal.innerHTML = `<td>TOPLAM</td><td class="text-end">${formatMoney(total)}</td>`;
+            }
+            tableBody.appendChild(trTotal);
+        }
+
+        function goToStokRapor(stokId) {
+            // 1. Modal'ı Kapat
+            const modal = bootstrap.Modal.getInstance(document.getElementById('modalDrillDown'));
+            if (modal) modal.hide();
+
+            // 2. Tab Değiştir
+            switchTab('tab-rapor');
+
+            // 3. Rapor Türünü 'Stok' Yap
+            setReportType('stok');
+
+            // --- 4. UI STATE AYARLAMA (User Request) ---
+
+            // A) Filtre Butonunu Aktif Et
+            const filterChk = document.getElementById('stok-filtre-aktif');
+            if (filterChk) filterChk.checked = true;
+
+            // B) Detayları Göster'i Aç
+            const detayChk = document.getElementById('rapor-detay-chk');
+            if (detayChk) detayChk.checked = true;
+
+            // C) Dropdown'dan Ürünü Seç
+            // HTML'deki ID: 'rep-stok-secimi' (inp-rapor-stok-id değil!)
+            const sel = document.getElementById('rep-stok-secimi');
+            if (sel) {
+                // Dropdown dolmuş olmalı (loadDropdownData ile)
+                sel.value = stokId;
+                // Değişikliği tetikle (eğer listener varsa)
+                sel.dispatchEvent(new Event('change'));
+            }
+
+            // 5. Raporu Getir
+            setTimeout(() => getReport(), 300);
+        }
+
+        function goToCariRapor(cariId) {
+            // 1. Modal'ı Kapat
+            const modal = bootstrap.Modal.getInstance(document.getElementById('modalDrillDown'));
+            if (modal) modal.hide();
+
+            // 2. Tab Değiştir
+            switchTab('tab-rapor');
+
+            // 3. Rapor Türünü 'Cari' Yap
+            setReportType('cari'); // Butonları ayarlar
+
+            // 4. Dropdown'dan Kişiyi Seç
+            // Listeyi doldurmamız lazım önce (eğer boşsa)
+            // updateEkstreCariListMain() çağrısı gerekebilir ama "Hepsi" seçili ise listede vardır.
+            // updateEkstreCariListMain(); // Eğer liste boşsa doldur
+            const sel = document.getElementById('inp-ekstre-cari-main');
+            if (sel) {
+                sel.value = cariId;
+            }
+
+            // 5. Raporu Getir
+            setTimeout(() => getReport(), 300);
+        }
+
+        // --- STOK SATIŞ DETAY FONKSİYONU (YENİ) ---
+        function loadStokSalesDetail(stokId) {
+            const wrapper = document.getElementById('stok-detay-wrapper');
+            if (!wrapper) return;
+
+            wrapper.innerHTML = '<div class="text-center p-3"><i class="fa fa-spinner fa-spin"></i> Satış Performansı Yükleniyor...</div>';
+
+            postAPI("buhasebe_stok_detay_getir", { stokId: stokId }).then(res => {
+                if (!res.basarili) {
+                    wrapper.innerHTML = `<div class="alert alert-warning">${res.mesaj}</div>`;
+                    return;
+                }
+
+                // Render
+                // 1. Grafik
+                const chartId = 'stokDetayChart';
+
+                let html = `
+                <div class="row">
+                    <div class="col-md-7">
+                         <div class="card shadow-sm mb-3">
+                            <div class="card-header bg-white fw-bold">
+                                <i class="fa fa-chart-bar text-primary me-2"></i> Aylık Satış Performansı (Tutar)
+                            </div>
+                            <div class="card-body" style="height: 300px;">
+                                <canvas id="${chartId}"></canvas>
+                            </div>
+                         </div>
+                    </div>
+                    <div class="col-md-5">
+                         <div class="card shadow-sm mb-3">
+                            <div class="card-header bg-white fw-bold">
+                                <i class="fa fa-history text-secondary me-2"></i> Son Satışlar (Son 50)
+                            </div>
+                            <div class="card-body p-0" style="max-height: 300px; overflow-y: auto;">
+                                <table class="table table-sm table-striped small mb-0">
+                                    <thead class="table-light sticky-top">
+                                        <tr>
+                                            <th>Tarih</th>
+                                            <th>Alıcı</th>
+                                            <th>Ödeme</th>
+                                            <th>User</th>
+                                            <th class="text-end">Miktar</th>
+                                            <th class="text-end">Tutar</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+            `;
+
+                if (res.liste.length === 0) {
+                    html += `<tr><td colspan="6" class="text-center text-muted py-3">Henüz satış yok.</td></tr>`;
+                } else {
+                    res.liste.forEach(item => {
+                        // Badge Styling
+                        const badgeClass = (item.odeme === 'Peşin' || item.odeme === 'Pesin') ? 'bg-primary' : 'bg-danger';
+                        const userShort = item.user ? item.user.split('@')[0] : '-'; // Email'den isim çıkar
+
+                        html += `
+                        <tr>
+                            <td>${item.tarihStr}</td>
+                            <td class="text-truncate" style="max-width: 100px;" title="${item.cariAd}">${item.cariAd}</td>
+                            <td><span class="badge ${badgeClass}">${item.odeme}</span></td>
+                            <td class="small text-muted text-truncate" style="max-width: 80px;" title="${item.user}">${userShort}</td>
+                            <td class="text-end">${Number(item.adet).toFixed(2)}</td>
+                            <td class="text-end fw-bold">${formatMoney(item.tutar)}</td>
+                        </tr>
+                    `;
+                    });
+                }
+
+                html += `</tbody></table></div></div></div></div>`;
+                wrapper.innerHTML = html;
+
+                // Render Chart
+                renderStokDetayChart(chartId, res.grafik);
+            });
+        }
+
+        let stokChartInstance = null;
+        function renderStokDetayChart(canvasId, dataMap) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return; // Güvenlik
+
+            const ctx = canvas.getContext('2d');
+            if (stokChartInstance) stokChartInstance.destroy();
+
+            // Data Prep
+            const labels = Object.keys(dataMap).sort(); // ["2024-01", "2024-02"]
+            // USER PREFERENCE: Adet/Kg daha mantıklı (Stok Takibi için)
+            const dataQ = labels.map(k => dataMap[k].adet);
+
+            stokChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Aylık Satış Miktarı (Adet/Kg)',
+                        data: dataQ,
+                        backgroundColor: '#ffc107', // Warning Color (Stok Rengi)
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+
+        // --- SAYFA YÜKLENİNCE ---
+        window.addEventListener('load', function () {
+            // ... (Mevcut kodlar)
+            // Kartlara Click Event Ekle
+            document.getElementById('dash-borc').parentElement.parentElement.style.cursor = "pointer";
+            document.getElementById('dash-borc').parentElement.parentElement.onclick = () => openDrillDown('BORC');
+
+            document.getElementById('dash-alacak').parentElement.parentElement.style.cursor = "pointer";
+            document.getElementById('dash-alacak').parentElement.parentElement.onclick = () => openDrillDown('ALACAK');
+
+            document.getElementById('dash-stok').parentElement.parentElement.style.cursor = "pointer";
+            document.getElementById('dash-stok').parentElement.parentElement.onclick = () => openDrillDown('STOK');
+
+            // --- LISTENERS FOR DYNAMIC REPORTING ---
+            const detayChk = document.getElementById('rapor-detay-chk');
+            if (detayChk) {
+                detayChk.addEventListener('change', function () {
+                    if (document.getElementById('rep-tur-secimi').value === 'stok') {
+                        getReport();
+                    }
+                });
+            }
+
+            const stokSel = document.getElementById('rep-stok-secimi');
+            if (stokSel) {
+                stokSel.addEventListener('change', function () {
+                    if (document.getElementById('rep-tur-secimi').value === 'stok') {
+                        getReport();
+                    }
+                });
+            }
+        });
+
     </script>
+</body>
 
 </html>
