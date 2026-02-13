@@ -149,6 +149,18 @@
                 <input type="range" min="1.5" max="4.5" step="0.1" value="2.5" class="w-full accent-emerald-600"
                     oninput="ayarGuncelle('lineHeight', this.value)">
             </div>
+
+            <hr class="border-stone-200">
+            <div class="flex gap-2">
+                <button onclick="goToBookmark()"
+                    class="flex-1 bg-emerald-600 text-white p-2 rounded text-sm font-bold hover:bg-emerald-700 transition">
+                    Ayraça Git
+                </button>
+                <button onclick="showFavorites()"
+                    class="flex-1 bg-yellow-500 text-white p-2 rounded text-sm font-bold hover:bg-yellow-600 transition">
+                    Favorilerim
+                </button>
+            </div>
         </div>
     </div>
 
@@ -179,6 +191,27 @@
     <div
         class="bg-white border-t border-stone-200 h-8 shrink-0 z-20 flex justify-center items-center text-xs text-stone-400">
         <span class="mr-2">&larr; Sonraki</span> | <span class="ml-2">Önceki &rarr;</span>
+    </div>
+
+    <!-- FAVORITES MODAL -->
+    <div id="favoritesModal"
+        class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[80vh] flex flex-col">
+            <div class="p-4 border-b flex justify-between items-center bg-stone-50 rounded-t-lg">
+                <h3 class="font-bold text-lg text-stone-800">Favorilerim</h3>
+                <button onclick="document.getElementById('favoritesModal').classList.add('hidden')"
+                    class="text-stone-500 hover:text-red-500">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                        </path>
+                    </svg>
+                </button>
+            </div>
+            <div id="favoritesList" class="p-4 overflow-y-auto flex-1">
+                <!-- Javascript ile dolacak -->
+                <p class="text-center text-stone-400">Henüz favori eklenmedi.</p>
+            </div>
+        </div>
     </div>
 
     <script src="data.js"></script>
@@ -387,6 +420,17 @@
         }
 
         /* --- BOOKMARK ACTIONS --- */
+        function goToBookmark() {
+            if (bookmarkPage > 0) {
+                aktifSayfa = bookmarkPage;
+                sayfayiCiz(aktifSayfa);
+                toggleAyarlar();
+                showToast("Ayraça gidildi: " + bookmarkPage + ". Sayfa");
+            } else {
+                showToast("Henüz ayraç eklenmedi");
+            }
+        }
+
         function toggleBookmark() {
             if (bookmarkPage === aktifSayfa) {
                 bookmarkPage = 0;
