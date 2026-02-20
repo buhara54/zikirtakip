@@ -41,9 +41,7 @@
             text-justify: inter-word;
         }
 
-        .sajdah-ayah {
-            color: #dc2626;
-        }
+        .sajdah-ayah {color: #dc2626;}
 
         .ayah-symbol {
             font-family: sans-serif;
@@ -380,35 +378,44 @@
 
         /* --- SWIPE NAVIGATION IMPLEMENTATION --- */
         let touchStartX = 0;
+        let touchStartY = 0;
         let touchEndX = 0;
+        let touchEndY = 0;
         const mainCard = document.getElementById('mainCard');
         const minSwipeDistance = 50;
 
         document.getElementById('scrollContainer').addEventListener('touchstart', e => {
             touchStartX = e.changedTouches[0].screenX;
+            touchStartY = e.changedTouches[0].screenY;
         }, { passive: true });
 
         document.getElementById('scrollContainer').addEventListener('touchend', e => {
             touchEndX = e.changedTouches[0].screenX;
+            touchEndY = e.changedTouches[0].screenY;
             handleSwipe();
         }, { passive: true });
 
         // PC MOUSE DESTEĞİ (Test İçin)
         document.getElementById('scrollContainer').addEventListener('mousedown', e => {
             touchStartX = e.screenX;
+            touchStartY = e.screenY;
         });
 
         document.getElementById('scrollContainer').addEventListener('mouseup', e => {
             touchEndX = e.screenX;
+            touchEndY = e.screenY;
             handleSwipe();
         });
 
         function handleSwipe() {
-            const distance = touchEndX - touchStartX;
+            const distanceX = touchEndX - touchStartX;
+            const distanceY = touchEndY - touchStartY;
 
-            if (Math.abs(distance) > minSwipeDistance) {
+            // Sadece yatay hareket (X ekseni), dikey hareketten (Y ekseni) fazlaysa
+            // sayfayı çevir. Böylece aşağı/yukarı kaydırırken yanlışlıkla sayfa değişmez.
+            if (Math.abs(distanceX) > Math.abs(distanceY) && Math.abs(distanceX) > minSwipeDistance) {
                 // Hareketi algıla
-                if (distance > 0) {
+                if (distanceX > 0) {
                     // SAĞA KAYDIRMA (->) = SONRAKİ SAYFA (Sayfayı Sağa Çekince Sol Taraf Gelir)
                     // Kullanıcı talebi üzerine: "Kuran mantığı" -> Sağdan sola.
                     sayfaDegis(1);
@@ -534,7 +541,5 @@
             }, 2000);
         }
     </script>
-
 </body>
-
 </html>
