@@ -917,7 +917,10 @@
                 <div class="modal-ikon">⚠️</div>
                 <h3 id="custom-alert-title">Uyarı</h3>
                 <p id="custom-alert-msg">Mesaj buraya gelecek...</p>
-                <button onclick="kapatAlert()" class="modal-btn">TAMAM</button>
+                <div style="display: flex; gap: 10px; margin-top: 15px; width: 100%;">
+                    <button id="btnAlertCancel" class="modal-btn" style="background:#888; display: none;">HAYIR</button>
+                    <button id="btnAlertOk" class="modal-btn">TAMAM</button>
+                </div>
             </div>
         </div>
 
@@ -936,10 +939,12 @@
                 </div>
             </div>
         </div>
-       <!-- config.js already included in head -->
+
+        <!-- config.js already included in head -->
         <script>
             // --- VERİ YAPISI ---
             // const APP_VERSION = "v2.8"; // Artık config.js'den geliyor
+            // const API_URL comes from config.js
             // HATIM İÇİN ESKİ STABİL API (Çünkü Yeni Scriptte henüz Hatim kodu yok)
             const HATIM_API_URL = "https://script.google.com/macros/s/AKfycbyjgcqxphx1289d7I6huxpj-ImqUbOscgg5pM6waojHhU-r9NoQnJ_4DpPmgw9WtOYJ/exec";
             const BASE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzG8oO9FVrSH67A7ImWQXkBA66y_g6sxUQaAnPRZ48ttXg8W7h2l_FJErI6F9gr4cSEcA/exec";
@@ -1323,13 +1328,15 @@
             }
 
             function sayacSifirla(key) {
-                if (confirm("Sayı sıfırlanacak ve Biten sayacı +1 artacak. Onaylıyor musunuz?")) {
-                    data[key].biten++;
-                    data[key].toplam = 0;
-                    data[key].gecmis = [];
-                    data[key].baslangic = new Date().toISOString().substring(0, 10);
-                    kaydet();
-                }
+                ozelAlert("Sayı sıfırlanacak ve Biten sayacı +1 artacak. Onaylıyor musunuz?", "Onay", "evethayir", function (onay) {
+                    if (onay) {
+                        data[key].biten++;
+                        data[key].toplam = 0;
+                        data[key].gecmis = [];
+                        data[key].baslangic = new Date().toISOString().substring(0, 10);
+                        kaydet();
+                    }
+                });
             }
 
             function updateZikir(anaKey, altKey, val) {
@@ -1356,11 +1363,13 @@
                     try {
                         let json = JSON.parse(e.target.result);
                         if (json.kalp && json.letaif) {
-                            if (confirm("Mevcut veriler silinip yedek yüklenecek. Emin misiniz?")) {
-                                data = json;
-                                kaydet();
-                                ozelAlert("Yedek başarıyla yüklendi.");
-                            }
+                            ozelAlert("Mevcut veriler silinip yedek yüklenecek. Emin misiniz?", "Onay", "evethayir", function (onay) {
+                                if (onay) {
+                                    data = json;
+                                    kaydet();
+                                    ozelAlert("Yedek başarıyla yüklendi.");
+                                }
+                            });
                         } else {
                             ozelAlert("Geçersiz veya hatalı yedek dosyası!");
                         }
@@ -1370,10 +1379,12 @@
             }
 
             function sifirla() {
-                if (confirm("DİKKAT: Tüm verileriniz kalıcı olarak silinecek!")) {
-                    localStorage.removeItem(DB_KEY);
-                    location.reload();
-                }
+                ozelAlert("DİKKAT: Tüm verileriniz kalıcı olarak silinecek!", "Kritik Uyarı", "evethayir", function (onay) {
+                    if (onay) {
+                        localStorage.removeItem(DB_KEY);
+                        location.reload();
+                    }
+                });
             }
             // --- ONLINE HATİM FONKSİYONLARI ---
             function showLoader(goster) {
@@ -1596,25 +1607,27 @@
             }
 
             function manuelArsivle(index, hNo, sayfaNo) {
-                if (!confirm("Sayfa " + sayfaNo + " arşive taşınacak. Onaylıyor musunuz?")) return;
+                ozelAlert("Sayfa " + sayfaNo + " arşive taşınacak. Onaylıyor musunuz?", "Arşiv Onayı", "evethayir", function (onay) {
+                    if (!onay) return;
 
-                let aktifList = JSON.parse(localStorage.getItem("online_sayfalarim") || "[]");
-                let arsiv = JSON.parse(localStorage.getItem("hatim_arsivi") || "[]");
+                    let aktifList = JSON.parse(localStorage.getItem("online_sayfalarim") || "[]");
+                    let arsiv = JSON.parse(localStorage.getItem("hatim_arsivi") || "[]");
 
-                let tasinacakVeri = aktifList[index];
+                    let tasinacakVeri = aktifList[index];
 
-                if (!tasinacakVeri.hatimNo) {
-                    tasinacakVeri.hatimNo = hNo !== 'Eski' ? hNo : "Geçmiş";
-                }
+                    if (!tasinacakVeri.hatimNo) {
+                        tasinacakVeri.hatimNo = hNo !== 'Eski' ? hNo : "Geçmiş";
+                    }
 
-                arsiv.push(tasinacakVeri);
-                aktifList.splice(index, 1);
+                    arsiv.push(tasinacakVeri);
+                    aktifList.splice(index, 1);
 
-                localStorage.setItem("hatim_arsivi", JSON.stringify(arsiv));
-                localStorage.setItem("online_sayfalarim", JSON.stringify(aktifList));
+                    localStorage.setItem("hatim_arsivi", JSON.stringify(arsiv));
+                    localStorage.setItem("online_sayfalarim", JSON.stringify(aktifList));
 
-                alinanlariListele();
-                arsivRenderEt();
+                    alinanlariListele();
+                    arsivRenderEt();
+                });
             }
 
             function arsivAcKapat() {
@@ -1662,15 +1675,48 @@
                 container.innerHTML = html;
             }
 
-            function ozelAlert(mesaj, baslik = "Bilgi") {
+            function ozelAlert(mesaj, baslik = "Bilgi", tip = "tamam", onConfirm = null) {
                 document.getElementById("custom-alert-msg").innerText = mesaj;
                 document.getElementById("custom-alert-title").innerText = baslik;
 
                 let ikon = "ℹ️";
-                if (baslik.includes("Hata") || baslik.includes("Uyarı")) ikon = "⚠️";
+                if (baslik.includes("Hata") || baslik.includes("Uyarı") || baslik.includes("Kritik")) ikon = "⚠️";
                 if (baslik.includes("Başarılı") || baslik.includes("Tamam")) ikon = "✅";
+                if (baslik.includes("Onay") || baslik.includes("Emin")) ikon = "❓";
 
                 document.querySelector(".modal-ikon").innerText = ikon;
+
+                let btnOk = document.getElementById("btnAlertOk");
+                let btnCancel = document.getElementById("btnAlertCancel");
+
+                // Event listener'ları temizlemek için butonları klonla
+                let newBtnOk = btnOk.cloneNode(true);
+                btnOk.parentNode.replaceChild(newBtnOk, btnOk);
+                let newBtnCancel = btnCancel.cloneNode(true);
+                btnCancel.parentNode.replaceChild(newBtnCancel, btnCancel);
+
+                if (tip === "evethayir" && onConfirm) {
+                    newBtnCancel.style.display = "inline-block";
+                    newBtnOk.innerText = "EVET";
+                    newBtnCancel.innerText = "HAYIR";
+
+                    newBtnOk.onclick = function () {
+                        kapatAlert();
+                        onConfirm(true);
+                    };
+                    newBtnCancel.onclick = function () {
+                        kapatAlert();
+                        onConfirm(false);
+                    };
+                } else {
+                    newBtnCancel.style.display = "none";
+                    newBtnOk.innerText = "TAMAM";
+                    newBtnOk.onclick = function () {
+                        kapatAlert();
+                        if (onConfirm) onConfirm(true);
+                    };
+                }
+
                 document.getElementById("custom-alert").style.display = "flex";
             }
 
@@ -1700,5 +1746,3 @@
 </body>
 
 </html>
-
-
