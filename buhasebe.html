@@ -3578,15 +3578,17 @@
         }
 
         function deleteSabitGiderDesc(id) {
-            if (!confirm("Bu otomatik ödeme talimatını silmek istediğinize emin misiniz?\n(Geçmiş ödemeler silinmez, sadece gelecektekiler iptal edilir.)")) return;
+            showOzelAlert("Bu otomatik ödeme talimatını silmek istediğinize emin misiniz?<br><small>(Geçmiş ödemeler silinmez, sadece gelecektekiler iptal edilir.)</small>", "evethayir", function (onay) {
+                if (!onay) return;
 
-            postAPI("buhasebe_sg_sil", { id: id, username: currentUser.email }).then(res => {
-                if (res.basarili) {
-                    showToast(res.mesaj);
-                    loadSabitGiderList(); // Refresh list
-                } else {
-                    showToast("Hata: " + res.mesaj);
-                }
+                postAPI("buhasebe_sg_sil", { id: id, username: currentUser.email }).then(res => {
+                    if (res.basarili) {
+                        showToast(res.mesaj);
+                        loadSabitGiderList(); // Refresh list
+                    } else {
+                        showToast("Hata: " + res.mesaj);
+                    }
+                });
             });
         }
 
@@ -3750,7 +3752,7 @@
                 const tableHead = document.getElementById('drillDownTableHead');
 
                 if (!modalTitle || !tableBody || !tableHead) {
-                    alert("Hata: Modal elementleri bulunamadı!");
+                    showOzelAlert("Hata: Modal elementleri bulunamadı!", "hata");
                     return;
                 }
 
@@ -3824,11 +3826,11 @@
                             renderDrillDownTable(res.urunler, 'STOK');
                             new bootstrap.Modal(document.getElementById('modalDrillDown')).show();
                         } else {
-                            alert("Veri alınamadı: " + res.mesaj);
+                            showOzelAlert("Veri alınamadı: " + res.mesaj, "hata");
                         }
                     }).catch(err => {
                         hideLoadingModal();
-                        alert("Sistem Hatası: " + err);
+                        showOzelAlert("Sistem Hatası: " + err, "hata");
                     });
                     return; // Async bekle
                 }
@@ -3840,7 +3842,7 @@
 
             } catch (err) {
                 console.error("DrillDown Error:", err);
-                alert("Beklenmedik Hata: " + err.message);
+                showOzelAlert("Beklenmedik Hata: " + err.message, "hata");
             }
         }
 
@@ -4102,8 +4104,6 @@
                 });
             }
         });
-
     </script>
 </body>
-
 </html>
