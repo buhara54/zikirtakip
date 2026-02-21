@@ -6,6 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="config.js"></script>
     <script>
+        // const APP_VERSION = "v3.4";
+        // const CACHE_VERSION = "3.4";
+    </script>
+    <!-- /*<script src="config.js"></script>//BURASI SONRA GERİ KOYULACAK*/-->
+    <script>
         var link = document.createElement('link');
         link.rel = 'manifest';
         link.href = './manifest.json?v=' + CACHE_VERSION;
@@ -20,7 +25,7 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
-        /* Header Tasarımı (Kutu Takip ile aynı gradient) */
+        /* Header Tasarımı */
         .kafile-header {
             background: linear-gradient(93deg, #0BB351, #264d3a);
             color: white;
@@ -108,6 +113,50 @@
 </head>
 
 <body>
+    <!-- ÖZEL ALERT MODAL -->
+    <div class="modal-backdrop" id="custom-modal-backdrop"
+        style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9998;">
+    </div>
+    <div id="ozelAlertModal"
+        style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:white; padding:0; border-radius:12px; box-shadow:0 5px 15px rgba(0,0,0,0.3); z-index:9999; min-width:300px; max-width:90%;">
+        <div id="ozelAlertHeader"
+            style="background:linear-gradient(93deg, #0BB351, #264d3a); color:white; padding:10px 15px; border-top-left-radius:12px; border-top-right-radius:12px; font-weight:bold; display:flex; justify-content:space-between; align-items:center;">
+            <span id="ozelAlertTitle">Bilgi</span>
+            <span style="cursor:pointer;" onclick="closeOzelAlert()" style="font-size:1.5rem;">&times;</span>
+        </div>
+        <div id="ozelAlertBody" style="padding:20px; color:#333; font-size:1rem;"></div>
+        <div style="padding:10px 15px; text-align:right; border-top:1px solid #eee;">
+            <button class="btn btn-secondary btn-sm" id="btnAlertCancel"
+                style="display:none; margin-right:5px;">İptal</button>
+            <button class="btn btn-success btn-sm" id="btnAlertOk" onclick="closeOzelAlert()">Tamam</button>
+        </div>
+    </div>
+
+    <!-- YOLA ÇIK SEÇENEKLERİ MODALI -->
+    <div class="modal fade" id="modalYolaCikOptions" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">Sefer Başlatma</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <p class="mb-4">Otobüs hareket ediyor mu, yoksa durağa mı geçiyorsunuz?</p>
+                    <div class="d-grid gap-3">
+                        <button class="btn btn-outline-primary btn-lg" onclick="handleYolaCikOption('durak')">
+                            <i class="fa fa-map-marker-alt me-2"></i>Duraktan Yolcu Al
+                        </button>
+                        <button class="btn btn-success btn-lg" onclick="handleYolaCikOption('tamam')">
+                            <i class="fa fa-route me-2"></i>Liste Tamamlandı (Yola Çık)
+                        </button>
+                        <button class="btn btn-secondary" onclick="handleYolaCikOption('iptal')">
+                            İptal
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Header -->
     <div class="kafile-header d-flex justify-content-between align-items-center">
@@ -134,8 +183,8 @@
             </div>
             <div class="col-6">
                 <div class="dash-card">
-                    <div class="dash-label text-danger">KALAN GÜN</div>
-                    <div id="lbl-kalan-gun" class="dash-val text-danger">-</div>
+                    <div class="dash-label text-danger">GİDİŞ / DÖNÜŞ</div>
+                    <div id="lbl-tarihler" class="fw-bold mt-1" style="font-size: 0.9rem;">-</div>
                 </div>
             </div>
         </div>
@@ -150,8 +199,8 @@
             </div>
             <div class="col-4">
                 <div class="dash-card border-bottom border-4 border-warning">
-                    <div class="dash-label">DOLULUK</div>
-                    <div id="lbl-doluluk" class="dash-val text-warning">-%</div>
+                    <div class="dash-label">DOLULUK (E/K)</div>
+                    <div id="lbl-doluluk" class="dash-val text-warning" style="font-size: 1.2rem;">-</div>
                 </div>
             </div>
             <div class="col-4">
@@ -221,14 +270,64 @@
         </div>
     </div>
 
-    <!-- Modals (Placeholder) -->
+    <!-- 1. YOLCU EKLE MODALI -->
     <div class="modal fade" id="modalYolcuEkle" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
-                <div class="modal-body">Yolcu Ekleme Ekranı (Yapım Aşamasında)</div>
+                <div class="modal-header">
+                    <h5 class="modal-title">Yolcu Ekle</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formYolcuEkle" onsubmit="handleAddPassenger(event)">
+                        <!-- Gizli input kaldırıldı, Select yeterli -->
+                        <div class="mb-3">
+                            <label class="form-label">Kafile Seçimi</label>
+                            <select class="form-select" name="kafileId" id="inp-yolcu-kafileId" required>
+                                <option value="">Kafileler Yükleniyor...</option>
+                            </select>
+                        </div>
+
+                        <div class="row g-2 mb-2">
+                            <div class="col-8">
+                                <label class="form-label">Ad Soyad</label>
+                                <input type="text" name="adSoyad" class="form-control" required>
+                            </div>
+                            <div class="col-4">
+                                <label class="form-label">Cinsiyet</label>
+                                <select name="cinsiyet" class="form-select" required>
+                                    <option value="" selected disabled>Seçiniz...</option>
+                                    <option value="Erkek">Erkek</option>
+                                    <option value="Kadın">Kadın</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-2">
+                            <label class="form-label">TC Kimlik (Opsiyonel)</label>
+                            <input type="text" name="tc" class="form-control" maxlength="11">
+                        </div>
+
+                        <div class="mb-2">
+                            <label class="form-label">Telefon</label>
+                            <input type="tel" name="tel" class="form-control">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Not / Biniş Yeri</label>
+                            <input type="text" name="not" class="form-control" placeholder="Örn: Meydan Durak">
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 btn-lg">
+                            <i class="fa fa-save me-2"></i>Kaydet
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
+
+    <!-- 2. YOLCU ARA MODALI (Placeholder) -->
     <div class="modal fade" id="modalYolcuAra" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -236,13 +335,59 @@
             </div>
         </div>
     </div>
+
+    <!-- 3. KAFİLE LİSTESİ MODALI (Yerleşim ve Liste) -->
     <div class="modal fade" id="modalKafileListesi" tabindex="-1">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-lg"> <!-- Geniş Modal -->
             <div class="modal-content">
-                <div class="modal-body">Kafile Listesi (Yapım Aşamasında)</div>
+                <div class="modal-header">
+                    <h5 class="modal-title">Kafile Yolcu Listesi</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <!-- Tablar -->
+                    <ul class="nav nav-tabs nav-justified" role="tablist">
+                        <li class="nav-item">
+                            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-list-view">
+                                <i class="fa fa-list"></i> Liste & Yoklama
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-bus-view">
+                                <i class="fa fa-bus"></i> Yerleşim
+                            </button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content">
+                        <!-- Liste Görünümü -->
+                        <div class="tab-pane fade show active" id="tab-list-view">
+                            <div class="list-group list-group-flush" id="passenger-list-container">
+                                <div class="p-3 text-center text-muted">Yükleniyor...</div>
+                            </div>
+                        </div>
+                        <!-- Otobüs Görünümü -->
+                        <div class="tab-pane fade" id="tab-bus-view">
+                            <div class="p-3 bg-light">
+                                <!-- Bilgi notları kaldırıldı -->
+                                <div class="d-flex justify-content-between mb-2 fw-bold text-muted small">
+                                </div>
+
+                                <!-- Vertical Layout: Flex Column -->
+                                <div id="bus-visual-container"
+                                    class="border rounded bg-white p-2 d-flex flex-column gap-3"
+                                    style="min-height:300px;">
+                                    <!-- JS ile doldurulacak -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
+
+    <!-- 4. RAPORLAR (Placeholder) -->
     <div class="modal fade" id="modalRaporlar" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -250,6 +395,8 @@
             </div>
         </div>
     </div>
+
+    <!-- 5. TANIMLAMALAR (Placeholder) -->
     <div class="modal fade" id="modalTanimlamalar" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -257,13 +404,124 @@
             </div>
         </div>
     </div>
+
+    <!-- 6. KAFİLE YÖNETİMİ (Liste ve Yeni Ekleme) -->
     <div class="modal fade" id="modalKafileYonetim" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
-                <div class="modal-body">Kafile Yönetim Ekranı (Yapım Aşamasında)</div>
+                <div class="modal-header">
+                    <h5 class="modal-title">Kafile Yönetimi</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <ul class="nav nav-tabs" id="kafileTab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="list-tab" data-bs-toggle="tab"
+                                data-bs-target="#list-pane" type="button">Kafile Listesi</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="new-tab" data-bs-toggle="tab" data-bs-target="#new-pane"
+                                type="button">Yeni Kafile</button>
+                        </li>
+                    </ul>
+                    <div class="tab-content pt-3" id="kafileTabContent">
+                        <!-- LİSTE SEKMESİ -->
+                        <div class="tab-pane fade show active" id="list-pane" role="tabpanel">
+                            <div id="kafile-list-container" class="list-group">
+                                <div class="text-center py-3 text-muted">Yükleniyor...</div>
+                            </div>
+                        </div>
+                        <!-- YENİ KAFİLE SEKMESİ -->
+                        <div class="tab-pane fade" id="new-pane" role="tabpanel">
+                            <form id="formNewKafile" onsubmit="handleCreateKafile(event)">
+                                <div class="mb-2">
+                                    <label class="form-label">Kafile Adı</label>
+                                    <input type="text" name="ad" class="form-control" required
+                                        placeholder="Örn: Şubat Umresi">
+                                </div>
+                                <div class="row g-2 mb-2">
+                                    <div class="row g-2 mb-2">
+                                        <div class="col-6">
+                                            <label class="form-label">Tarih</label>
+                                            <input type="date" name="tarih" class="form-control" required>
+                                        </div>
+                                        <div class="col-6">
+                                            <label class="form-label">Saat</label>
+                                            <div class="input-group">
+                                                <select class="form-select" id="inp-saat-hh" name="saat_hh"></select>
+                                                <span class="input-group-text">:</span>
+                                                <select class="form-select" id="inp-saat-mm" name="saat_mm">
+                                                    <option value="00" selected>00</option>
+                                                    <option value="15">15</option>
+                                                    <option value="30">30</option>
+                                                    <option value="45">45</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row g-2 mb-2">
+                                        <div class="col-6">
+                                            <label class="form-label">Dönüş Tarihi</label>
+                                            <input type="date" name="donusTarih" class="form-control">
+                                        </div>
+                                        <div class="col-6">
+                                            <label class="form-label">Ücret</label>
+                                            <input type="number" name="ucret" class="form-control" placeholder="TL">
+                                        </div>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="form-label">Güzergah (Kısa Bilgi)</label>
+                                        <input type="text" name="guzergahJson" class="form-control"
+                                            placeholder="Örn: İstanbul - Mekke">
+                                    </div>
+
+                                    <hr>
+                                    <div class="mb-2">
+                                        <label class="form-label fw-bold">Planlama Bilgileri (Opsiyonel)</label>
+                                        <div class="row g-2">
+                                            <div class="col-6">
+                                                <input type="text" name="plaka" class="form-control"
+                                                    placeholder="Plaka (34AB123)">
+                                            </div>
+                                            <div class="col-6">
+                                                <input type="text" name="sofor" class="form-control"
+                                                    placeholder="Şoför Adı">
+                                            </div>
+                                            <div class="col-12">
+                                                <small class="text-muted">Araç bilgileri girilmezse "Planlama" modunda
+                                                    açılır.</small>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <hr>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">İzinli Dergahlar</label>
+                                        <div class="alert alert-light border p-2"
+                                            style="max-height: 100px; overflow-y: auto;">
+                                            <!-- Burası JS ile doldurulacak (İleride) -->
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" value="TÜMÜ"
+                                                    id="chkDefault" checked>
+                                                <label class="form-check-label" for="chkDefault">Tüm Dergahlar</label>
+                                            </div>
+                                        </div>
+                                        <input type="hidden" name="izinliDergahlar" id="inputIzinliDergahlar"
+                                            value="TÜMÜ">
+                                    </div>
+
+                                    <button type="submit" class="btn btn-success w-100">
+                                        <i class="fa fa-plus me-2"></i>Kafileyi Oluştur
+                                    </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
+
+    <!-- 7. YOKLAMA (Placeholder) -->
     <div class="modal fade" id="modalYoklama" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -277,6 +535,8 @@
     <script>
         // --- TEMEL JS ---
         let currentUser = null;
+        let activeKafileGlobal = null;
+        let allKafilesGlobal = []; // Tüm kafileleri tutalım
 
         document.addEventListener('DOMContentLoaded', function () {
             checkLogin();
@@ -296,34 +556,671 @@
             document.getElementById('user-display').innerText = `${currentUser.Ad_Soyad} (${currentUser.Birim_Kimligi || 'Bilinmiyor'})`;
 
             // Yetki Kontrolü
-            // Master Sheet'te KafYet sütunu eklendi ancak localStorage güncellemesi gerekecek.
-            // Şimdilik existing mantıkla birim üzerinden gidelim veya localStorage'ı güncellemesi için uyaralım.
-            // Kafile için özel yetki "KafYet" -> Kullanıcı giriş yaparken bu bilgi localStorage'a atılmalı.
-            // Eğer yoksa backend'den çekmeli.
-
-            // Simüle Edilmiş Yetki Kontrolü (İleride backend'den gelecek)
             const yetki = "il"; // TEST İÇİN
-
             if (yetki === 'il' || yetki === 'bolge') {
                 document.getElementById('admin-zone').style.display = 'block';
             }
 
-            // Dashboard Verilerini Çek (Mock)
+            // Dashboard Verilerini Çek
             loadDashboard();
+
+            // Saat Seçicisini Doldur (00-23)
+            const hhSelect = document.getElementById('inp-saat-hh');
+            if (hhSelect) {
+                hhSelect.innerHTML = "";
+                for (let i = 0; i < 24; i++) {
+                    let val = i < 10 ? "0" + i : i;
+                    let opt = document.createElement("option");
+                    opt.value = val;
+                    opt.text = val;
+                    hhSelect.appendChild(opt);
+                }
+                hhSelect.value = "00"; // Default
+            }
         }
 
         function loadDashboard() {
-            // İleride google.script.run.getKafileDashboardData() olacak.
-            document.getElementById('lbl-aktif-sefer').innerText = "Şubat Umresi";
-            document.getElementById('lbl-kalan-gun').innerText = "25";
-            document.getElementById('lbl-toplam-kayit').innerText = "32";
-            document.getElementById('lbl-doluluk').innerText = "%78";
-            document.getElementById('lbl-kapasite').innerText = "41";
+            // Aktif Kafileyi Bul ve İstatistiklerini Çek
+            document.getElementById('lbl-aktif-sefer').innerText = "Yükleniyor...";
+
+            google.script.run.withSuccessHandler(function (kafiles) {
+                console.log("Gelen Kafileler (Raw):", kafiles); // DEBUG LOG
+
+                if (!kafiles || kafiles.length === 0) {
+                    console.log("Hiç kafile verisi dönmedi.");
+                    setDashboardEmpty();
+                    allKafilesGlobal = [];
+                    return;
+                }
+
+                // Kafileleri Tarihe Göre Sırala (YENİDEN ESKİYE)
+                // Böylece en son oluşturulan kafile en başta gelir.
+                kafiles.sort((a, b) => new Date(b.tarih) - new Date(a.tarih));
+                allKafilesGlobal = kafiles;
+
+                // En yakın tarihli ve hala aktif olan (Kayıt Açık, Hazır, Yolda)
+                const activeKafile = kafiles.find(k => ["Kayıt Açık", "Hazır", "Yolda"].includes(k.durum));
+
+                if (activeKafile) {
+                    activeKafileGlobal = activeKafile; // Global kaydet
+                    updateDashboardWithKafile(activeKafile);
+                } else {
+                    activeKafileGlobal = null;
+                    setDashboardEmpty("Aktif Sefer Yok");
+                }
+
+                // Kafile Seçim Listesini Doldur (Eğer açık bir modal varsa veya tekrar açıldığında hazır olsun)
+                populateKafileSelect();
+
+                // Kafile listesini de hazırla (Yönetim Modalı için)
+                renderKafileList(kafiles);
+
+            }).withFailureHandler(err => {
+                console.error(err);
+                setDashboardEmpty("Hata!");
+            }).getKafiles(currentUser.email);
+        }
+
+        function updateDashboardWithKafile(kafile) {
+            document.getElementById('lbl-aktif-sefer').innerText = kafile.ad;
+
+            // Stats Çek
+            google.script.run.withSuccessHandler(function (stats) {
+                // stats: { kafileId, total, male, female, capacity }
+                document.getElementById('lbl-toplam-kayit').innerText = stats.total;
+
+                // Doluluk: 12 E / 8 K
+                document.getElementById('lbl-doluluk').innerHTML =
+                    `<span class="text-primary"><i class="fa fa-male"></i> ${stats.male}</span> / ` +
+                    `<span class="text-danger"><i class="fa fa-female"></i> ${stats.female}</span>`;
+
+                document.getElementById('lbl-kapasite').innerText = stats.capacity || "?";
+
+                // Tarihler
+                const gidis = new Date(kafile.tarih).toLocaleDateString() + (kafile.saat ? " " + kafile.saat : "");
+                const donus = kafile.donusTarih ? new Date(kafile.donusTarih).toLocaleDateString() : "?";
+                document.getElementById('lbl-tarihler').innerHTML = `<span class="text-dark">${gidis}</span><br><span class="text-muted small">Dönüş: ${donus}</span>`;
+
+            }).getKafileStats(kafile.id, currentUser.email);
+        }
+
+        function setDashboardEmpty(msg = "-") {
+            document.getElementById('lbl-aktif-sefer').innerText = msg;
+            document.getElementById('lbl-tarihler').innerText = "-";
+            document.getElementById('lbl-toplam-kayit').innerText = "-";
+            document.getElementById('lbl-doluluk').innerText = "-";
+            document.getElementById('lbl-kapasite').innerText = "-";
+        }
+
+        // --- KAFİLE YÖNETİMİ ---
+        function renderKafileList(kafiles) {
+            const container = document.getElementById('kafile-list-container');
+            container.innerHTML = "";
+
+            if (!kafiles || kafiles.length === 0) {
+                container.innerHTML = "<div class='p-2 text-muted'>Hiç kafile bulunamadı.</div>";
+                return;
+            }
+
+            kafiles.forEach(k => {
+                const isClosed = (k.durum === "TAMAMLANDI" || k.durum === "DEVREDİLDİ");
+                const badgeClass = isClosed ? "bg-secondary" : "bg-success";
+
+                const item = document.createElement('div');
+                item.className = "list-group-item d-flex justify-content-between align-items-center";
+                item.innerHTML = `
+                    <div>
+                        <div class="fw-bold">${k.ad}</div>
+                        <small class="text-muted"><i class="fa fa-calendar-alt"></i> ${new Date(k.tarih).toLocaleDateString()} | <span class="badge ${badgeClass}">${k.durum}</span></small>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-sm btn-outline-primary" onclick="ozelAlert('Düzenleme yakında...', 'Bilgi')"><i class="fa fa-edit"></i></button>
+                        ${!isClosed ? `
+                           <!-- DEVRET BUTONU -->
+                           <button class="btn btn-sm btn-outline-secondary" onclick="handleTransfer('${k.id}')" title="Devret"><i class="fa fa-exchange-alt"></i></button>
+                           
+                           <!-- DURUMA GÖRE BUTONLAR -->
+                           ${k.durum === 'Kayıt Açık' ?
+                            `<button class="btn btn-sm btn-outline-warning" onclick="handlePrepare('${k.id}')" title="Hazırlığı Tamamla (Plaka Gir)"><i class="fa fa-clipboard-check"></i> Hazırla</button>` : ''}
+                             
+                           ${k.durum === 'Hazır' ?
+                            `<button class="btn btn-sm btn-success" onclick="handleDepart('${k.id}')" title="Yola Çık"><i class="fa fa-route"></i> Yola Çık</button>` : ''}
+                             
+                           ${k.durum === 'Yolda' ?
+                            `<button class="btn btn-sm btn-dark" onclick="handleFinish('${k.id}')" title="Seferi Bitir"><i class="fa fa-flag-checkered"></i> Bitir</button>` : ''}
+
+                        ` : ''}
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function handleCreateKafile(e) {
+            e.preventDefault();
+            const form = e.target;
+            const formData = new FormData(form);
+
+            // Saati birleştir
+            const hh = document.getElementById('inp-saat-hh').value;
+            const mm = document.getElementById('inp-saat-mm').value;
+            const combinedTime = `${hh}:${mm}`;
+
+            const data = {
+                ad: formData.get('ad'),
+                tarih: formData.get('tarih'),
+                saat: combinedTime,
+                donusTarih: formData.get('donusTarih'),
+                ucret: formData.get('ucret'),
+                guzergahJson: formData.get('guzergahJson'),
+                plaka: formData.get('plaka'),
+                sofor: formData.get('sofor'),
+                izinliDergahlar: formData.get('izinliDergahlar')
+            };
+
+            google.script.run.withSuccessHandler(function (res) {
+                ozelAlert("Kafile başarıyla oluşturuldu!", "Başarılı");
+                form.reset();
+                loadDashboard();
+                const triggerEl = document.querySelector('#kafileTab button[data-bs-target="#list-pane"]');
+                bootstrap.Tab.getInstance(triggerEl).show();
+            }).withFailureHandler(error => {
+                ozelAlert("Hata: " + error.message, "Hata");
+            }).createKafile(data, currentUser.email);
+        }
+
+        function handleTransfer(id) {
+            ozelAlert("Bu kafileyi devretmek istediğinize emin misiniz? Yolcular 'Devredilenler' listesine taşınacak ve bu kafile kapatılacaktır.", "Devir Onayı", function () {
+                google.script.run.withSuccessHandler(function (res) {
+                    ozelAlert(res.transferredCount + " yolcu devredildi ve kafile kapatıldı.", "Devir Başarılı");
+                    loadDashboard();
+                }).withFailureHandler(err => ozelAlert("Hata: " + err, "Hata")).transferKafileToRegion(id, currentUser.email);
+            });
+        }
+
+        function handlePrepare(id) {
+            const plaka = prompt("Araç Plakasını Giriniz (Zorunlu):", "34...");
+            if (!plaka) return;
+            const sofor = prompt("Şoför Adı:", "");
+
+            const driverInfo = { plaka: plaka, sofor: sofor, soforTel: "" };
+
+            google.script.run.withSuccessHandler(res => {
+                ozelAlert("Kafile 'Hazır' durumuna getirildi. Yola çıkmaya hazır!", "Başarılı");
+                loadDashboard();
+            }).withFailureHandler(err => ozelAlert("Hata: " + err, "Hata")).prepareKafile(id, driverInfo, currentUser.email);
+        }
+
+        // --- YENİ YOLA ÇIK MANTIĞI ---
+        let pendingDepartId = null; // Yola çıkılacak ID'yi tutar
+
+        function handleDepart(id) {
+            pendingDepartId = id;
+            const m = new bootstrap.Modal(document.getElementById('modalYolaCikOptions'));
+            m.show();
+        }
+
+        function handleYolaCikOption(option) {
+            const modalEl = document.getElementById('modalYolaCikOptions');
+            const modal = bootstrap.Modal.getInstance(modalEl);
+
+            if (option === 'iptal') {
+                modal.hide();
+                pendingDepartId = null;
+                return;
+            }
+
+            if (option === 'durak') {
+                // Duraktan alma modu: Hiçbir şey yapma, sadece modalı kapat
+                modal.hide();
+                ozelAlert("Durak modunda devam ediliyor. Yolcu almaya devam edebilirsiniz.", "Bilgi");
+                return;
+            }
+
+            if (option === 'tamam') {
+                // Yolcu kontrolü yap
+                modal.hide(); // Önce modalı kapat
+
+                // Eksik yolcu var mı? Checkboxları kontrol et
+                // Not: Checkboxlar sadece o an ekranda render edilmişse görünür.
+                // Global passengers listesinden kontrol etmek daha sağlıklı.
+                // Ancak passengers listesi elimizde global yoksa (ki loadDashboard içinde yok), 
+                // en sağlıklısı Backend'den de kontrol etmek veya o anki UI listesine bakmak.
+
+                // Basit çözüm: Ekranda 'passenger-list-container' içindeki unchecked checkboxları say.
+                const container = document.getElementById('passenger-list-container');
+                const unchecked = container.querySelectorAll('input[type="checkbox"]:not(:checked)');
+
+                if (unchecked.length > 0) {
+                    ozelAlert(`${unchecked.length} yolcu işaretlenmedi (GELMEDİ). Yine de yola çıkılsın mı?`, "Eksik Yolcu", function () {
+                        submitDepart();
+                    });
+                } else {
+                    submitDepart();
+                }
+            }
+        }
+
+        function submitDepart() {
+            if (!pendingDepartId) return;
+            // Backend çağrısı (ozelAlert loading eklenebilir ama basit tutalım)
+            google.script.run.withSuccessHandler(res => {
+                ozelAlert("Kafile yola çıktı! İyi yolculuklar.", "İyi Yolculuklar");
+                loadDashboard();
+            }).withFailureHandler(err => ozelAlert("Hata: " + err, "Hata")).departKafile(pendingDepartId, currentUser.email);
+        }
+
+        // --- DÖNÜŞ İŞLEMLERİ ---
+        function handleStartReturn(id) {
+            ozelAlert("Kafile dönüş yoluna geçecek. Gidiş yoklaması gizlenecek ve dönüş yoklaması başlayacaktır. Onaylıyor musunuz?", "Dönüş Onayı", function () {
+                google.script.run.withSuccessHandler(res => {
+                    ozelAlert("Kafile dönüş yoluna girdi.", "Başarılı");
+                    loadDashboard();
+                }).withFailureHandler(err => ozelAlert("Hata: " + err, "Hata")).startReturnTrip(id, currentUser.email);
+            });
+        }
+
+        function handleFinish(id) {
+            ozelAlert("Sefer tamamlandı ve kafile kapatılacak. Emin misiniz?", "Sefer Sonu", function () {
+                google.script.run.withSuccessHandler(res => {
+                    ozelAlert("Sefer başarıyla tamamlandı.", "Teşekkürler");
+                    loadDashboard();
+                }).withFailureHandler(err => ozelAlert("Hata: " + err, "Hata")).finishKafile(id, currentUser.email);
+            });
         }
 
         function openModal(id) {
             const m = new bootstrap.Modal(document.getElementById(id));
+
+            // Yolcu Ekle Modalı ise, Select'i Doldur
+            if (id === 'modalYolcuEkle') {
+                populateKafileSelect();
+            }
+
             m.show();
+
+            // Kafile Listesi ise verileri çek
+            if (id === 'modalKafileListesi') {
+                loadPassengerManifest();
+            }
+        }
+
+        // --- YENİ HELPER: Kafile Select Doldurma ---
+        function populateKafileSelect() {
+            const select = document.getElementById('inp-yolcu-kafileId');
+            select.innerHTML = "";
+
+            // Aktif veya Planlamada olanları filtrele
+            const activeOnes = allKafilesGlobal.filter(k => k.durum === "Kayıt Açık" || k.durum === "Planlama");
+
+            if (activeOnes.length === 0) {
+                const opt = document.createElement("option");
+                opt.text = "Aktif Sefer Yok";
+                opt.value = "";
+                select.appendChild(opt);
+                return;
+            }
+
+            activeOnes.forEach(k => {
+                const opt = document.createElement("option");
+                opt.value = k.id;
+                opt.text = `${k.ad} (${new Date(k.tarih).toLocaleDateString()}) - ${k.durum}`;
+                // Eğer global aktif ile eşleşiyorsa seçili yap
+                if (activeKafileGlobal && k.id === activeKafileGlobal.id) {
+                    opt.selected = true;
+                }
+                select.appendChild(opt);
+            });
+        }
+
+        // --- YOLCU İŞLEMLERİ ---
+        function handleAddPassenger(e) {
+            e.preventDefault();
+            const kafileId = document.getElementById('inp-yolcu-kafileId').value;
+            if (!kafileId) {
+                ozelAlert("Lütfen listeden bir kafile seçiniz!", "Uyarı");
+                return;
+            }
+
+            const form = e.target;
+            const formData = new FormData(form);
+            const data = {
+                kafileId: kafileId,
+                adSoyad: formData.get('adSoyad'),
+                cinsiyet: formData.get('cinsiyet'),
+                tc: formData.get('tc'),
+                tel: formData.get('tel'),
+                binisNoktasi: formData.get('not'), // Formdaki "Not/Biniş Yeri" alanı buraya
+                not: "", // Şimdilik boş, istenirse ayrılabilir
+                odemeDurumu: "Bekliyor",
+                odenenMiktar: 0
+            };
+
+            const btn = form.querySelector('button[type="submit"]');
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Kaydediliyor...';
+
+            google.script.run.withSuccessHandler(function (res) {
+                ozelAlert("Yolcu eklendi.", "Başarılı");
+                form.reset();
+
+                // Form resetlenince select bozulur, tekrar set et
+                // En son seçileni korumak kullanıcı için iyidir
+                const select = document.getElementById('inp-yolcu-kafileId');
+                select.value = kafileId;
+
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+                loadDashboard();
+            }).withFailureHandler(err => {
+                ozelAlert("Hata: " + err, "Hata");
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }).addPassenger(data, currentUser.email);
+        }
+
+        function loadPassengerManifest() {
+            const container = document.getElementById('passenger-list-container');
+            const busContainer = document.getElementById('bus-visual-container');
+
+            if (!activeKafileGlobal) {
+                container.innerHTML = "<div class='p-3 text-center'>Aktif kafile yok (Dashboard'da seçili değil).</div>";
+                busContainer.innerHTML = "-";
+                // İsteğe bağlı: Burada da bir Combobox koyulabilir ama şimdilik dashboar'a bağlı kalsın.
+                return;
+            }
+
+            container.innerHTML = "<div class='p-3 text-center'>Yükleniyor...</div>";
+
+            google.script.run.withSuccessHandler(function (passengers) {
+                renderPassengerUI(passengers);
+            }).getPassengers(activeKafileGlobal.id, currentUser.email);
+        }
+
+        function renderPassengerUI(passengers) {
+            const listCont = document.getElementById('passenger-list-container');
+            const busCont = document.getElementById('bus-visual-container');
+
+            listCont.innerHTML = "";
+            busCont.innerHTML = "";
+
+            if (!passengers || passengers.length === 0) {
+                listCont.innerHTML = "<div class='p-3 text-center text-muted'>Henüz kayıtlı yolcu yok.</div>";
+                busCont.innerHTML = "<div class='text-center mt-5 text-muted'>Otobüs Boş</div>";
+                renderFooterButtons(); // Aktif kafile var ama yolcu yoksa da butonlar çıksın
+                return;
+            }
+
+            // --- 1. LİSTE GÖRÜNÜMÜ ---
+            // Sıralama: Önce Erkekler, Sonra Kadınlar
+            const men = passengers.filter(p => p.cinsiyet === 'Erkek');
+            const women = passengers.filter(p => p.cinsiyet !== 'Erkek');
+            const sortedPassengers = [...men, ...women];
+
+            // Kafile Durumu (Yola Çıkılmış mı?)
+            // activeKafileGlobal: Kafile objesi
+            const kDurum = activeKafileGlobal ? activeKafileGlobal.durum : "";
+            // Gidiş Modu: Yolda veya TAMAMLANDI (ve Dönüşte değilse)
+            // Dönüş Modu: Donuste (Veya Tamamlandı ama ayrım zor, 'Donuste' statusu var)
+
+            const isDonus = (kDurum === 'Donuste' || kDurum === 'Dönüşte');
+            const activeType = isDonus ? 'donus' : 'gidis';
+
+            // Checkbox aktiflik durumu
+            const isInteractable = (kDurum === 'Yolda' || kDurum === 'Donuste');
+
+            sortedPassengers.forEach((p, index) => {
+                const isMale = p.cinsiyet === 'Erkek';
+                const icon = isMale ? '<i class="fa fa-male text-primary"></i>' : '<i class="fa fa-female text-danger"></i>';
+
+                // Telefon Biçimlendirme
+                const telLink = p.tel ? `<a href="#" onclick="event.preventDefault(); copyPhone('${p.tel}')" class="text-decoration-none text-dark" title="Kopyala"><i class="fa fa-phone text-success"></i></a>` : '-';
+
+                // Yoklama Değeri (Gidiş veya Dönüş)
+                const rawVal = isDonus ? p.yoklamaDonus : p.yoklama;
+                const isChecked = (rawVal === true || rawVal === "TRUE");
+
+                const checkboxHTML = `
+                    <div class="form-check m-0">
+                        <input class="form-check-input" type="checkbox" 
+                            onchange="handleAttendance('${p.id}', this.checked, '${activeType}')" 
+                            ${isChecked ? 'checked' : ''} 
+                            ${isInteractable ? '' : 'disabled'}>
+                    </div>
+                `;
+
+                const div = document.createElement('div');
+                div.className = "list-group-item d-flex justify-content-between align-items-center py-2 px-2";
+                div.innerHTML = `
+                    <div class="d-flex align-items-center gap-2 text-truncate" style="flex:1; min-width:0;">
+                         <span class="badge bg-light text-dark border" style="min-width:25px;">${index + 1}</span>
+                        ${icon}
+                        <div class="fw-bold text-truncate" title="${p.adSoyad}">${p.adSoyad}</div>
+                        ${telLink}
+                    </div>
+                    <div class="d-flex align-items-center gap-2 ms-2">
+                         <span class="badge bg-secondary opacity-75 small text-truncate" style="max-width:80px;" title="${p.binisNoktasi || ''}">${p.binisNoktasi || '?'}</span>
+                        ${checkboxHTML}
+                    </div>
+                `;
+                listCont.appendChild(div);
+            });
+
+            // --- 2. OTOBÜS GÖRÜNÜMÜ (DİKEY) ---
+            renderVerticalBus(busCont, sortedPassengers);
+
+            // --- 3. FOOTER BUTONLARI ---
+            renderFooterButtons();
+        }
+
+        // --- YENİ HELPERLAR ---
+        function copyPhone(tel) {
+            navigator.clipboard.writeText(tel).then(() => {
+                // Basit bir bildirim (Toast yerine alert yorabilir ama basit kalsın)
+                // console.log("Kopyalandı: " + tel);
+            });
+        }
+
+        function handleAttendance(id, isChecked, type) {
+            google.script.run.withFailureHandler(err => {
+                ozelAlert("Hata: " + err, "Hata");
+            }).togglePassengerAttendance(id, isChecked, type, currentUser.email);
+        }
+
+        function renderFooterButtons() {
+            const footerDiv = document.getElementById('footer-buttons');
+            const statusText = document.getElementById('footer-status-text');
+
+            if (!footerDiv) return;
+
+            if (!activeKafileGlobal) {
+                footerDiv.innerHTML = "";
+                statusText.innerText = "Kafile Seçilmedi";
+                return;
+            }
+
+            const k = activeKafileGlobal;
+            const status = (k.durum || "").trim(); // Trim for safety
+            statusText.innerText = "Durum: " + status;
+
+            let btnHtml = "";
+            // Case-insensitive checks
+            const s = status.toLowerCase();
+
+            if (s === 'kayıt açık' || s === 'kayit acik') {
+                btnHtml = `<button class="btn btn-sm btn-warning" onclick="handlePrepare('${k.id}')"><i class="fa fa-clipboard-check"></i> Hazırla</button>`;
+            } else if (s === 'hazır' || s === 'hazir') {
+                btnHtml = `<button class="btn btn-sm btn-success" onclick="handleDepart('${k.id}')"><i class="fa fa-route"></i> Yola Çık</button>`;
+            } else if (s === 'yolda') {
+                // Yolda -> Dönüşe Geç
+                btnHtml = `<button class="btn btn-sm btn-primary" onclick="handleStartReturn('${k.id}')"><i class="fa fa-undo"></i> Dönüşe Geç</button>`;
+            } else if (s === 'donuste') {
+                // Dönüşte -> Bitir
+                btnHtml = `<button class="btn btn-sm btn-dark" onclick="handleFinish('${k.id}')"><i class="fa fa-flag-checkered"></i> Seferi Bitir</button>`;
+            } else if (s === 'tamamlandı' || s === 'tamamlandi') {
+                btnHtml = `<span class="badge bg-secondary">Tamamlandı</span>`;
+            }
+
+            footerDiv.innerHTML = btnHtml;
+        }
+
+        function renderVerticalBus(container, passengers) {
+            container.innerHTML = "";
+
+            // Şoför Alanı
+            const driverRow = document.createElement("div");
+            driverRow.className = "d-flex justify-content-between mb-3 border-bottom pb-2";
+            driverRow.innerHTML = `<div class="border rounded bg-secondary text-white small d-flex align-items-center justify-content-center" style="width:40px; height:40px;"><i class="fa fa-dharmachakra"></i></div>`;
+            container.appendChild(driverRow);
+
+            const men = passengers.filter(p => p.cinsiyet === 'Erkek');
+            const women = passengers.filter(p => p.cinsiyet !== 'Erkek');
+
+            let seatCounter = 1;
+
+            // Helper: Satır oluştur (SOL:1 - KORİDOR - SAĞ:2 -> 2+1 Düzeni)
+            function createRow(seats, startIndex, sourceArray) {
+                const row = document.createElement("div");
+                row.className = "d-flex justify-content-between mb-2";
+
+                // SOL (1 Koltuk)
+                if (startIndex < sourceArray.length) {
+                    row.appendChild(createSeat(sourceArray[startIndex], seatCounter++));
+                    startIndex++;
+                } else {
+                    row.appendChild(createEmptySeat());
+                }
+
+                // Koridor
+                const corridor = document.createElement("div");
+                corridor.style.width = "20px";
+                row.appendChild(corridor);
+
+                // SAĞ (2 Koltuk)
+                const rightSide = document.createElement("div");
+                rightSide.className = "d-flex gap-1";
+
+                // Sağ 1
+                if (startIndex < sourceArray.length) {
+                    rightSide.appendChild(createSeat(sourceArray[startIndex], seatCounter++));
+                    startIndex++;
+                } else {
+                    rightSide.appendChild(createEmptySeat());
+                }
+
+                // Sağ 2
+                if (startIndex < sourceArray.length) {
+                    rightSide.appendChild(createSeat(sourceArray[startIndex], seatCounter++));
+                    startIndex++;
+                } else {
+                    rightSide.appendChild(createEmptySeat());
+                }
+
+                row.appendChild(rightSide);
+                return { rowElement: row, nextIndex: startIndex };
+            }
+
+            // 1. ERKEKLER
+            let mIndex = 0;
+            const menRows = Math.ceil(men.length / 3);
+            for (let i = 0; i < menRows; i++) {
+                const res = createRow(3, mIndex, men);
+                container.appendChild(res.rowElement);
+                mIndex = res.nextIndex;
+            }
+
+            // 2. BOŞLUK (Erkekler bitti, Kadınlar yeni satıra geçer)
+            if (men.length > 0 && women.length > 0) {
+                const sep = document.createElement("div");
+                sep.className = "my-2 border-top border-dashed";
+                container.appendChild(sep);
+            }
+
+            // 3. KADINLAR
+            let wIndex = 0;
+            const womenRows = Math.ceil(women.length / 3);
+            for (let i = 0; i < womenRows; i++) {
+                const res = createRow(3, wIndex, women);
+                container.appendChild(res.rowElement);
+                wIndex = res.nextIndex;
+            }
+
+            // ARKA (Boş)
+            const backendRow = document.createElement("div");
+            backendRow.className = "d-flex justify-content-center mt-3 border-top pt-2";
+            container.appendChild(backendRow);
+        }
+
+        function createSeat(p, num) {
+            const el = document.createElement("div");
+            const bg = p.cinsiyet === 'Erkek' ? 'bg-primary' : 'bg-danger';
+            el.className = `rounded text-white small d-flex align-items-center justify-content-center shadow-sm ${bg}`;
+            el.style.width = "40px";
+            el.style.height = "40px";
+            el.style.cursor = "pointer";
+            el.title = p.adSoyad;
+            el.innerText = num;
+            return el;
+        }
+
+        function createEmptySeat() {
+            const el = document.createElement("div");
+            el.className = `rounded bg-light border small`;
+            el.style.width = "40px";
+            el.style.height = "40px";
+            return el;
+        }
+
+
+        // --- OZEL ALERT FONKSİYONLARI ---
+        function ozelAlert(mesaj, baslik = "Bilgi", onConfirm = null) {
+            const modalEl = document.getElementById('ozelAlertModal');
+            const backdrop = document.getElementById('custom-modal-backdrop');
+            const body = document.getElementById('ozelAlertBody');
+            const header = document.getElementById('ozelAlertHeader');
+            const title = document.getElementById('ozelAlertTitle');
+            const btnOk = document.getElementById('btnAlertOk');
+            const btnCancel = document.getElementById('btnAlertCancel');
+
+            if (!modalEl) {
+                console.error("Özel Alert Modalı bulunamadı. Mesaj:", mesaj);
+                if (onConfirm) onConfirm();
+                return;
+            }
+
+            body.innerHTML = mesaj;
+            title.innerText = baslik;
+
+            if (baslik === "Hata") header.style.background = "#d32f2f";
+            else if (baslik.includes("Onay") || baslik.includes("Emin") || baslik.includes("Eksik")) header.style.background = "#ffa000";
+            else header.style.background = "linear-gradient(93deg, #0BB351, #264d3a)"; // Varsayılan Yeşil
+
+            // Clone to remove listeners
+            const newBtnOk = btnOk.cloneNode(true);
+            btnOk.parentNode.replaceChild(newBtnOk, btnOk);
+            const newBtnCancel = btnCancel.cloneNode(true);
+            btnCancel.parentNode.replaceChild(newBtnCancel, btnCancel);
+
+            if (onConfirm && typeof onConfirm === 'function') {
+                newBtnCancel.style.display = 'inline-block';
+                newBtnOk.innerHTML = "Evet";
+
+                newBtnCancel.onclick = () => { closeOzelAlert(); };
+                newBtnOk.onclick = () => { closeOzelAlert(); onConfirm(); };
+            } else {
+                newBtnCancel.style.display = 'none';
+                newBtnOk.innerHTML = "Tamam";
+                newBtnOk.onclick = () => { closeOzelAlert(); };
+            }
+
+            modalEl.style.display = 'block';
+            backdrop.style.display = 'block';
+        }
+
+        function closeOzelAlert() {
+            document.getElementById('ozelAlertModal').style.display = 'none';
+            document.getElementById('custom-modal-backdrop').style.display = 'none';
         }
     </script>
 </body>
