@@ -468,17 +468,33 @@ function ayetSec(ayahKey) {
         }
 
         function toggleBookmark() {
-            if (bookmarkPage === aktifSayfa) {
-                bookmarkPage = 0;
-                localStorage.removeItem('quran_bookmark_page');
-                showToast("Ayraç kaldırıldı");
-            } else {
-                bookmarkPage = aktifSayfa;
-                localStorage.setItem('quran_bookmark_page', aktifSayfa);
-                showToast("Sayfa ayracı eklendi");
-            }
-            updateIcons();
+    if (bookmarkPage === aktifSayfa) {
+        // Ayraç Kaldırılıyor
+        bookmarkPage = 0;
+        bookmarkAyah = "";
+        localStorage.removeItem('quran_bookmark_page');
+        localStorage.removeItem('quran_bookmark_ayah');
+        showToast("Ayraç kaldırıldı");
+        
+        // Ekrandaki yeşil vurguyu temizle
+        geciciSeciliAyet = "";
+        document.querySelectorAll('.soft-highlight').forEach(el => el.classList.remove('soft-highlight'));
+    } else {
+        // Ayraç Ekleniyor
+        bookmarkPage = aktifSayfa;
+        bookmarkAyah = geciciSeciliAyet; // Seçili ayeti kaydet
+        localStorage.setItem('quran_bookmark_page', aktifSayfa);
+        
+        if (bookmarkAyah !== "") {
+            localStorage.setItem('quran_bookmark_ayah', bookmarkAyah);
+            showToast("Sayfa ve seçili ayet ayraca eklendi");
+        } else {
+            localStorage.removeItem('quran_bookmark_ayah');
+            showToast("Sayfa ayracı eklendi");
         }
+    }
+    updateIcons();
+}
 
         function toggleFavorite() {
             const map = pageMappings[aktifSayfa + 1];
