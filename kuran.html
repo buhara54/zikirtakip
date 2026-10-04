@@ -64,6 +64,16 @@
         body {
             padding-bottom: env(safe-area-inset-bottom);
         }
+        /* Seçili Ayet Vurgusu (Soft Yeşil) */
+.soft-highlight {
+    background-color: #d1fae5 !important; /* Açık ve yormayan yeşil tonu */
+    border-radius: 6px;
+    padding: 2px 4px;
+    transition: background-color 0.3s ease;
+}
+.ayah-clickable:hover {
+    background-color: #ecfdf5; /* Üzerine gelince çok hafif yeşil */
+}
     </style>
 </head>
 
@@ -229,6 +239,9 @@
         // Bookmark & Favorites
         let bookmarkPage = parseInt(localStorage.getItem('quran_bookmark_page')) || 0;
         let favorites = JSON.parse(localStorage.getItem('quran_favorites') || "[]");
+        // Bookmark & Favorites kısmına eklenecekler
+let bookmarkAyah = localStorage.getItem('quran_bookmark_ayah') || ""; // AYRAÇTAKİ AYET
+let geciciSeciliAyet = ""; // O AN TIKLANAN AYET
 
         window.onload = function () {
             // Veri Dosyası Kontrolü
@@ -328,23 +341,39 @@
                         html += `<div class="w-full text-center mb-4 mt-2 text-2xl">بِسۡمِ ٱللَّهِ ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ</div>`;
                     }
                 }
-                // Ayetler
-                const ayetler = sure.verses.filter(v => v.id >= item.start && v.id <= item.end);
-                ayetler.forEach(v => {
-                    let isSajdah = secdeAyetleri[sure.id] && secdeAyetleri[sure.id].includes(v.id);
-                    let textClass = isSajdah ? "sajdah-ayah" : "";
-                    html += `<span class="${textClass}">${v.text} <span class="ayah-symbol select-none text-xl">&#64831;${v.id}&#64830;</span></span> `;
-                });
-            });
+             // Sayfa yüklendiğinde, eğer ayraçlı sayfadaysak ayraca alınmış ayeti seçili göster
+if (sayfaNo === bookmarkPage) {
+    geciciSeciliAyet = bookmarkAyah;
+} else {
+    geciciSeciliAyet = "";
+}
 
-            div.innerHTML = html;
-            document.getElementById('scrollContainer').scrollTop = 0;
-            localStorage.setItem('son_kaldigim_sayfa', sayfaNo);
+// Ayetler
+const ayetler = sure.verses.filter(v => v.id >= item.start && v.id <= item.end);
+ayetler.forEach(v => {
+    let ayahKey = sure.id + "-" + v.id;
+    let isSajdah = secdeAyetleri[sure.id] && secdeAyetleri[sure.id].includes(v.id);
+    let textClass = isSajdah ? "sajdah-ayah " : "";
+        // Eğer bu ayet geçici olarak seçiliyse veya ayraçtaki ayetse yeşil yap
+    if (geciciSeciliAyet === ayahKey) {
+        textClass += "soft-highlight ";
+    }
 
-            // İkonları Güncelle
-            updateIcons();
-        }
+    html += `<span id="ayah-${ayahKey}" class="ayah-clickable cursor-pointer ${textClass}" onclick="ayetSec('${ayahKey}')">${v.text} <span class="ayah-symbol select-none text-xl">&#64831;${v.id}&#64830;</span></span> `;
+});
+function ayetSec(ayahKey) {
+    // Eski yeşil vurguları temizle
+    document.querySelectorAll('.soft-highlight').forEach(el => el.classList.remove('soft-highlight'));
 
+    // Aynı ayete tekrar tıklandıysa seçimi iptal et
+    if (geciciSeciliAyet === ayahKey) {
+        geciciSeciliAyet = "";
+    } else {
+        // Yeni ayeti seç ve yeşil yap
+        geciciSeciliAyet = ayahKey;
+        document.getElementById('ayah-' + ayahKey).classList.add('soft-highlight');
+    }
+}
         function sayfaDegis(yon) {
             let yeni = aktifSayfa + yon;
             if (yeni >= 0 && yeni <= 604) { aktifSayfa = yeni; sayfayiCiz(aktifSayfa); }
