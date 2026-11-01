@@ -594,6 +594,19 @@
         </div>
 
         <div class="container">
+            <!-- YENİ UYGULAMAYA GEÇİŞ VE ZİKİR AKTARIM KARTI -->
+            <div style="background: linear-gradient(135deg, #064e3b, #047857); color: white; border-radius: 12px; padding: 14px; margin-bottom: 16px; box-shadow: 0 4px 12px rgba(6,78,59,0.25); text-align: center;">
+                <div style="font-size: 1rem; font-weight: 800; margin-bottom: 6px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    <span>🚀</span> <span>Yeni Buhara Zikir Takip Portalı Yayında!</span>
+                </div>
+                <p style="font-size: 0.82rem; margin: 0 0 10px 0; opacity: 0.95; line-height: 1.4;">
+                    Daha gelişmiş arayüz, 3'lü Kur'an ayracı ve ortak hatim-i şerif sistemi ile yeni uygulamamız hizmete girdi. Kayıtlı zikirlerinizi tek tıkla otomatik aktararak kesintisiz devam edebilirsiniz.
+                </p>
+                <button onclick="yeniUygulamayaGoc()" style="background: #f59e0b; color: #78350f; font-weight: 900; font-size: 0.85rem; border: none; padding: 10px 16px; border-radius: 8px; cursor: pointer; width: 100%; box-shadow: 0 2px 6px rgba(0,0,0,0.2);">
+                    📲 Zikirlerimi Aktar & Yeni Uygulamaya Geç
+                </button>
+            </div>
+
 
             <div id="tab-hatim" class="tab-content">
                 <div style="position: relative; margin-bottom: 10px;">
@@ -625,7 +638,7 @@
                         <div style="font-size:3rem; font-weight:bold; color:#1565c0;" id="online-son-sayfa">0</div>
                         <button class="btn btn-ana" style="background:#1565c0; margin-top:10px;"
                             onclick="onlineSayfaAl()">
-                            <i class="fa fa-plus"></i> Sayfa Al (Sıradaki)
+                            <i class="fa fa-arrow-right"></i> Yeni Uygulamadan Hatim Al
                         </button>
                     </div>
                 </div>
@@ -1432,7 +1445,30 @@
             }
 
             // Sayfa Alma İsteği
+            function yeniUygulamayaGoc() {
+                try {
+                    var rawData = localStorage.getItem(DB_KEY);
+                    var dataObj = {};
+                    if (rawData) {
+                        try { dataObj = JSON.parse(rawData); } catch(e){}
+                    } else if (typeof data !== 'undefined') {
+                        dataObj = data;
+                    }
+                    var b64 = btoa(unescape(encodeURIComponent(JSON.stringify(dataObj))));
+                    window.location.href = "https://zikritakip.web.app/#migrate=" + b64;
+                } catch (e) {
+                    window.location.href = "https://zikritakip.web.app";
+                }
+            }
+
             function onlineSayfaAl() {
+                ozelAlert(
+                    "<div style='text-align:center;'><div style='font-size:1.05rem; font-weight:800; color:#065f46; margin-bottom:8px;'>📢 Hatim Dağıtımı Yeni Sisteme Taşındı!</div><p style='font-size:0.85rem; color:#444; line-height:1.5; margin-bottom:14px;'>Eski sistem üzerinden yeni sayfa alımı durdurulmuştur. Ortak hatim sayfalarınızı yeni ve modern Buhara Portalımız üzerinden alabilirsiniz.<br><br><b>Kayıtlı zikirlerinizi tek tıkla aktararak hemen devam edebilirsiniz:</b></p><button onclick='yeniUygulamayaGoc()' class='btn btn-ana' style='background:#10b981; width:100%; padding:12px; font-weight:bold; font-size:0.9rem; border-radius:8px;'>🚀 Zikirlerimi Aktar & Yeni Uygulamaya Geç</button></div>",
+                    "Yeni Sisteme Geçiş"
+                );
+            }
+
+            function eski_onlineSayfaAl_pasif() {
                 if (!navigator.onLine) {
                     ozelAlert("Hatim almak için internet gereklidir.", "Bağlantı Hatası");
                     return;
