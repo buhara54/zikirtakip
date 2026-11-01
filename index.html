@@ -1455,7 +1455,7 @@
                         dataObj = data;
                     }
                     var b64 = btoa(unescape(encodeURIComponent(JSON.stringify(dataObj))));
-                    window.location.href = "https://zikritakip.web.app/#migrate=" + b64;
+                    window.location.href = "https://zikritakip.web.app/?migrate=" + b64 + "#migrate=" + b64;
                 } catch (e) {
                     window.location.href = "https://zikritakip.web.app";
                 }
@@ -1463,9 +1463,15 @@
 
             function onlineSayfaAl() {
                 ozelAlert(
-                    "<div style='text-align:center;'><div style='font-size:1.05rem; font-weight:800; color:#065f46; margin-bottom:8px;'>📢 Hatim Dağıtımı Yeni Sisteme Taşındı!</div><p style='font-size:0.85rem; color:#444; line-height:1.5; margin-bottom:14px;'>Eski sistem üzerinden yeni sayfa alımı durdurulmuştur. Ortak hatim sayfalarınızı yeni ve modern Buhara Portalımız üzerinden alabilirsiniz.<br><br><b>Kayıtlı zikirlerinizi tek tıkla aktararak hemen devam edebilirsiniz:</b></p><button onclick='yeniUygulamayaGoc()' class='btn btn-ana' style='background:#10b981; width:100%; padding:12px; font-weight:bold; font-size:0.9rem; border-radius:8px;'>🚀 Zikirlerimi Aktar & Yeni Uygulamaya Geç</button></div>",
-                    "Yeni Sisteme Geçiş"
+                    "<div style='text-align:center;'><div style='font-size:1.05rem; font-weight:800; color:#065f46; margin-bottom:8px;'>📢 Hatim Dağıtımı Yeni Sisteme Taşındı!</div><p style='font-size:0.85rem; color:#444; line-height:1.5; margin-bottom:12px;'>Eski sistem üzerinden yeni sayfa alımı durdurulmuştur. Ortak hatim sayfalarınızı yeni ve modern Buhara Portalımız üzerinden alabilirsiniz.<br><br><b>Kayıtlı zikirlerinizi aktarmak ve yeni uygulamaya geçmek için aşağıdaki butona tıklayınız:</b></p></div>",
+                    "Yeni Sisteme Geçiş",
+                    "tamam",
+                    function () {
+                        yeniUygulamayaGoc();
+                    }
                 );
+                var btn = document.getElementById("btnAlertOk");
+                if (btn) btn.innerText = "🚀 ZİKİRLERİMİ AKTAR & GEÇ";
             }
 
             function eski_onlineSayfaAl_pasif() {
@@ -1712,7 +1718,7 @@
             }
 
             function ozelAlert(mesaj, baslik = "Bilgi", tip = "tamam", onConfirm = null) {
-                document.getElementById("custom-alert-msg").innerText = mesaj;
+                document.getElementById("custom-alert-msg").innerHTML = mesaj;
                 document.getElementById("custom-alert-title").innerText = baslik;
 
                 let ikon = "ℹ️";
